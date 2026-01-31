@@ -9,7 +9,10 @@ import {
   LogOut,
   ChevronRight,
   Star,
+  Moon,
+  Sun,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -25,17 +28,35 @@ const menuItems = [
 
 export const Profile = () => {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = () => {
     toast.success("Logged out successfully");
     navigate("/login");
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+    toast.success(`Switched to ${theme === "dark" ? "light" : "dark"} mode`);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <header className="gradient-primary px-4 pb-20 pt-12">
-        <h1 className="text-2xl font-bold text-primary-foreground">Profile</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-primary-foreground">Profile</h1>
+          <button
+            onClick={toggleTheme}
+            className="rounded-xl bg-primary-foreground/20 p-3 backdrop-blur-sm transition-colors hover:bg-primary-foreground/30"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-5 w-5 text-primary-foreground" />
+            ) : (
+              <Moon className="h-5 w-5 text-primary-foreground" />
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Profile card */}
