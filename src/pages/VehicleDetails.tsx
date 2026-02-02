@@ -22,6 +22,7 @@ export const VehicleDetails = () => {
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [pricingType, setPricingType] = useState<"hour" | "day">("hour");
 
   const vehicle = vehicles.find((v) => v.id === id);
   const shop = vehicle ? rentalShops.find((s) => s.id === vehicle.shopId) : null;
@@ -170,16 +171,46 @@ export const VehicleDetails = () => {
         <div className="rounded-2xl bg-card p-5 shadow-card">
           <h3 className="mb-4 font-semibold text-foreground">Pricing</h3>
           <div className="flex gap-4">
-            <div className="flex-1 rounded-xl border-2 border-primary bg-primary/5 p-4 text-center">
-              <Clock className="mx-auto mb-2 h-5 w-5 text-primary" />
-              <p className="text-2xl font-bold text-primary">${vehicle.pricePerHour}</p>
+            <button
+              type="button"
+              onClick={() => setPricingType("hour")}
+              className={cn(
+                "flex-1 rounded-xl p-4 text-center transition-all cursor-pointer select-none active:scale-95",
+                pricingType === "hour"
+                  ? "border-2 border-primary bg-primary/5"
+                  : "border border-border hover:border-primary/50"
+              )}
+            >
+              <Clock className={cn(
+                "mx-auto mb-2 h-5 w-5",
+                pricingType === "hour" ? "text-primary" : "text-muted-foreground"
+              )} />
+              <p className={cn(
+                "text-2xl font-bold",
+                pricingType === "hour" ? "text-primary" : "text-foreground"
+              )}>${vehicle.pricePerHour}</p>
               <p className="text-sm text-muted-foreground">per hour</p>
-            </div>
-            <div className="flex-1 rounded-xl border border-border p-4 text-center">
-              <Calendar className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
-              <p className="text-2xl font-bold text-foreground">${vehicle.pricePerDay}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPricingType("day")}
+              className={cn(
+                "flex-1 rounded-xl p-4 text-center transition-all cursor-pointer select-none active:scale-95",
+                pricingType === "day"
+                  ? "border-2 border-primary bg-primary/5"
+                  : "border border-border hover:border-primary/50"
+              )}
+            >
+              <Calendar className={cn(
+                "mx-auto mb-2 h-5 w-5",
+                pricingType === "day" ? "text-primary" : "text-muted-foreground"
+              )} />
+              <p className={cn(
+                "text-2xl font-bold",
+                pricingType === "day" ? "text-primary" : "text-foreground"
+              )}>${vehicle.pricePerDay}</p>
               <p className="text-sm text-muted-foreground">per day</p>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -188,8 +219,13 @@ export const VehicleDetails = () => {
       <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 p-4 backdrop-blur-xl">
         <div className="mx-auto max-w-md flex items-center gap-4">
           <div>
-            <p className="text-sm text-muted-foreground">Starting from</p>
-            <p className="text-2xl font-bold text-primary">${vehicle.pricePerHour}/hr</p>
+            <p className="text-sm text-muted-foreground">
+              {pricingType === "hour" ? "Per hour" : "Per day"}
+            </p>
+            <p className="text-2xl font-bold text-primary">
+              ${pricingType === "hour" ? vehicle.pricePerHour : vehicle.pricePerDay}
+              {pricingType === "hour" ? "/hr" : "/day"}
+            </p>
           </div>
           <Button
             className="flex-1"
