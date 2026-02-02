@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Clock, ChevronRight } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { bookings } from "@/data/mockData";
@@ -5,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 export const Bookings = () => {
+  const navigate = useNavigate();
   const upcomingBookings = bookings.filter((b) => b.status === "upcoming");
   const pastBookings = bookings.filter((b) => b.status === "completed" || b.status === "cancelled");
 
@@ -65,10 +67,14 @@ export const Bookings = () => {
                       <p className="text-sm text-muted-foreground">Total</p>
                       <p className="text-lg font-bold text-primary">${booking.totalPrice}</p>
                     </div>
-                    <button className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
-                      View Details
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
+                      <button 
+                        type="button"
+                        onClick={() => navigate(`/booking-details/${booking.id}`)}
+                        className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline active:scale-95"
+                      >
+                        View Details
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
                   </div>
                 </div>
               ))}
@@ -119,9 +125,22 @@ export const Bookings = () => {
                       </div>
                       <div className="mt-2 flex items-center justify-between">
                         <p className="font-semibold text-foreground">${booking.totalPrice}</p>
-                        <button className="text-sm font-medium text-primary hover:underline">
-                          Book Again
-                        </button>
+                        <div className="flex gap-2">
+                          <button 
+                            type="button"
+                            onClick={() => navigate(`/booking-details/${booking.id}`)}
+                            className="text-sm font-medium text-muted-foreground hover:underline active:scale-95"
+                          >
+                            Details
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => navigate(`/vehicle/${booking.vehicleId}`)}
+                            className="text-sm font-medium text-primary hover:underline active:scale-95"
+                          >
+                            Book Again
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
