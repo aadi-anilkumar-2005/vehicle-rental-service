@@ -49,8 +49,13 @@ export const VehicleDetails = () => {
         {/* Header actions */}
         <div className="absolute left-0 right-0 top-0 flex items-center justify-between p-4">
           <button
+            type="button"
             onClick={() => navigate(-1)}
-            className="rounded-xl bg-card/80 p-3 backdrop-blur-sm transition-colors hover:bg-card"
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              navigate(-1);
+            }}
+            className="rounded-xl bg-card/80 p-3 backdrop-blur-sm transition-colors hover:bg-card active:scale-95 cursor-pointer z-10"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
