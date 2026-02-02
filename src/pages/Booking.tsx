@@ -80,13 +80,18 @@ export const Booking = () => {
             <Calendar className="h-5 w-5 text-primary" />
             <h3 className="font-semibold text-foreground">Select Date</h3>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide touch-pan-x">
             {dates.map((date) => (
               <button
                 key={date}
+                type="button"
                 onClick={() => setSelectedDate(date)}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setSelectedDate(date);
+                }}
                 className={cn(
-                  "whitespace-nowrap rounded-xl px-5 py-3 text-sm font-medium transition-all",
+                  "whitespace-nowrap rounded-xl px-5 py-3 text-sm font-medium transition-all cursor-pointer select-none active:scale-95",
                   selectedDate === date
                     ? "gradient-primary text-primary-foreground shadow-button"
                     : "bg-card text-muted-foreground shadow-sm hover:bg-secondary"
@@ -108,9 +113,14 @@ export const Booking = () => {
             {times.map((time) => (
               <button
                 key={time}
+                type="button"
                 onClick={() => setSelectedTime(time)}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setSelectedTime(time);
+                }}
                 className={cn(
-                  "rounded-xl py-3 text-sm font-medium transition-all",
+                  "rounded-xl py-3 text-sm font-medium transition-all cursor-pointer select-none active:scale-95",
                   selectedTime === time
                     ? "gradient-primary text-primary-foreground shadow-button"
                     : "bg-card text-muted-foreground shadow-sm hover:bg-secondary"
