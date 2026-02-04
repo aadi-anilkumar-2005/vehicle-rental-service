@@ -7,7 +7,8 @@ import {
   DollarSign,
   Plus,
   ChevronRight,
-  Star
+  Star,
+  User
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 
 const stats = [
   { label: "Total Revenue", value: "$12,847", change: "+18%", icon: DollarSign, color: "text-green-500" },
-  { label: "Active Bookings", value: "34", change: "+5%", icon: Calendar, color: "text-blue-500" },
+  { label: "Active Bookings", value: "34", change: "+5%", icon: Calendar, color: "text-primary" },
   { label: "Total Vehicles", value: "48", change: "+2", icon: Car, color: "text-purple-500" },
   { label: "Staff Members", value: "8", change: "-", icon: Users, color: "text-orange-500" },
 ];
@@ -56,9 +57,14 @@ export const OwnerDashboard = () => {
               <p className="text-xs text-muted-foreground">{user?.name}</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/owner/profile')}>
+              <User className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -89,7 +95,12 @@ export const OwnerDashboard = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">My Rental Shops</CardTitle>
-              <Button size="sm" variant="ghost" className="h-8 gap-1 text-primary">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 gap-1 text-primary"
+                onClick={() => navigate('/owner/shops')}
+              >
                 <Plus className="h-4 w-4" />
                 Add
               </Button>
@@ -97,7 +108,11 @@ export const OwnerDashboard = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             {shops.map((shop) => (
-              <div key={shop.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
+              <div
+                key={shop.id}
+                className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 cursor-pointer hover:bg-secondary/70 transition-colors"
+                onClick={() => navigate('/owner/shops')}
+              >
                 <div className="flex-1">
                   <p className="font-medium text-foreground text-sm">{shop.name}</p>
                   <div className="flex items-center gap-3 mt-1">
@@ -118,7 +133,18 @@ export const OwnerDashboard = () => {
         {/* Recent Bookings */}
         <Card className="border-border">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Recent Bookings</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Recent Bookings</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-primary"
+                onClick={() => navigate('/owner/bookings')}
+              >
+                View All
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             {recentBookings.map((booking) => (
@@ -142,11 +168,19 @@ export const OwnerDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+          <Button
+            variant="outline"
+            className="h-auto py-4 flex-col gap-2"
+            onClick={() => navigate('/owner/vehicles')}
+          >
             <Car className="h-5 w-5" />
-            <span className="text-sm">Add Vehicle</span>
+            <span className="text-sm">Manage Vehicles</span>
           </Button>
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+          <Button
+            variant="outline"
+            className="h-auto py-4 flex-col gap-2"
+            onClick={() => navigate('/owner/staff')}
+          >
             <Users className="h-5 w-5" />
             <span className="text-sm">Manage Staff</span>
           </Button>

@@ -19,10 +19,25 @@ import { BookingDetails } from "./pages/BookingDetails";
 import { Profile } from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
-// Role-based dashboards
+// Admin pages
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
+import { AdminProfile } from "./pages/admin/AdminProfile";
+import { UserManagement } from "./pages/admin/UserManagement";
+import { OwnerManagement } from "./pages/admin/OwnerManagement";
+import { ShopMonitoring } from "./pages/admin/ShopMonitoring";
+
+// Owner pages
 import { OwnerDashboard } from "./pages/owner/OwnerDashboard";
+import { OwnerProfile } from "./pages/owner/OwnerProfile";
+import { ShopManagement } from "./pages/owner/ShopManagement";
+import { VehicleManagement } from "./pages/owner/VehicleManagement";
+import { StaffManagement } from "./pages/owner/StaffManagement";
+import { BookingOverview } from "./pages/owner/BookingOverview";
+
+// Staff pages
 import { StaffDashboard } from "./pages/staff/StaffDashboard";
+import { StaffProfile } from "./pages/staff/StaffProfile";
+import { AssignedTasks } from "./pages/staff/AssignedTasks";
 
 const queryClient = new QueryClient();
 
@@ -50,34 +65,24 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
 
               {/* Admin routes */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={['admin']}><AdminProfile /></ProtectedRoute>} />
+              <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><UserManagement /></ProtectedRoute>} />
+              <Route path="/admin/owners" element={<ProtectedRoute allowedRoles={['admin']}><OwnerManagement /></ProtectedRoute>} />
+              <Route path="/admin/shops" element={<ProtectedRoute allowedRoles={['admin']}><ShopMonitoring /></ProtectedRoute>} />
 
               {/* Owner routes */}
-              <Route
-                path="/owner"
-                element={
-                  <ProtectedRoute allowedRoles={['owner']}>
-                    <OwnerDashboard />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/owner" element={<ProtectedRoute allowedRoles={['owner']}><OwnerDashboard /></ProtectedRoute>} />
+              <Route path="/owner/profile" element={<ProtectedRoute allowedRoles={['owner']}><OwnerProfile /></ProtectedRoute>} />
+              <Route path="/owner/shops" element={<ProtectedRoute allowedRoles={['owner']}><ShopManagement /></ProtectedRoute>} />
+              <Route path="/owner/vehicles" element={<ProtectedRoute allowedRoles={['owner']}><VehicleManagement /></ProtectedRoute>} />
+              <Route path="/owner/staff" element={<ProtectedRoute allowedRoles={['owner']}><StaffManagement /></ProtectedRoute>} />
+              <Route path="/owner/bookings" element={<ProtectedRoute allowedRoles={['owner']}><BookingOverview /></ProtectedRoute>} />
 
               {/* Staff routes */}
-              <Route
-                path="/staff"
-                element={
-                  <ProtectedRoute allowedRoles={['staff']}>
-                    <StaffDashboard />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/staff" element={<ProtectedRoute allowedRoles={['staff']}><StaffDashboard /></ProtectedRoute>} />
+              <Route path="/staff/profile" element={<ProtectedRoute allowedRoles={['staff']}><StaffProfile /></ProtectedRoute>} />
+              <Route path="/staff/tasks" element={<ProtectedRoute allowedRoles={['staff']}><AssignedTasks /></ProtectedRoute>} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
