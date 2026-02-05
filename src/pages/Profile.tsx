@@ -11,14 +11,17 @@ import {
   Star,
   Moon,
   Sun,
+   FileText,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
   { icon: User, label: "Edit Profile", path: "/profile/edit" },
+  { icon: FileText, label: "KYC Verification", path: "/profile/edit" },
   { icon: MapPin, label: "Saved Locations", path: "/saved-locations" },
   { icon: CreditCard, label: "Payment Methods", path: "/payment-methods" },
   { icon: Bell, label: "Notifications", path: "/notifications" },
@@ -29,8 +32,10 @@ const menuItems = [
 export const Profile = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
+    logout();
     toast.success("Logged out successfully");
     navigate("/login");
   };
@@ -101,7 +106,7 @@ export const Profile = () => {
           {menuItems.map((item, index) => (
             <button
               key={item.label}
-              onClick={() => toast.info(`${item.label} coming soon!`)}
+              onClick={() => navigate(item.path)}
               className="flex w-full items-center gap-4 border-b border-border p-4 transition-colors hover:bg-secondary/50 last:border-0"
               style={{ animationDelay: `${index * 0.05}s` }}
             >

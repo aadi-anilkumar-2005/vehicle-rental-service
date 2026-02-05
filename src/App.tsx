@@ -39,6 +39,14 @@ import { StaffDashboard } from "./pages/staff/StaffDashboard";
 import { StaffProfile } from "./pages/staff/StaffProfile";
 import { AssignedTasks } from "./pages/staff/AssignedTasks";
 
+// User profile sub-pages
+import { EditProfile } from "./pages/user/EditProfile";
+import { SavedLocations } from "./pages/user/SavedLocations";
+import { PaymentMethods } from "./pages/user/PaymentMethods";
+import { Notifications } from "./pages/user/Notifications";
+import { HelpSupport } from "./pages/user/HelpSupport";
+import { PrivacySecurity } from "./pages/user/PrivacySecurity";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -63,6 +71,12 @@ const App = () => (
               <Route path="/booking-details/:id" element={<BookingDetails />} />
               <Route path="/explore" element={<Home />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/edit" element={<EditProfile />} />
+              <Route path="/saved-locations" element={<SavedLocations />} />
+              <Route path="/payment-methods" element={<PaymentMethods />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/support" element={<HelpSupport />} />
+              <Route path="/privacy" element={<PrivacySecurity />} />
 
               {/* Admin routes */}
               <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
