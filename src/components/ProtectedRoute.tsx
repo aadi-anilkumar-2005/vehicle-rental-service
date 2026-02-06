@@ -21,7 +21,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
       admin: '/admin',
       owner: '/owner',
       staff: '/staff',
-      user: '/',
+      user: '/home',
     };
     return <Navigate to={dashboards[user.role]} replace />;
   }

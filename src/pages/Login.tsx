@@ -161,6 +161,14 @@ export const Login = () => {
               Sign up
             </Link>
           </p>
+
+          {/* Shop owner signup link */}
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            Own a rental shop?{" "}
+            <Link to="/shop-signup" className="font-semibold text-purple-500 hover:underline">
+              Register as partner
+            </Link>
+          </p>
         </div>
       </div>
     </div>

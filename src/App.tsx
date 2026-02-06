@@ -11,6 +11,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
+import { ShopOwnerSignup } from "./pages/ShopOwnerSignup";
 import { ShopDetails } from "./pages/ShopDetails";
 import { VehicleDetails } from "./pages/VehicleDetails";
 import { Booking } from "./pages/Booking";
@@ -61,11 +62,13 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               {/* Public routes */}
+              <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/shop-signup" element={<ShopOwnerSignup />} />
 
               {/* User (Customer) routes */}
-              <Route path="/" element={<Home />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/shop/:id" element={<ShopDetails />} />
               <Route path="/vehicle/:id" element={<VehicleDetails />} />
               <Route path="/booking/:id" element={<Booking />} />

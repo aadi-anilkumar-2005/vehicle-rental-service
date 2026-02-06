@@ -72,9 +72,9 @@ export const getRoleDashboardPath = (role: UserRole): string => {
     case 'staff':
       return '/staff';
     case 'user':
-      return '/';
+      return '/home';
     default:
-      return '/';
+      return '/home';
   }
 };
 
