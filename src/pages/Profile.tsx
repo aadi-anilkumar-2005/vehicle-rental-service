@@ -11,7 +11,8 @@ import {
   Star,
   Moon,
   Sun,
-   FileText,
+  FileText,
+  Settings,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { BottomNav } from "@/components/BottomNav";
@@ -21,10 +22,11 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
   { icon: User, label: "Edit Profile", path: "/profile/edit" },
-  { icon: FileText, label: "KYC Verification", path: "/profile/edit" },
+  { icon: FileText, label: "KYC Verification", path: "/profile/kyc" },
   { icon: MapPin, label: "Saved Locations", path: "/saved-locations" },
   { icon: CreditCard, label: "Payment Methods", path: "/payment-methods" },
   { icon: Bell, label: "Notifications", path: "/notifications" },
+  { icon: Settings, label: "Settings", path: "/settings" },
   { icon: HelpCircle, label: "Help & Support", path: "/support" },
   { icon: Shield, label: "Privacy & Security", path: "/privacy" },
 ];
