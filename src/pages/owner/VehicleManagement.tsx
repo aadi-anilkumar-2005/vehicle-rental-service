@@ -42,11 +42,14 @@ export const VehicleManagement = () => {
     name: '',
     brand: '',
     model: '',
+    vehicleNumber: '',
     pricePerHour: '',
     pricePerDay: '',
     fuelType: 'Petrol',
     transmission: 'Automatic',
     seating: '5',
+    color: '',
+    year: '',
   });
 
   const filteredVehicles = vehicles.filter(v => {
@@ -65,16 +68,19 @@ export const VehicleManagement = () => {
       name: '',
       brand: '',
       model: '',
+      vehicleNumber: '',
       pricePerHour: '',
       pricePerDay: '',
       fuelType: 'Petrol',
       transmission: 'Automatic',
       seating: '5',
+      color: '',
+      year: '',
     });
   };
 
   const handleAddVehicle = () => {
-    if (!formData.name || !formData.brand || !formData.pricePerDay) {
+    if (!formData.name || !formData.brand || !formData.pricePerDay || !formData.vehicleNumber) {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
@@ -90,6 +96,7 @@ export const VehicleManagement = () => {
       name: formData.name,
       brand: formData.brand,
       model: formData.model,
+      vehicleNumber: formData.vehicleNumber,
       image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800&q=80',
       pricePerHour: parseInt(formData.pricePerHour) || 0,
       pricePerDay: parseInt(formData.pricePerDay) || 0,
@@ -98,6 +105,8 @@ export const VehicleManagement = () => {
       seating: formData.type === 'car' ? parseInt(formData.seating) : undefined,
       isAvailable: true,
       features: [],
+      color: formData.color || undefined,
+      year: formData.year || undefined,
     };
 
     setVehicles(prev => [...prev, newVehicle]);
@@ -145,11 +154,14 @@ export const VehicleManagement = () => {
       name: vehicle.name,
       brand: vehicle.brand,
       model: vehicle.model,
+      vehicleNumber: vehicle.vehicleNumber,
       pricePerHour: vehicle.pricePerHour.toString(),
       pricePerDay: vehicle.pricePerDay.toString(),
       fuelType: vehicle.fuelType,
       transmission: vehicle.transmission,
       seating: vehicle.seating?.toString() || '5',
+      color: vehicle.color || '',
+      year: vehicle.year || '',
     });
     setShowEditDialog(true);
   };
@@ -240,6 +252,7 @@ export const VehicleManagement = () => {
                               <p className="font-medium text-foreground">{vehicle.name}</p>
                             </div>
                             <p className="text-xs text-muted-foreground">{vehicle.brand} • {vehicle.model}</p>
+                            <p className="text-xs font-medium text-primary">{vehicle.vehicleNumber}</p>
                           </div>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -342,6 +355,14 @@ export const VehicleManagement = () => {
                 placeholder="e.g., Toyota Camry"
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Vehicle Number *</label>
+              <Input
+                value={formData.vehicleNumber}
+                onChange={(e) => handleInputChange('vehicleNumber', e.target.value)}
+                placeholder="e.g., TN-01-AB-1234"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Brand *</label>
@@ -356,7 +377,25 @@ export const VehicleManagement = () => {
                 <Input
                   value={formData.model}
                   onChange={(e) => handleInputChange('model', e.target.value)}
+                  placeholder="e.g., Camry"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Year</label>
+                <Input
+                  value={formData.year}
+                  onChange={(e) => handleInputChange('year', e.target.value)}
                   placeholder="e.g., 2024"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Color</label>
+                <Input
+                  value={formData.color}
+                  onChange={(e) => handleInputChange('color', e.target.value)}
+                  placeholder="e.g., White"
                 />
               </div>
             </div>
@@ -434,6 +473,13 @@ export const VehicleManagement = () => {
                 onChange={(e) => handleInputChange('name', e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Vehicle Number *</label>
+              <Input
+                value={formData.vehicleNumber}
+                onChange={(e) => handleInputChange('vehicleNumber', e.target.value)}
+              />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Brand *</label>
@@ -447,6 +493,22 @@ export const VehicleManagement = () => {
                 <Input
                   value={formData.model}
                   onChange={(e) => handleInputChange('model', e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Year</label>
+                <Input
+                  value={formData.year}
+                  onChange={(e) => handleInputChange('year', e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Color</label>
+                <Input
+                  value={formData.color}
+                  onChange={(e) => handleInputChange('color', e.target.value)}
                 />
               </div>
             </div>

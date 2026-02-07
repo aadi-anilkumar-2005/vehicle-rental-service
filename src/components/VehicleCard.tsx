@@ -48,6 +48,9 @@ export const VehicleCard = ({ vehicle, onClick }: VehicleCardProps) => {
           <div>
             <h3 className="text-lg font-bold text-foreground">{vehicle.name}</h3>
             <p className="text-sm text-muted-foreground">{vehicle.brand}</p>
+            {vehicle.vehicleNumber && (
+              <p className="text-xs font-medium text-primary">{vehicle.vehicleNumber}</p>
+            )}
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-primary">${vehicle.pricePerHour}</div>

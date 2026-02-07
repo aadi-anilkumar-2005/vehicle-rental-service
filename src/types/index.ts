@@ -21,6 +21,7 @@ export interface Vehicle {
   name: string;
   brand: string;
   model: string;
+  vehicleNumber?: string;
   images: string[];
   pricePerHour: number;
   pricePerDay: number;
@@ -29,6 +30,8 @@ export interface Vehicle {
   seating?: number;
   isAvailable: boolean;
   features: string[];
+  color?: string;
+  year?: string;
 }
 
 export interface Booking {

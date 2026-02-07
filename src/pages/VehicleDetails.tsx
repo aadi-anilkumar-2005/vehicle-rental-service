@@ -122,6 +122,9 @@ export const VehicleDetails = () => {
               </div>
               <h1 className="text-2xl font-bold text-foreground">{vehicle.name}</h1>
               <p className="text-muted-foreground">{vehicle.model}</p>
+              {vehicle.vehicleNumber && (
+                <p className="text-sm font-medium text-primary mt-1">{vehicle.vehicleNumber}</p>
+              )}
             </div>
           </div>
 

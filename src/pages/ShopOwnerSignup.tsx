@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone, Store, MapPin } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -11,19 +11,20 @@ export const ShopOwnerSignup = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     password: "",
-    shopName: "",
-    shopAddress: "",
   });
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password || !formData.shopName) {
+    if (!formData.name || !formData.email || !formData.password) {
       toast.error("Please fill in all required fields");
       return;
     }
-    toast.success("Application submitted! We'll review and get back to you soon.");
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    toast.success("Account created! You can now add your shop details after login.");
     navigate("/login");
   };
 
@@ -38,7 +39,7 @@ export const ShopOwnerSignup = () => {
             </div>
             <h1 className="text-3xl font-bold text-foreground">Become a Partner</h1>
             <p className="mt-2 text-muted-foreground">
-              Register your rental shop with us
+              Create your owner account
             </p>
           </div>
 
@@ -62,39 +63,6 @@ export const ShopOwnerSignup = () => {
                 placeholder="Email address *"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="h-14 rounded-2xl border-2 border-border bg-card pl-12 text-base transition-all focus:border-primary"
-              />
-            </div>
-
-            <div className="relative">
-              <Phone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="tel"
-                placeholder="Phone number"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="h-14 rounded-2xl border-2 border-border bg-card pl-12 text-base transition-all focus:border-primary"
-              />
-            </div>
-
-            <div className="relative">
-              <Store className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Shop/Business name *"
-                value={formData.shopName}
-                onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
-                className="h-14 rounded-2xl border-2 border-border bg-card pl-12 text-base transition-all focus:border-primary"
-              />
-            </div>
-
-            <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Shop address"
-                value={formData.shopAddress}
-                onChange={(e) => setFormData({ ...formData, shopAddress: e.target.value })}
                 className="h-14 rounded-2xl border-2 border-border bg-card pl-12 text-base transition-all focus:border-primary"
               />
             </div>
@@ -129,9 +97,9 @@ export const ShopOwnerSignup = () => {
               <strong>What happens next?</strong>
             </p>
             <ul className="mt-2 text-xs text-muted-foreground space-y-1">
-              <li>• Our team will review your application</li>
-              <li>• You'll receive approval within 24-48 hours</li>
-              <li>• Once approved, you can add vehicles and start earning</li>
+              <li>• Login to your owner dashboard</li>
+              <li>• Add your shop name and address</li>
+              <li>• Add vehicles and start earning</li>
             </ul>
           </div>
 

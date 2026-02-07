@@ -38,6 +38,7 @@ export const StaffManagement = () => {
     name: '',
     email: '',
     phone: '',
+    password: '',
     shopId: '',
   });
 
@@ -46,14 +47,23 @@ export const StaffManagement = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', email: '', phone: '', shopId: '' });
+    setFormData({ name: '', email: '', phone: '', password: '', shopId: '' });
   };
 
   const handleAddStaff = () => {
-    if (!formData.name || !formData.email || !formData.phone) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.password) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields including password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters.",
         variant: "destructive",
       });
       return;
@@ -115,6 +125,7 @@ export const StaffManagement = () => {
       name: staff.name,
       email: staff.email,
       phone: staff.phone,
+      password: '',
       shopId: staff.shopId,
     });
     setShowEditDialog(true);
@@ -304,6 +315,15 @@ export const StaffManagement = () => {
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="Enter phone number"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Password *</label>
+              <Input
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                placeholder="Create login password (min 6 chars)"
               />
             </div>
             <div className="space-y-2">

@@ -19,6 +19,7 @@ export interface OwnerVehicle {
   name: string;
   brand: string;
   model: string;
+  vehicleNumber: string;
   image: string;
   pricePerHour: number;
   pricePerDay: number;
@@ -27,6 +28,8 @@ export interface OwnerVehicle {
   seating?: number;
   isAvailable: boolean;
   features: string[];
+  color?: string;
+  year?: string;
 }
 
 export interface OwnerStaff {
@@ -86,6 +89,7 @@ export const mockOwnerVehicles: OwnerVehicle[] = [
     name: 'Toyota Camry',
     brand: 'Toyota',
     model: 'Camry 2024',
+    vehicleNumber: 'TN-01-AB-1234',
     image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800&q=80',
     pricePerHour: 15,
     pricePerDay: 89,
@@ -94,6 +98,8 @@ export const mockOwnerVehicles: OwnerVehicle[] = [
     seating: 5,
     isAvailable: true,
     features: ['GPS', 'Bluetooth', 'USB Charging', 'Air Conditioning'],
+    color: 'White',
+    year: '2024',
   },
   {
     id: 'ov2',
@@ -102,6 +108,7 @@ export const mockOwnerVehicles: OwnerVehicle[] = [
     name: 'Honda Civic',
     brand: 'Honda',
     model: 'Civic 2023',
+    vehicleNumber: 'TN-01-CD-5678',
     image: 'https://images.unsplash.com/photo-1606611013016-969c19ba27bb?w=800&q=80',
     pricePerHour: 12,
     pricePerDay: 75,
@@ -110,6 +117,8 @@ export const mockOwnerVehicles: OwnerVehicle[] = [
     seating: 5,
     isAvailable: true,
     features: ['GPS', 'Bluetooth', 'Backup Camera'],
+    color: 'Black',
+    year: '2023',
   },
   {
     id: 'ov3',
@@ -118,6 +127,7 @@ export const mockOwnerVehicles: OwnerVehicle[] = [
     name: 'Royal Enfield Classic',
     brand: 'Royal Enfield',
     model: 'Classic 350',
+    vehicleNumber: 'TN-02-EF-9012',
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
     pricePerHour: 8,
     pricePerDay: 45,
@@ -125,6 +135,8 @@ export const mockOwnerVehicles: OwnerVehicle[] = [
     transmission: 'Manual',
     isAvailable: false,
     features: ['Helmet Included', 'Luggage Box'],
+    color: 'Red',
+    year: '2023',
   },
   {
     id: 'ov4',
@@ -133,6 +145,7 @@ export const mockOwnerVehicles: OwnerVehicle[] = [
     name: 'BMW 3 Series',
     brand: 'BMW',
     model: '330i 2024',
+    vehicleNumber: 'TN-03-GH-3456',
     image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80',
     pricePerHour: 35,
     pricePerDay: 199,
@@ -141,6 +154,8 @@ export const mockOwnerVehicles: OwnerVehicle[] = [
     seating: 5,
     isAvailable: true,
     features: ['GPS', 'Leather Seats', 'Sunroof', 'Premium Sound'],
+    color: 'Blue',
+    year: '2024',
   },
 ];
 
