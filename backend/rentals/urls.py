@@ -12,6 +12,7 @@ from .views import (
     notification_list, mark_notification_read, delete_notification, create_notification,
     complaints_view,
     staff_assigned_complaints_view,
+    staff_resolve_complaint_view,
     favorites_view,
 )
 
@@ -45,6 +46,7 @@ urlpatterns = [
     # Complaints
     path('complaints/', complaints_view, name='complaints'),
     path('staff-complaints/', staff_assigned_complaints_view, name='staff-complaints'),
+    path('staff-complaints/<int:complaint_id>/resolve/', staff_resolve_complaint_view, name='staff-complaint-resolve'),
     # Favorites
     path('favorites/', favorites_view, name='favorites'),
     # Profile

@@ -393,10 +393,33 @@ export default function StaffDashboard() {
         <User size={13} color="#6B7280" />
         <Text className="text-xs text-gray-400">{complaint.customer_name}</Text>
       </View>
-      <View className="flex-row items-center gap-2">
+      <View className="flex-row items-center gap-2 mb-4">
         <MapPin size={13} color="#6B7280" />
         <Text className="text-xs text-gray-400">{complaint.shop_name}</Text>
       </View>
+
+      {/* View Details Button */}
+      <TouchableOpacity
+        className="flex-row items-center justify-center py-3 rounded-full"
+        style={{ backgroundColor: COLORS.primary }}
+        onPress={() =>
+          router.push({
+            pathname: "/staff/ComplaintDetail",
+            params: {
+              id: complaint.id,
+              subject: complaint.subject,
+              description: complaint.description,
+              status: complaint.status,
+              customer_name: complaint.customer_name,
+              shop_name: complaint.shop_name,
+              booking_id: complaint.booking_id ?? "",
+              created_at: complaint.created_at,
+            },
+          })
+        }
+      >
+        <Text className="font-bold text-black">View Details</Text>
+      </TouchableOpacity>
     </View>
   );
 

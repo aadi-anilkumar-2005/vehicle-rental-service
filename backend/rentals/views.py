@@ -263,6 +263,35 @@ def staff_assigned_complaints_view(request):
     return Response(data)
 
 
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def staff_resolve_complaint_view(request, complaint_id):
+    """
+    PATCH /api/staff-complaints/<complaint_id>/resolve/
+    Allows the assigned staff member to mark a complaint as resolved.
+    """
+    from .models import Complaint
+    try:
+        complaint = Complaint.objects.get(id=complaint_id)
+    except Complaint.DoesNotExist:
+        return Response({'error': 'Complaint not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if complaint.assigned_to != request.user:
+        return Response({'error': 'You are not assigned to this complaint.'}, status=status.HTTP_403_FORBIDDEN)
+
+    if complaint.status == 'resolved':
+        return Response({'error': 'Complaint is already resolved.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    complaint.status = 'resolved'
+    complaint.save()
+
+    return Response({
+        'id': complaint.id,
+        'status': complaint.status,
+        'message': 'Complaint marked as resolved.'
+    })
+
+
 @api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def favorites_view(request):
