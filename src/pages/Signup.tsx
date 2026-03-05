@@ -37,7 +37,7 @@ export const Signup = () => {
 
     setIsSubmitting(true);
     try {
-      const result = await signup(formData.email, formData.password, formData.name, 'user');
+      const result = await signup(formData.email, formData.password, formData.name);
 
       if (result.success) {
         toast.success("Account created! Please check your email to verify your account.");

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Search, Store, MoreVertical, CheckCircle, XCircle, Eye, Ban, Unlock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,59 +18,96 @@ import {
 } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { mockShopOwners, ShopOwner } from '@/data/adminMockData';
+import { supabase } from '@/integrations/supabase/client';
+
+interface OwnerRecord {
+  id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: string;
+  is_active: boolean;
+}
 
 export const OwnerManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [owners, setOwners] = useState<ShopOwner[]>(mockShopOwners);
+  const [owners, setOwners] = useState<OwnerRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedOwner, setSelectedOwner] = useState<ShopOwner | null>(null);
+  const [selectedOwner, setSelectedOwner] = useState<OwnerRecord | null>(null);
   const [showOwnerDetails, setShowOwnerDetails] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+
+  const fetchOwners = async () => {
+    // Fetch all profiles, then check their roles
+    const { data: profiles } = await supabase.from('profiles').select('*');
+    if (!profiles) { setLoading(false); return; }
+
+    const { data: roles } = await supabase.from('user_roles').select('*');
+    const roleMap = new Map((roles || []).map(r => [r.user_id, r.role]));
+
+    const ownerList: OwnerRecord[] = profiles.map(p => ({
+      id: p.id,
+      user_id: p.user_id,
+      name: p.name,
+      email: p.email,
+      phone: p.phone,
+      role: roleMap.get(p.user_id) || 'user',
+      is_active: p.is_active,
+    }));
+
+    setOwners(ownerList);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchOwners(); }, []);
+
+  const getStatus = (owner: OwnerRecord) => {
+    if (!owner.is_active) return 'blocked';
+    if (owner.role === 'owner') return 'approved';
+    return 'pending';
+  };
 
   const filteredOwners = owners.filter(owner => {
     const matchesSearch = owner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       owner.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const status = getStatus(owner);
     if (activeTab === 'all') return matchesSearch;
-    return matchesSearch && owner.status === activeTab;
+    return matchesSearch && status === activeTab;
   });
 
-  const approveOwner = (ownerId: string) => {
-    setOwners(prev =>
-      prev.map(owner =>
-        owner.id === ownerId ? { ...owner, status: 'approved' } : owner
-      )
-    );
-    const owner = owners.find(o => o.id === ownerId);
-    toast({
-      title: "Owner Approved",
-      description: `${owner?.name} has been approved successfully.`,
+  const approveOwner = async (owner: OwnerRecord) => {
+    const { error } = await supabase.rpc('admin_set_user_role', {
+      _target_user_id: owner.user_id,
+      _role: 'owner' as any,
     });
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Owner Approved', description: `${owner.name} has been granted owner access.` });
+    fetchOwners();
   };
 
-  const rejectOwner = (ownerId: string) => {
-    setOwners(prev => prev.filter(owner => owner.id !== ownerId));
-    toast({
-      title: "Owner Rejected",
-      description: "The owner application has been rejected.",
-      variant: "destructive",
-    });
+  const rejectOwner = async (owner: OwnerRecord) => {
+    // Keep as regular user - no action needed on role, just notify
+    toast({ title: 'Application Rejected', description: `${owner.name}'s application has been rejected.`, variant: 'destructive' });
   };
 
-  const toggleBlockStatus = (ownerId: string) => {
-    setOwners(prev =>
-      prev.map(owner =>
-        owner.id === ownerId
-          ? { ...owner, status: owner.status === 'blocked' ? 'approved' : 'blocked' }
-          : owner
-      )
-    );
-    const owner = owners.find(o => o.id === ownerId);
+  const toggleBlockStatus = async (owner: OwnerRecord) => {
+    const newStatus = owner.is_active ? false : true;
+    const { error } = await supabase.from('profiles').update({ is_active: newStatus }).eq('user_id', owner.user_id);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
     toast({
-      title: owner?.status === 'blocked' ? "Owner Unblocked" : "Owner Blocked",
-      description: `${owner?.name} has been ${owner?.status === 'blocked' ? 'unblocked' : 'blocked'}.`,
+      title: newStatus ? 'Owner Unblocked' : 'Owner Blocked',
+      description: `${owner.name} has been ${newStatus ? 'unblocked' : 'blocked'}.`,
     });
+    fetchOwners();
   };
 
   const getStatusColor = (status: string) => {
@@ -81,6 +118,14 @@ export const OwnerManagement = () => {
       default: return 'bg-muted text-muted-foreground';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,89 +169,89 @@ export const OwnerManagement = () => {
                 </CardContent>
               </Card>
             ) : (
-              filteredOwners.map(owner => (
-                <Card key={owner.id} className="border-border">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-purple-500/10 flex items-center justify-center">
-                          <Store className="h-5 w-5 text-purple-500" />
+              filteredOwners.map(owner => {
+                const status = getStatus(owner);
+                return (
+                  <Card key={owner.id} className="border-border">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Store className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">{owner.name}</p>
+                            <p className="text-xs text-muted-foreground">{owner.email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">{owner.name}</p>
-                          <p className="text-xs text-muted-foreground">{owner.email}</p>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(status)}`}>
+                            {status}
+                          </span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => { setSelectedOwner(owner); setShowOwnerDetails(true); }}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </DropdownMenuItem>
+                              {status === 'pending' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => approveOwner(owner)}>
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Approve as Owner
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => rejectOwner(owner)}>
+                                    <XCircle className="h-4 w-4 mr-2" />
+                                    Reject
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              {status === 'approved' && (
+                                <DropdownMenuItem onClick={() => toggleBlockStatus(owner)}>
+                                  <Ban className="h-4 w-4 mr-2" />
+                                  Block
+                                </DropdownMenuItem>
+                              )}
+                              {status === 'blocked' && (
+                                <DropdownMenuItem onClick={() => toggleBlockStatus(owner)}>
+                                  <Unlock className="h-4 w-4 mr-2" />
+                                  Unblock
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(owner.status)}`}>
-                          {owner.status}
-                        </span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => {
-                              setSelectedOwner(owner);
-                              setShowOwnerDetails(true);
-                            }}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            {owner.status === 'pending' && (
-                              <>
-                                <DropdownMenuItem onClick={() => approveOwner(owner.id)}>
-                                  <CheckCircle className="h-4 w-4 mr-2" />
-                                  Approve
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => rejectOwner(owner.id)}>
-                                  <XCircle className="h-4 w-4 mr-2" />
-                                  Reject
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                            {owner.status === 'approved' && (
-                              <DropdownMenuItem onClick={() => toggleBlockStatus(owner.id)}>
-                                <Ban className="h-4 w-4 mr-2" />
-                                Block
-                              </DropdownMenuItem>
-                            )}
-                            {owner.status === 'blocked' && (
-                              <DropdownMenuItem onClick={() => toggleBlockStatus(owner.id)}>
-                                <Unlock className="h-4 w-4 mr-2" />
-                                Unblock
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                    {owner.status === 'pending' && (
-                      <div className="flex gap-2 mt-3">
-                        <Button
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => approveOwner(owner.id)}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="flex-1"
-                          onClick={() => rejectOwner(owner.id)}
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
+                      {status === 'pending' && (
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => approveOwner(owner)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="flex-1"
+                            onClick={() => rejectOwner(owner)}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </TabsContent>
         </Tabs>
@@ -221,8 +266,8 @@ export const OwnerManagement = () => {
           {selectedOwner && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center">
-                  <Store className="h-8 w-8 text-purple-500" />
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Store className="h-8 w-8 text-primary" />
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">{selectedOwner.name}</p>
@@ -232,30 +277,26 @@ export const OwnerManagement = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-lg bg-secondary">
                   <p className="text-xs text-muted-foreground">Phone</p>
-                  <p className="font-medium text-foreground">{selectedOwner.phone}</p>
+                  <p className="font-medium text-foreground">{selectedOwner.phone || 'N/A'}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-secondary">
                   <p className="text-xs text-muted-foreground">Status</p>
                   <p className={`font-medium ${
-                    selectedOwner.status === 'approved' ? 'text-green-500' :
-                    selectedOwner.status === 'pending' ? 'text-orange-500' :
+                    getStatus(selectedOwner) === 'approved' ? 'text-green-500' :
+                    getStatus(selectedOwner) === 'pending' ? 'text-orange-500' :
                     'text-destructive'
                   }`}>
-                    {selectedOwner.status}
+                    {getStatus(selectedOwner)}
                   </p>
                 </div>
                 <div className="p-3 rounded-lg bg-secondary">
-                  <p className="text-xs text-muted-foreground">Shops</p>
-                  <p className="font-medium text-foreground">{selectedOwner.shopCount}</p>
+                  <p className="text-xs text-muted-foreground">Role</p>
+                  <p className="font-medium text-foreground">{selectedOwner.role}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-secondary">
-                  <p className="text-xs text-muted-foreground">Revenue</p>
-                  <p className="font-medium text-foreground">${selectedOwner.totalRevenue.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Active</p>
+                  <p className="font-medium text-foreground">{selectedOwner.is_active ? 'Yes' : 'No'}</p>
                 </div>
-              </div>
-              <div className="p-3 rounded-lg bg-secondary">
-                <p className="text-xs text-muted-foreground">Applied Date</p>
-                <p className="font-medium text-foreground">{selectedOwner.appliedDate}</p>
               </div>
             </div>
           )}
