@@ -85,9 +85,12 @@ export default function Signup() {
           <View className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#22D3EE] shadow-[0_0_20px_rgba(34,211,238,0.3)]">
             <ArrowLeftRight color="#0F1C23" size={32} strokeWidth={2.5} />
           </View>
-          <Text className="text-3xl font-bold text-white mb-2">
-            Create Account
-          </Text>
+   <Text
+  numberOfLines={1}
+  className="text-white text-3xl font-bold text-center"
+>
+  Create Account
+</Text>
           <Text className="text-slate-400 text-base text-center">
             Start your journey with us today
           </Text>
@@ -167,30 +170,12 @@ export default function Signup() {
             onPress={handleSignup}
             className="w-full mt-4 bg-[#22D3EE] h-14 rounded-full items-center justify-center flex-row gap-2 active:opacity-90 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
           >
-            <Text className="text-[#0F1C23] text-lg font-bold">
+            <Text numberOfLines={1} className="text-[#0F1C23] text-lg font-bold">
               Create Account
             </Text>
             <ArrowRight color="#0F1C23" size={20} strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
-
-        {/* Divider */}
-        <View className="my-8 flex-row items-center gap-4">
-          <View className="h-[1px] flex-1 bg-slate-800" />
-          <Text className="text-sm text-slate-500">or continue with</Text>
-          <View className="h-[1px] flex-1 bg-slate-800" />
-        </View>
-
-        {/* Social signup */}
-        <TouchableOpacity
-          onPress={handleGoogleSignup}
-          className="w-full h-14 rounded-full bg-[#16202C] border border-slate-700/50 items-center justify-center flex-row gap-3 active:opacity-80"
-        >
-          <Chrome color="white" size={20} />
-          <Text className="text-white font-semibold text-base">
-            Continue with Google
-          </Text>
-        </TouchableOpacity>
 
         {/* Terms */}
         <View className="mt-8 px-4">

@@ -8,7 +8,6 @@ export const BottomNav = (props: Partial<BottomTabBarProps>) => {
   const nativeNavigation = useNavigation();
   const { state, descriptors, navigation } = props;
 
-  // Map route names to Icons and Labels
   const getRouteConfig = (routeName: string) => {
     switch (routeName) {
       case "index":
@@ -28,7 +27,7 @@ export const BottomNav = (props: Partial<BottomTabBarProps>) => {
     }
   };
 
-  // Standalone mode (when used in screens without tab nav context)
+  // Standalone navigation mode
   if (!state) {
     const navItems = [
       { name: "index", label: "Home", icon: Home },
@@ -43,15 +42,14 @@ export const BottomNav = (props: Partial<BottomTabBarProps>) => {
           {navItems.map((item) => (
             <TouchableOpacity
               key={item.name}
-              onPress={() => {
-                nativeNavigation.navigate(item.name as never);
-              }}
+              onPress={() => nativeNavigation.navigate(item.name as never)}
               style={styles.navItem}
               activeOpacity={0.8}
             >
               <View style={styles.iconWrapper}>
                 <item.icon size={24} color="#94a3b8" strokeWidth={2} />
               </View>
+
               <Text style={[styles.label, styles.labelInactive]}>
                 {item.label}
               </Text>
@@ -62,7 +60,7 @@ export const BottomNav = (props: Partial<BottomTabBarProps>) => {
     );
   }
 
-  // TabBar mode (inside Tabs)
+  // Tab navigator mode
   return (
     <View style={styles.navContainer}>
       <View style={styles.navContent}>
@@ -118,6 +116,7 @@ export const BottomNav = (props: Partial<BottomTabBarProps>) => {
                   strokeWidth={2}
                 />
               </View>
+
               <Text
                 style={[
                   styles.label,
@@ -136,50 +135,62 @@ export const BottomNav = (props: Partial<BottomTabBarProps>) => {
 
 const styles = StyleSheet.create({
   navContainer: {
-    backgroundColor: "#0f172a", // Dark background
+    backgroundColor: "#0f172a",
     borderTopWidth: 1,
-    borderTopColor: "#1e293b", // Subtle border
+    borderTopColor: "#1e293b",
     paddingBottom: 20,
     paddingTop: 12,
   },
+
   navContent: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
   },
+
   navItem: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
-    minWidth: 64,
   },
+
   iconWrapper: {
     width: 48,
     height: 48,
-    borderRadius: 999, // Ensure perfect circle
+    borderRadius: 24, // perfect circle
     backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
+
   iconWrapperActive: {
-    backgroundColor: "#2dd4bf", // Teal Active Background
+    width: 48,
+    height: 48,
+    borderRadius: 24, // circle
+    backgroundColor: "#2dd4bf",
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: "#2dd4bf",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
-    shadowRadius: 12, // Glow effect
+    shadowRadius: 12,
     elevation: 5,
+    overflow: "hidden",
   },
+
   label: {
     fontSize: 12,
-    fontWeight: "500",
     marginTop: 2,
   },
+
   labelActive: {
-    color: "#2dd4bf", // Teal Text
+    color: "#2dd4bf",
     fontWeight: "600",
   },
+
   labelInactive: {
-    color: "#94a3b8", // Slate-400
+    color: "#94a3b8",
+    fontWeight: "500",
   },
 });
