@@ -4,28 +4,50 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { z } from "zod";
+
+const shopOwnerSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: z.string().trim().email("Invalid email address").max(255),
+  password: z.string().min(6, "Password must be at least 6 characters").max(128),
+});
 
 export const ShopOwnerSignup = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password) {
-      toast.error("Please fill in all required fields");
+
+    const validation = shopOwnerSchema.safeParse(formData);
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
       return;
     }
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await signup(formData.email, formData.password, formData.name, 'owner');
+
+      if (result.success) {
+        toast.success("Account created! Please check your email to verify your account.");
+        navigate("/login");
+      } else {
+        toast.error(result.error || "Signup failed");
+      }
+    } catch {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
-    toast.success("Account created! You can now add your shop details after login.");
-    navigate("/login");
   };
 
   return (
@@ -85,9 +107,9 @@ export const ShopOwnerSignup = () => {
               </button>
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Submit Application
-              <ArrowRight className="h-5 w-5" />
+            <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+              {isSubmitting ? "Creating account..." : "Submit Application"}
+              {!isSubmitting && <ArrowRight className="h-5 w-5" />}
             </Button>
           </form>
 
@@ -97,6 +119,7 @@ export const ShopOwnerSignup = () => {
               <strong>What happens next?</strong>
             </p>
             <ul className="mt-2 text-xs text-muted-foreground space-y-1">
+              <li>• Verify your email address</li>
               <li>• Login to your owner dashboard</li>
               <li>• Add your shop name and address</li>
               <li>• Add vehicles and start earning</li>
