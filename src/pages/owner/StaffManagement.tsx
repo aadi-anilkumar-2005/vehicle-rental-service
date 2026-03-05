@@ -97,7 +97,7 @@ export const StaffManagement = () => {
       email: formData.email.trim(),
       password: formData.password,
       options: {
-        data: { name: formData.name.trim(), role: 'staff' },
+        data: { name: formData.name.trim() },
       },
     });
 
@@ -114,10 +114,16 @@ export const StaffManagement = () => {
       shop_id: formData.shopId || null,
     });
 
-    setSaving(false);
     if (staffError) {
+      setSaving(false);
       toast({ title: 'Error', description: staffError.message, variant: 'destructive' });
       return;
+    }
+
+    // Assign staff role via secure RPC
+    const { error: roleError } = await supabase.rpc('owner_assign_staff_role', { _staff_user_id: signUpData.user.id });
+    if (roleError) {
+      console.error('Failed to assign staff role:', roleError.message);
     }
 
     toast({ title: 'Staff Added', description: `${formData.name} has been added. They will receive a confirmation email.` });

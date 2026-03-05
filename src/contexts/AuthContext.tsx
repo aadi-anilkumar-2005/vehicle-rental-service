@@ -8,7 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; redirectPath?: string }>;
-  signup: (email: string, password: string, name: string, role?: UserRole) => Promise<{ success: boolean; error?: string }>;
+  signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -88,12 +88,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { success: false, error: 'Login failed' };
   }, []);
 
-  const signup = useCallback(async (email: string, password: string, name: string, role: UserRole = 'user') => {
+  const signup = useCallback(async (email: string, password: string, name: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name, role },
+        data: { name },
         emailRedirectTo: window.location.origin,
       },
     });

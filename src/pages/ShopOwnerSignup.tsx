@@ -35,10 +35,10 @@ export const ShopOwnerSignup = () => {
 
     setIsSubmitting(true);
     try {
-      const result = await signup(formData.email, formData.password, formData.name, 'owner');
+      const result = await signup(formData.email, formData.password, formData.name);
 
       if (result.success) {
-        toast.success("Account created! Please check your email to verify your account.");
+        toast.success("Account created! Please check your email to verify. An admin will review and approve your owner access.");
         navigate("/login");
       } else {
         toast.error(result.error || "Signup failed");
@@ -120,7 +120,8 @@ export const ShopOwnerSignup = () => {
             </p>
             <ul className="mt-2 text-xs text-muted-foreground space-y-1">
               <li>• Verify your email address</li>
-              <li>• Login to your owner dashboard</li>
+              <li>• An admin will review and approve your owner role</li>
+              <li>• Once approved, login to your owner dashboard</li>
               <li>• Add your shop name and address</li>
               <li>• Add vehicles and start earning</li>
             </ul>
