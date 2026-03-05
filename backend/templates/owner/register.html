@@ -2,160 +2,313 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vehicle Rental - Partner Registration</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    {% load static %}    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Vehicle Rental - Partner Registration</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
 </head>
 
+
 <body>
-    <div class="auth-split">
-        <div class="auth-split-left">
-            <i class="bi bi-car-front-fill mb-4" style="font-size: 3rem;"></i>
-            <h1 class="font-bold mb-4" style="font-size: 2.5rem; line-height: 1.2;">Join our growing <br>rental network
-            </h1>
-            <p class="mb-5 opacity-75" style="max-width: 400px;">Manage your fleet, staff, and bookings all in one place
-                with our comprehensive dashboard.</p>
 
-            <div class="d-flex flex-column gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="bg-white bg-opacity-10 p-2 rounded-circle"><i class="bi bi-check-lg"></i></div>
-                    <span>Streamlined Fleet Management</span>
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="bg-white bg-opacity-10 p-2 rounded-circle"><i class="bi bi-check-lg"></i></div>
-                    <span>Real-time Booking Insights</span>
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="bg-white bg-opacity-10 p-2 rounded-circle"><i class="bi bi-check-lg"></i></div>
-                    <span>Secure Staff Coordination</span>
-                </div>
-            </div>
-        </div>
+<div class="auth-split">
 
-        <div class="auth-split-right">
-            <div style="width: 100%; max-width: 480px;">
-                <div class="mb-5">
-                    <h2 class="font-bold mb-2">Create an Account</h2>
-                    <p class="text-muted">Fill in your details to register your shop</p>
-                </div>
+<!-- LEFT PANEL -->
+<div class="auth-split-left">
 
-                <form id="registerForm">
-                    <div class="row g-3 mb-3">
-                        <div class="col-sm-6">
-                            <label class="form-label" for="shopName">Shop Name</label>
-                            <input type="text" class="form-control" id="shopName" required>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="form-label" for="ownerName">Owner Name</label>
-                            <input type="text" class="form-control" id="ownerName" required>
-                        </div>
-                    </div>
+<i class="bi bi-car-front-fill mb-4" style="font-size:3rem;"></i>
 
-                    <div class="form-group">
-                        <label class="form-label" for="email">Email Address</label>
-                        <input type="email" class="form-control" id="email" required>
-                    </div>
+<h1 class="font-bold mb-4" style="font-size:2.5rem; line-height:1.2;">
+Join our growing <br>rental network
+</h1>
 
-                    <div class="form-group">
-                        <label class="form-label" for="phone">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone" required>
-                    </div>
+<p class="mb-5 opacity-75" style="max-width:400px;">
+Manage your fleet, staff, and bookings all in one place with our comprehensive dashboard.
+</p>
 
-                    <div class="row g-3 mb-3">
-                        <div class="col-sm-6">
-                            <label class="form-label" for="password">Password</label>
-                            <input type="password" class="form-control" id="password" required>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="form-label" for="confirmPassword">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" required>
-                        </div>
-                    </div>
+<div class="d-flex flex-column gap-3">
 
-                    <div class="form-group mb-3">
-                        <label class="form-label" for="certificateId">Business Certificate ID</label>
-                        <input type="text" class="form-control" id="certificateId" placeholder="e.g. CERT-12345"
-                            required>
-                    </div>
+<div class="d-flex align-items-center gap-3">
+<div class="bg-white bg-opacity-10 p-2 rounded-circle">
+<i class="bi bi-check-lg"></i>
+</div>
+<span>Streamlined Fleet Management</span>
+</div>
 
-                    <div class="form-group mb-4">
-                        <label class="form-label">Upload Shop License/Certificate</label>
-                        <div class="position-relative">
-                            <input type="file" class="form-control" id="licenseFile" accept=".pdf,.jpg,.jpeg,.png"
-                                required>
-                            <div class="form-text mt-1 text-muted small">Accepted formats: PDF, JPG, PNG (Max 5MB)</div>
-                            <div id="fileName" class="mt-1 small fw-semibold text-success"></div>
-                        </div>
-                    </div>
+<div class="d-flex align-items-center gap-3">
+<div class="bg-white bg-opacity-10 p-2 rounded-circle">
+<i class="bi bi-check-lg"></i>
+</div>
+<span>Real-time Booking Insights</span>
+</div>
 
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" type="checkbox" id="terms" required>
-                        <label class="form-check-label text-muted small" for="terms">
-                            I agree to the Terms and Conditions
-                        </label>
-                    </div>
+<div class="d-flex align-items-center gap-3">
+<div class="bg-white bg-opacity-10 p-2 rounded-circle">
+<i class="bi bi-check-lg"></i>
+</div>
+<span>Secure Staff Coordination</span>
+</div>
 
-                    <button type="submit" class="btn btn-primary w-100 py-2 mb-4" id="registerBtn">
-                        Create Account
-                    </button>
+</div>
+</div>
 
-                    <div class="text-center">
-                        <p class="text-muted small">Already have an account? <a href="{% url 'owner_login' %}"
-                                class="text-primary fw-semibold">Sign In</a></p>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.getElementById('licenseFile').addEventListener('change', function (e) {
-            const fileName = e.target.files[0]?.name || '';
-            const fileNameDiv = document.getElementById('fileName');
-            if (fileName) {
-                fileNameDiv.textContent = `Selected: ${fileName}`;
-            } else {
-                fileNameDiv.textContent = '';
-            }
-        });
 
-        document.getElementById('registerForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const password = document.getElementById('password').value;
-            const confirm = document.getElementById('confirmPassword').value;
+<!-- RIGHT PANEL -->
+<div class="auth-split-right">
 
-            if (password !== confirm) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Passwords do not match'
-                });
-                return;
-            }
+<div style="width:100%; max-width:480px;">
 
-            const btn = document.getElementById('registerBtn');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Registering...';
-            btn.disabled = true;
+<div class="mb-5">
+<h2 class="font-bold mb-2">Create an Account</h2>
+<p class="text-muted">Fill in your details to register your shop</p>
+</div>
 
-            setTimeout(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Registration successful! Please login.',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.href = 'login.html';
-                });
-            }, 1000);
-        });
-    </script>
+
+
+<form id="registerForm">
+
+<div class="row g-3 mb-3">
+
+<div class="col-sm-6">
+<label class="form-label">Shop Name</label>
+<input type="text" class="form-control" id="shopName" required>
+</div>
+
+<div class="col-sm-6">
+<label class="form-label">Owner Name</label>
+<input type="text" class="form-control" id="ownerName" required>
+</div>
+
+</div>
+
+
+
+<div class="form-group mb-3">
+<label class="form-label">Email Address</label>
+<input type="email" class="form-control" id="email" required>
+</div>
+
+
+
+<div class="form-group mb-3">
+<label class="form-label">Phone Number</label>
+<input type="tel" class="form-control" id="phone" required>
+</div>
+
+
+
+<!-- PASSWORD SECTION -->
+
+<div class="row g-3 mb-3">
+
+<div class="col-sm-6">
+
+<label class="form-label">Password</label>
+
+<div class="input-group">
+
+<input type="password" class="form-control" id="password" required>
+
+<button class="btn btn-outline-secondary" type="button" id="togglePassword">
+<i class="bi bi-eye"></i>
+</button>
+
+</div>
+
+</div>
+
+
+
+<div class="col-sm-6">
+
+<label class="form-label">Confirm Password</label>
+
+<div class="input-group">
+
+<input type="password" class="form-control" id="confirmPassword" required>
+
+<button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+<i class="bi bi-eye"></i>
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="form-group mb-3">
+<label class="form-label">Business Certificate ID</label>
+<input type="text" class="form-control" id="certificateId" placeholder="e.g. CERT-12345" required>
+</div>
+
+
+
+<div class="form-group mb-4">
+
+<label class="form-label">Upload Shop License/Certificate</label>
+
+<input type="file" class="form-control" id="licenseFile" accept=".pdf,.jpg,.jpeg,.png" required>
+
+<div class="form-text text-muted small">
+Accepted formats: PDF, JPG, PNG (Max 5MB)
+</div>
+
+<div id="fileName" class="small text-success fw-semibold mt-1"></div>
+
+</div>
+
+
+
+<div class="form-check mb-4">
+
+<input class="form-check-input" type="checkbox" id="terms" required>
+
+<label class="form-check-label text-muted small">
+I agree to the Terms and Conditions
+</label>
+
+</div>
+
+
+
+<button type="submit" class="btn btn-primary w-100 py-2 mb-4" id="registerBtn">
+Create Account
+</button>
+
+
+
+<div class="text-center">
+<p class="text-muted small">
+Already have an account?
+<a href="{% url 'owner_login' %}" class="text-primary fw-semibold">Sign In</a>
+</p>
+</div>
+
+</form>
+
+</div>
+</div>
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+<script>
+
+/* FILE NAME PREVIEW */
+
+document.getElementById("licenseFile").addEventListener("change", function(e){
+
+const fileName = e.target.files[0]?.name || "";
+document.getElementById("fileName").textContent = fileName ? "Selected: " + fileName : "";
+
+});
+
+
+
+/* PASSWORD TOGGLE */
+
+const togglePassword = document.getElementById("togglePassword");
+const password = document.getElementById("password");
+
+togglePassword.addEventListener("click", function(){
+
+const type = password.type === "password" ? "text" : "password";
+password.type = type;
+
+this.querySelector("i").classList.toggle("bi-eye");
+this.querySelector("i").classList.toggle("bi-eye-slash");
+
+});
+
+
+
+/* CONFIRM PASSWORD TOGGLE */
+
+const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
+const confirmPassword = document.getElementById("confirmPassword");
+
+toggleConfirmPassword.addEventListener("click", function(){
+
+const type = confirmPassword.type === "password" ? "text" : "password";
+confirmPassword.type = type;
+
+this.querySelector("i").classList.toggle("bi-eye");
+this.querySelector("i").classList.toggle("bi-eye-slash");
+
+});
+
+
+
+/* FORM SUBMIT */
+
+document.getElementById("registerForm").addEventListener("submit", function(e){
+
+e.preventDefault();
+
+const passwordValue = password.value;
+const confirmValue = confirmPassword.value;
+
+if(passwordValue !== confirmValue){
+
+Swal.fire({
+icon:"error",
+title:"Passwords do not match"
+});
+
+return;
+
+}
+
+
+
+const btn = document.getElementById("registerBtn");
+
+btn.innerHTML =
+'<span class="spinner-border spinner-border-sm me-2"></span>Registering...';
+
+btn.disabled = true;
+
+
+
+setTimeout(()=>{
+
+Swal.fire({
+icon:"success",
+title:"Success!",
+text:"Registration successful! Please login.",
+timer:1500,
+showConfirmButton:false
+}).then(()=>{
+
+window.location.href="login.html";
+
+});
+
+},1000);
+
+});
+
+</script>
+
 </body>
-
 </html>
+```

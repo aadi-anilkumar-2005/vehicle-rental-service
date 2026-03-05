@@ -39,11 +39,9 @@ export const Login = () => {
         text2: "Login successful!",
       });
 
-      // Navigate based on role
       if (result.role === "staff") {
         router.replace("/staff");
       } else {
-        // Default to user tabs
         router.replace("/(tabs)");
       }
     } else {
@@ -56,85 +54,99 @@ export const Login = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0F1C23]">
-      <ScrollView contentContainerClassName="flex-grow justify-center px-6 py-8">
-        <View className="mb-8 items-center">
-          <View className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#22D3EE] shadow-[0_0_20px_rgba(34,211,238,0.3)]">
-            <ArrowLeftRight color="#0F1C23" size={32} strokeWidth={2.5} />
-          </View>
-          <Text className="text-3xl font-bold text-white mb-2">
-            Welcome Back
-          </Text>
-          <Text className="text-slate-400 text-base">
-            Sign in to your account
-          </Text>
+<SafeAreaView className="flex-1 bg-[#0F1C23]">
+  <View className="flex-1 px-6 justify-center">
+
+    {/* HEADER */}
+    <View className="items-center mb-12">
+      <View className="h-20 w-20 rounded-3xl bg-[#22D3EE] items-center justify-center mb-6 shadow-[0_0_20px_rgba(34,211,238,0.3)]">
+        <ArrowLeftRight color="#0F1C23" size={32} strokeWidth={2.5} />
+      </View>
+
+   <Text
+  numberOfLines={1}
+  className="text-white text-3xl font-bold text-center"
+>
+  Welcome Back
+</Text>
+
+      <Text className="text-slate-400 text-base mt-2 text-center">
+        Sign in to your account
+      </Text>
+    </View>
+
+    {/* FORM */}
+    <View className="space-y-5">
+
+      {/* EMAIL */}
+      <View className="relative">
+        <View className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+          <Mail color="#94A3B8" size={20} />
         </View>
 
-        <View className="flex-row items-center gap-4 mb-8">
-          <View className="h-[1px] flex-1 bg-slate-800" />
-          <Text className="text-sm text-slate-500">or login manually</Text>
-          <View className="h-[1px] flex-1 bg-slate-800" />
+        <Input
+          placeholder="Email address"
+          placeholderTextColor="#64748B"
+          value={email}
+          onChangeText={setEmail}
+          className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl"
+        />
+      </View>
+
+      {/* PASSWORD */}
+      <View className="relative">
+        <View className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+          <Lock color="#94A3B8" size={20} />
         </View>
 
-        {/* Form */}
-        <View className="gap-4">
-          <View>
-            <View className="absolute left-4 top-[18px] z-10">
-              <Mail color="#94A3B8" size={20} />
-            </View>
-            <Input
-              placeholder="Email address"
-              placeholderTextColor="#64748B"
-              value={email}
-              onChangeText={setEmail}
-              className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl focus:border-[#22D3EE]"
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-          </View>
+        <Input
+          secureTextEntry={!showPassword}
+          placeholder="Password"
+          placeholderTextColor="#64748B"
+          value={password}
+          onChangeText={setPassword}
+          className="pl-12 pr-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl"
+        />
 
-          <View>
-            <View className="absolute left-4 top-[18px] z-10">
-              <Lock color="#94A3B8" size={20} />
-            </View>
-            <Input
-              secureTextEntry={!showPassword}
-              placeholder="Password"
-              placeholderTextColor="#64748B"
-              value={password}
-              onChangeText={setPassword}
-              className="pl-12 pr-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl focus:border-[#22D3EE]"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-[18px] z-10"
-            >
-              {showPassword ? (
-                <EyeOff color="#94A3B8" size={20} />
-              ) : (
-                <Eye color="#94A3B8" size={20} />
-              )}
-            </TouchableOpacity>
-          </View>
+        <TouchableOpacity
+          onPress={() => setShowPassword(!showPassword)}
+          className="absolute right-4 top-1/2 -translate-y-1/2"
+        >
+          {showPassword ? (
+            <EyeOff color="#94A3B8" size={20} />
+          ) : (
+            <Eye color="#94A3B8" size={20} />
+          )}
+        </TouchableOpacity>
+      </View>
 
-          <TouchableOpacity
-            onPress={handleLogin}
-            className="w-full mt-4 bg-[#22D3EE] h-14 rounded-full items-center justify-center flex-row gap-2 active:opacity-90 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
-          >
-            <Text className="text-[#0F1C23] text-lg font-bold">Sign In</Text>
-            <ArrowRight color="#0F1C23" size={20} strokeWidth={2.5} />
-          </TouchableOpacity>
-        </View>
+      {/* BUTTON */}
+      <TouchableOpacity
+        onPress={handleLogin}
+        className="mt-6 bg-[#22D3EE] h-14 rounded-full items-center justify-center flex-row gap-2 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
+      >
+        <Text className="text-[#0F1C23] text-lg font-bold">
+          Sign In
+        </Text>
+        <ArrowRight color="#0F1C23" size={20} />
+      </TouchableOpacity>
+    </View>
 
-        {/* Sign up link */}
-        <View className="mt-8 flex-row justify-center items-center">
-          <Text className="text-slate-400">Don't have an account? </Text>
-          <TouchableOpacity onPress={() => router.push("/Signup")}>
-            <Text className="font-bold text-[#22D3EE]">Sign up</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    {/* FOOTER */}
+    <View className="flex-row justify-center mt-10">
+      <Text className="text-slate-400">
+        Don't have an account? 
+      </Text>
+
+      <TouchableOpacity onPress={() => router.push("/Signup")}>
+        <Text className="text-[#22D3EE] font-bold ml-1">
+          Sign up
+        </Text>
+      </TouchableOpacity>
+    </View>
+
+  </View>
+</SafeAreaView>
   );
 };
 
