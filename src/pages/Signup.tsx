@@ -1,13 +1,24 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Chrome, User, Phone } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { z } from "zod";
+
+const signupSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: z.string().trim().email("Invalid email address").max(255),
+  phone: z.string().max(20).optional(),
+  password: z.string().min(6, "Password must be at least 6 characters").max(128),
+});
 
 export const Signup = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,19 +26,30 @@ export const Signup = () => {
     password: "",
   });
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password) {
-      toast.error("Please fill in all required fields");
+
+    const validation = signupSchema.safeParse(formData);
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
       return;
     }
-    toast.success("Account created successfully!");
-    navigate("/");
-  };
 
-  const handleGoogleSignup = () => {
-    toast.success("Account created with Google!");
-    navigate("/");
+    setIsSubmitting(true);
+    try {
+      const result = await signup(formData.email, formData.password, formData.name, 'user');
+
+      if (result.success) {
+        toast.success("Account created! Please check your email to verify your account.");
+        navigate("/login");
+      } else {
+        toast.error(result.error || "Signup failed");
+      }
+    } catch {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -110,30 +132,11 @@ export const Signup = () => {
               </button>
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Create Account
-              <ArrowRight className="h-5 w-5" />
+            <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+              {isSubmitting ? "Creating account..." : "Create Account"}
+              {!isSubmitting && <ArrowRight className="h-5 w-5" />}
             </Button>
           </form>
-
-          {/* Divider */}
-          <div className="my-6 flex items-center gap-4">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-sm text-muted-foreground">or continue with</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          {/* Social signup */}
-          <Button
-            type="button"
-            variant="glass"
-            className="w-full"
-            size="lg"
-            onClick={handleGoogleSignup}
-          >
-            <Chrome className="h-5 w-5" />
-            Continue with Google
-          </Button>
 
           {/* Terms */}
           <p className="mt-6 text-center text-xs text-muted-foreground">
