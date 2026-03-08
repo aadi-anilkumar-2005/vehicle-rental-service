@@ -423,9 +423,9 @@ class KYCDocumentSerializer(serializers.ModelSerializer):
         fields = [
             'full_name', 'date_of_birth', 'address', 'phone', 'email',
             'driving_license_number', 'secondary_doc_type', 'secondary_doc_number',
-            'status', 'submitted_at', 'verified_at'
+            'status', 'submitted_at', 'verified_at', 'rejection_reason'
         ]
-        read_only_fields = ['status', 'submitted_at', 'verified_at']
+        read_only_fields = ['status', 'submitted_at', 'verified_at', 'rejection_reason']
 
 class KYCDocumentCreateSerializer(serializers.ModelSerializer):
     """Serializer for submitting KYC documents."""
@@ -439,7 +439,8 @@ class KYCDocumentCreateSerializer(serializers.ModelSerializer):
         fields = [
             'full_name', 'date_of_birth', 'address', 'phone', 'email',
             'driving_license_number', 'driving_license_photo',
-            'secondary_doc_type', 'secondary_doc_number', 'secondary_doc_photo'
+            'secondary_doc_type', 'secondary_doc_number', 'secondary_doc_photo',
+            'rejection_reason'
         ]
 
     def create(self, validated_data):
@@ -469,6 +470,37 @@ class KYCDocumentCreateSerializer(serializers.ModelSerializer):
             profile.save()
             
         return kyc
+
+    def update(self, instance, validated_data):
+        full_name = validated_data.pop('full_name', '')
+        address = validated_data.pop('address', '')
+        phone = validated_data.pop('phone', '')
+        email = validated_data.pop('email', '')
+        
+        # Update KYCDocument fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        user = instance.user
+        if full_name:
+            parts = full_name.split(' ', 1)
+            user.first_name = parts[0]
+            if len(parts) > 1:
+                user.last_name = parts[1]
+        if email:
+            user.email = email
+        user.save()
+        
+        profile = getattr(user, 'user_profile', None)
+        if profile:
+            if address:
+                profile.address = address
+            if phone:
+                profile.phone = phone
+            profile.save()
+            
+        return instance
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating user profile information."""

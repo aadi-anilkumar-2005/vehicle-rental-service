@@ -29,7 +29,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { profileManagementApi, KYCDocument } from "@/services/api";
+import * as DocumentPicker from "expo-document-picker";
+import { profileManagementApi } from "@/services/api";
 
 export default function KYCVerification() {
   const router = useRouter();
@@ -50,6 +51,7 @@ export default function KYCVerification() {
   const [kycStatus, setKycStatus] = useState<
     "pending" | "verified" | "not_submitted" | "rejected"
   >("not_submitted");
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -90,6 +92,7 @@ export default function KYCVerification() {
           });
 
           setKycStatus(data.status);
+          setRejectionReason(data.rejection_reason || null);
         } catch (error) {
           console.error("Failed to load KYC data:", error);
           // If no KYC data exists, keep default state
@@ -127,14 +130,38 @@ export default function KYCVerification() {
     setKycData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFileChange = (field: string) => {
-    const mockFile = { name: "document.jpg", uri: "path/to/image" };
-    handleKycChange(field, mockFile);
-    Toast.show({
-      type: "success",
-      text1: "File Uploaded",
-      text2: `${mockFile.name} attached successfully`,
-    });
+  const handleFileChange = async (field: string) => {
+    try {
+      // Launch document picker allowing images and pdfs
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "application/pdf"],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        
+        const fileObject = {
+          uri: asset.uri,
+          name: asset.name,
+          type: asset.mimeType || 'application/octet-stream',
+        };
+        
+        handleKycChange(field, fileObject);
+        Toast.show({
+          type: "success",
+          text1: "File Selected",
+          text2: `${asset.name} selected successfully`,
+        });
+      }
+    } catch (error) {
+      console.error("Document picker error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Selection Failed",
+        text2: "Failed to pick a document.",
+      });
+    }
   };
 
   const handleSubmitKYC = async () => {
@@ -179,26 +206,55 @@ export default function KYCVerification() {
         return typeMap[docType] || docType;
       };
 
-      const kycSubmitData = {
-        full_name: kycData.fullName,
-        date_of_birth: formatDate(kycData.dateOfBirth),
-        address: kycData.address,
-        phone: kycData.phone,
-        email: kycData.email,
-        driving_license_number: kycData.drivingLicenseNumber,
-        secondary_doc_type: mapDocType(kycData.secondaryDocType),
-        secondary_doc_number: kycData.secondaryDocNumber,
-      };
+      // Using FormData instead of JSON for file upload
+      const formData = new FormData();
+      formData.append("full_name", kycData.fullName);
+      formData.append("date_of_birth", formatDate(kycData.dateOfBirth));
+      formData.append("address", kycData.address);
+      formData.append("phone", kycData.phone);
+      formData.append("email", kycData.email);
+      
+      if (kycData.drivingLicenseNumber) {
+        formData.append("driving_license_number", kycData.drivingLicenseNumber);
+      }
+      
+      if (kycData.secondaryDocType) {
+        formData.append("secondary_doc_type", mapDocType(kycData.secondaryDocType));
+      }
+      
+      if (kycData.secondaryDocNumber) {
+        formData.append("secondary_doc_number", kycData.secondaryDocNumber);
+      }
 
-      console.log("Submitting KYC data:", kycSubmitData);
+      // Append files if they exist
+      if (kycData.drivingLicensePhoto && kycData.drivingLicensePhoto.uri && !kycData.drivingLicensePhoto.uri.startsWith('http')) {
+        // Only append if it's a new local file (not from backend URL)
+        formData.append("driving_license_photo", {
+          uri: kycData.drivingLicensePhoto.uri,
+          name: kycData.drivingLicensePhoto.name,
+          type: kycData.drivingLicensePhoto.type || 'image/jpeg'
+        } as any);
+      }
 
-      const response =
-        await profileManagementApi.submitKYCDocument(kycSubmitData);
+      if (kycData.secondaryDocPhoto && kycData.secondaryDocPhoto.uri && !kycData.secondaryDocPhoto.uri.startsWith('http')) {
+        // Only append if it's a new local file
+        formData.append("secondary_doc_photo", {
+          uri: kycData.secondaryDocPhoto.uri,
+          name: kycData.secondaryDocPhoto.name,
+          type: kycData.secondaryDocPhoto.type || 'image/jpeg'
+        } as any);
+      }
+
+      console.log("Submitting KYC data with files");
+
+      const response = await profileManagementApi.submitKYCDocumentWithFiles(formData);
 
       // Update local state with response
       setKycData((prev) => ({ ...prev, ...response }));
 
       setKycStatus("pending");
+      setRejectionReason(null);
+      
       Toast.show({
         type: "success",
         text1: "KYC Submitted",
@@ -238,13 +294,13 @@ export default function KYCVerification() {
         placeholder={placeholder}
         placeholderTextColor="#64748b"
         keyboardType={keyboardType}
-        editable={kycStatus === "not_submitted"}
+        editable={kycStatus === "not_submitted" || kycStatus === "rejected"}
         onFocus={() => setFocusedField(fieldKey)}
         onBlur={() => setFocusedField(null)}
         style={[
           styles.input,
           focusedField === fieldKey && styles.inputFocused,
-          kycStatus !== "not_submitted" && styles.inputDisabled,
+          (kycStatus === "pending" || kycStatus === "verified") && styles.inputDisabled,
         ]}
       />
     </View>
@@ -304,6 +360,18 @@ export default function KYCVerification() {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.main}>
+              {kycStatus === "rejected" && (
+                <View style={styles.rejectionBanner}>
+                  <AlertCircle size={20} color="#ef4444" style={styles.rejectionIcon} />
+                  <View style={styles.rejectionTextContainer}>
+                    <Text style={styles.rejectionTitle}>KYC Verification Rejected</Text>
+                    <Text style={styles.rejectionReason}>
+                      {rejectionReason || "Please review your details and resubmit."}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
               {/* Personal Details */}
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
@@ -400,7 +468,7 @@ export default function KYCVerification() {
                     <TouchableOpacity
                       style={styles.uploadBox}
                       onPress={() => handleFileChange("drivingLicensePhoto")}
-                      disabled={kycStatus !== "not_submitted" || loading}
+                      disabled={(kycStatus !== "not_submitted" && kycStatus !== "rejected") || loading}
                     >
                       {kycData.drivingLicensePhoto ? (
                         <View style={styles.fileUploaded}>
@@ -440,7 +508,7 @@ export default function KYCVerification() {
                     <TouchableOpacity
                       style={styles.selectInput}
                       onPress={() => setDocTypeModalVisible(true)}
-                      disabled={kycStatus !== "not_submitted" || loading}
+                      disabled={(kycStatus !== "not_submitted" && kycStatus !== "rejected") || loading}
                     >
                       <Text
                         style={
@@ -472,7 +540,7 @@ export default function KYCVerification() {
                     <TouchableOpacity
                       style={styles.uploadBox}
                       onPress={() => handleFileChange("secondaryDocPhoto")}
-                      disabled={kycStatus !== "not_submitted" || loading}
+                      disabled={(kycStatus !== "not_submitted" && kycStatus !== "rejected") || loading}
                     >
                       {kycData.secondaryDocPhoto ? (
                         <View style={styles.fileUploaded}>
@@ -524,7 +592,7 @@ export default function KYCVerification() {
                   </View>
                 ) : (
                   <Text style={styles.buttonText}>
-                    Submit KYC for Verification
+                    {kycStatus === "rejected" ? "Resubmit KYC" : "Submit KYC for Verification"}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -647,6 +715,33 @@ const styles = StyleSheet.create({
   badgeTextPending: {
     fontSize: 12,
     color: "#f97316",
+  },
+  rejectionBanner: {
+    flexDirection: "row",
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.3)",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "flex-start",
+  },
+  rejectionIcon: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  rejectionTextContainer: {
+    flex: 1,
+  },
+  rejectionTitle: {
+    color: "#ef4444",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  rejectionReason: {
+    color: "#fca5a5",
+    fontSize: 14,
+    lineHeight: 20,
   },
   scrollContent: {
     paddingBottom: 100,

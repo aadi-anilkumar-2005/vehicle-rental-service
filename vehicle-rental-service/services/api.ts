@@ -453,6 +453,7 @@ export interface KYCDocument {
   status: "not_submitted" | "pending" | "verified" | "rejected";
   submitted_at: string;
   verified_at?: string;
+  rejection_reason?: string;
 }
 
 export interface KYCDocumentCreate {
@@ -751,6 +752,28 @@ export const profileManagementApi = {
       method: "POST",
       headers: authHeaders(token),
       body: JSON.stringify(kycData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Failed to submit KYC document: ${response.status} ${errorText}`,
+      );
+    }
+    return await response.json();
+  },
+
+  /** Submit KYC documents with files */
+  async submitKYCDocumentWithFiles(kycData: FormData): Promise<KYCDocument> {
+    const token = await getAuthToken();
+    if (!token) throw new Error("No authentication token found");
+
+    const response = await fetch(`${API_BASE_URL}/kyc/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+      body: kycData,
     });
 
     if (!response.ok) {

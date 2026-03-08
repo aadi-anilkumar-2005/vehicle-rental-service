@@ -623,23 +623,25 @@ def kyc_document_view(request):
         return Response(serializer.data)
     
     elif request.method == 'POST':
-        if kyc_doc.status != 'not_submitted':
+        # Accept POST if not submitted OR if rejected (to bypass React Native's Fetch FormData PUT bug)
+        if kyc_doc.status not in ['not_submitted', 'rejected']:
             return Response({'error': 'KYC already submitted'}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer = KYCDocumentCreateSerializer(kyc_doc, data=request.data, partial=True)
         if serializer.is_valid():
-            kyc_doc = serializer.save(status='pending')
+            kyc_doc = serializer.save(status='pending', rejection_reason=None)
             response_serializer = KYCDocumentSerializer(kyc_doc)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'PUT':
-        if kyc_doc.status in ['verified', 'rejected']:
-            return Response({'error': 'Cannot modify verified/rejected KYC'}, status=status.HTTP_400_BAD_REQUEST)
+        if kyc_doc.status == 'verified':
+            return Response({'error': 'Cannot modify verified KYC'}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer = KYCDocumentCreateSerializer(kyc_doc, data=request.data, partial=True)
         if serializer.is_valid():
-            kyc_doc = serializer.save(status='pending')
+            # Automatically set back to pending upon modification
+            kyc_doc = serializer.save(status='pending', rejection_reason=None)
             response_serializer = KYCDocumentSerializer(kyc_doc)
             return Response(response_serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1147,12 +1149,13 @@ def kyc_document_view(request):
         return Response(serializer.data)
     
     elif request.method == 'POST':
-        if kyc_doc.status != 'not_submitted':
+        # Accept POST if not submitted OR if rejected (to bypass React Native's Fetch FormData bug)
+        if kyc_doc.status not in ['not_submitted', 'rejected']:
             return Response({'error': 'KYC already submitted'}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer = KYCDocumentCreateSerializer(kyc_doc, data=request.data, partial=True)
         if serializer.is_valid():
-            kyc_doc = serializer.save(status='pending')
+            kyc_doc = serializer.save(status='pending', rejection_reason=None)
             response_serializer = KYCDocumentSerializer(kyc_doc)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

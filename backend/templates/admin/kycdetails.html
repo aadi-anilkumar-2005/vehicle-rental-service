@@ -110,7 +110,11 @@
                         style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.5rem;">Driving
                         License Photo</span>
                     {% if kyc.driving_license_photo %}
-                    <img src="{{ kyc.driving_license_photo.url }}" alt="Driving License" title="Click to enlarge">
+                    <div style="margin-top: 0.5rem;">
+                        <a href="{{ kyc.driving_license_photo.url }}" target="_blank" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                            <i class="fas fa-file-download"></i> View Document
+                        </a>
+                    </div>
                     {% else %}
                     <div
                         style="height: 150px; display: flex; align-items: center; justify-content: center; background: var(--background); border-radius: 0.5rem; color: var(--text-muted);">
@@ -132,7 +136,11 @@
                     <span
                         style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.5rem;">{{ kyc.secondary_doc_type|upper }} Photo</span>
                     {% if kyc.secondary_doc_photo %}
-                    <img src="{{ kyc.secondary_doc_photo.url }}" alt="Secondary Document" title="Click to enlarge">
+                    <div style="margin-top: 0.5rem;">
+                        <a href="{{ kyc.secondary_doc_photo.url }}" target="_blank" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                            <i class="fas fa-file-download"></i> View Document
+                        </a>
+                    </div>
                     {% else %}
                     <div
                         style="height: 150px; display: flex; align-items: center; justify-content: center; background: var(--background); border-radius: 0.5rem; color: var(--text-muted);">
