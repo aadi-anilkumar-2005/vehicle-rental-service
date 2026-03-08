@@ -39,7 +39,7 @@ if 'runserver' in sys.argv:
                 print(f"ROUTE: /{prefix}{entry.pattern}  ->  {entry.name}")
     
     print("\n" + "="*50)
-    print("🚗 VEHICLE RENTAL SERVICE - AVAILABLE ROUTES")
+    print("VEHICLE RENTAL SERVICE - AVAILABLE ROUTES")
     print("="*50)
     try:
         print_urls(urlpatterns)

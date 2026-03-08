@@ -21,13 +21,14 @@ urlpatterns = [
     path('payments/', admin_views.admin_payments, name='admin_payments'),
     
     # Owners
-    path('owners/', admin_views.admin_owners, name='admin_owner_management'), 
+    path('owners/registrations/', admin_views.admin_owners, name='admin_owner_management'), 
+    path('owners/approved/', admin_views.admin_approved_owners, name='admin_approved_owners'),
     path('owners/<int:owner_id>/', admin_views.admin_owner_detail, name='admin_owner_detail'),
     path('owners/<int:owner_id>/approve/', admin_views.approve_owner, name='admin_approve_owner'),
     path('owners/<int:owner_id>/reject/', admin_views.reject_owner, name='admin_reject_owner'),
     path('owners/<int:owner_id>/delete/', admin_views.delete_owner, name='admin_delete_owner'),
-    # This action endpoint seems to be missing in admin_views, mapping to owners list for now to prevent NoReverseMatch
-    path('owners/action/', admin_views.admin_owners, name='admin_owner_action'),
+    # This action endpoint handles approve/reject POST requests
+    path('owners/action/', admin_views.admin_owner_action, name='admin_owner_action'),
     
     # KYC
     path('kyc/', admin_views.admin_kyc_list, name='admin_kyc_management'),

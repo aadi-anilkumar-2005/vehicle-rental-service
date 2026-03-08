@@ -418,3 +418,27 @@ class Notification(models.Model):
         
     def __str__(self):
         return f"{self.user.username} - {self.title}"
+
+class OwnerRegistrationRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    owner_name = models.CharField(max_length=255)
+    shop_name = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20)
+    password_hash = models.CharField(max_length=128) # Store hashed password
+    certificate_id = models.CharField(max_length=100, blank=True, null=True)
+    certificate_file = models.FileField(upload_to='owner_certificates/', blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.shop_name} - {self.owner_name} ({self.status})"
+

@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from .models import (
-    UserProfile, RentalShop, Vehicle, Booking, KYCDocument
+    UserProfile, RentalShop, Vehicle, Booking, KYCDocument, OwnerRegistrationRequest
 )
 
 def is_admin(user):
@@ -183,12 +183,130 @@ def admin_payments(request):
 
 @admin_required
 def admin_owners(request):
-    owners = UserProfile.objects.filter(role="owner").select_related("user")
+    # Fetch all owner registration requests
+    all_requests = OwnerRegistrationRequest.objects.all().order_by('-created_at')
+    
+    # Compute counts
+    pending_count = all_requests.filter(status='pending').count()
+    approved_count = all_requests.filter(status='approved').count()
+    rejected_count = all_requests.filter(status='rejected').count()
+    
+    context = {
+        'all_requests': all_requests,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'current_page': 'owners',
+    }
+    return render(request, 'admin/ownermanagement.html', context)
+
+
+@admin_required
+def admin_approved_owners(request):
+    # Fetch active owners
+    owners = UserProfile.objects.filter(role='owner').select_related('user').order_by('-user__date_joined')
     
     context = {
         'owners': owners,
+        'current_page': 'approved_owners',
     }
-    return render(request, 'admin/ownermanagement.html', context)
+    return render(request, 'admin/approved_owners.html', context)
+
+@admin_required
+@require_POST
+def admin_owner_action(request):
+    from django.contrib import messages
+    action = request.POST.get('action')
+    request_id = request.POST.get('request_id')
+    owner_id = request.POST.get('owner_id')
+
+    if owner_id:
+        try:
+            user = User.objects.get(id=owner_id, user_profile__role='owner')
+            if action == 'approve':
+                user.is_active = True
+                user.save()
+                messages.success(request, f"Owner {user.first_name} activated successfully.")
+            elif action == 'reject':
+                user.is_active = False
+                user.save()
+                messages.success(request, f"Owner {user.first_name} suspended successfully.")
+        except User.DoesNotExist:
+            messages.error(request, "Owner not found.")
+        except Exception as e:
+            messages.error(request, f"Error processing owner action: {str(e)}")
+        
+        # If we came from the details page, redirect back to it. Otherwise, return to management list.
+        referer = request.META.get('HTTP_REFERER', '')
+        if 'details' in referer or f'owners/{owner_id}' in referer:
+            return redirect('admin_owner_detail', owner_id=owner_id)
+        return redirect('admin_owner_management')
+
+    if not request_id:
+        messages.error(request, "Registration request ID is missing.")
+        return redirect('admin_owner_management')
+
+    try:
+        reg_request = OwnerRegistrationRequest.objects.get(id=request_id)
+        
+        if action == 'approve':
+            if User.objects.filter(email=reg_request.email).exists():
+                messages.error(request, "A user with this email already exists.")
+                return redirect('admin_owner_management')
+            
+            # Extract names
+            name_parts = reg_request.owner_name.split(' ', 1) if reg_request.owner_name else ["", ""]
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+
+            # Create User
+            user = User.objects.create_user(
+                username=reg_request.email,
+                email=reg_request.email,
+                password='temp_password', # Wil be replaced
+                first_name=first_name,
+                last_name=last_name
+            )
+            # Override password hash with the stored hash
+            user.password = reg_request.password_hash
+            user.is_active = True
+            user.save()
+
+            # Create UserProfile
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            profile.role = 'owner'
+            profile.phone = reg_request.phone
+            profile.save()
+
+            # Create RentalShop
+            RentalShop.objects.create(
+                name=reg_request.shop_name, 
+                address="Pending Address", 
+                latitude=0, 
+                longitude=0
+            )
+
+            reg_request.status = 'approved'
+            reg_request.is_approved = True
+            reg_request.is_rejected = False
+            reg_request.resolved_at = timezone.now()
+            reg_request.save()
+            messages.success(request, f"Owner {reg_request.owner_name} approved successfully.")
+
+        elif action == 'reject':
+            reg_request.status = 'rejected'
+            reg_request.is_rejected = True
+            reg_request.is_approved = False
+            reg_request.resolved_at = timezone.now()
+            reg_request.save()
+            messages.success(request, f"Owner {reg_request.owner_name} registration rejected.")
+            
+    except OwnerRegistrationRequest.DoesNotExist:
+        messages.error(request, "Registration request not found.")
+    except Exception as e:
+        messages.error(request, f"Error processing action: {str(e)}")
+
+    return redirect('admin_owner_management')
 
 @admin_required
 @require_POST
@@ -211,20 +329,35 @@ def delete_owner(request, owner_id):
 @admin_required
 def admin_owner_detail(request, owner_id):
     from django.contrib import messages
-    try:
-        owner = UserProfile.objects.select_related('user').get(user__id=owner_id, role='owner')
-    except UserProfile.DoesNotExist:
-        messages.error(request, "Owner not found.")
-        return redirect('admin_owner_management')
+    is_pending = request.GET.get('pending') == '1'
 
-    # Get their first associated shop if it exists
-    shop = owner.shops.first() if hasattr(owner, 'shops') else None
-    
-    context = {
-        'owner': owner,
-        'shop': shop,
-    }
-    return render(request, 'admin/ownerdetails.html', context)
+    if is_pending:
+        try:
+            pending_request = OwnerRegistrationRequest.objects.get(id=owner_id)
+            context = {
+                'pending_request': pending_request,
+                'is_pending': True,
+            }
+            return render(request, 'admin/ownerdetails.html', context)
+        except OwnerRegistrationRequest.DoesNotExist:
+            messages.error(request, "Pending registration not found.")
+            return redirect('admin_owner_management')
+    else:
+        try:
+            owner = UserProfile.objects.select_related('user').get(user__id=owner_id, role='owner')
+        except UserProfile.DoesNotExist:
+            messages.error(request, "Owner not found.")
+            return redirect('admin_owner_management')
+
+        # Get their first associated shop if it exists
+        shop = owner.shops.first() if hasattr(owner, 'shops') else None
+        
+        context = {
+            'owner': owner,
+            'shop': shop,
+            'is_pending': False,
+        }
+        return render(request, 'admin/ownerdetails.html', context)
 
 @admin_required
 def admin_kyc_list(request):

@@ -24,72 +24,110 @@
     </div>
 </div>
 
-<div class="data-table-container">
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-icon icon-orange">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="metric-info">
+            <h3>Pending</h3>
+            <p>{{ pending_count|default:"0" }}</p>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon icon-green">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="metric-info">
+            <h3>Approved</h3>
+            <p>{{ approved_count|default:"0" }}</p>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon icon-red">
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="metric-info">
+            <h3>Rejected</h3>
+            <p>{{ rejected_count|default:"0" }}</p>
+        </div>
+    </div>
+</div>
+
+{% if all_requests %}
+<div class="data-table-container" style="border-color: var(--warning-bg);">
     <div class="table-responsive">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Owner</th>
+                    <th>Owner Name</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <th>Shop Info</th>
+                    <th>Shop Name</th>
+                    <th>Certificate ID</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for owner in owners %}
+                {% for req in all_requests %}
                 <tr>
                     <td>
-                        <div style="font-weight: 600; color: var(--text-main);">{{ owner.user.first_name }} {{ owner.user.last_name }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">@{{ owner.user.username }}</div>
+                        <div style="font-weight: 600; color: var(--text-main);">{{ req.owner_name }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ req.created_at|date:"M d, Y" }}</div>
                     </td>
-                    <td>{{ owner.user.email }}</td>
-                    <td>{{ owner.phone|default:"-" }}</td>
+                    <td>{{ req.email }}</td>
+                    <td>{{ req.phone|default:"-" }}</td>
+                    <td><span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fas fa-store"></i> {{ req.shop_name }}</span></td>
                     <td>
-                        <!-- Optional Shop Info if accessible -->
-                        <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fas fa-store"></i> {{ owner.shops.first.name|default:"No Shop Linked" }}</span>
-                    </td>
-                    <td>
-                        <span class="status-badge status-{{ owner.user.is_active|yesno:'success,danger' }}">
-                            {{ owner.user.is_active|yesno:'Active,Suspended' }}
-                        </span>
+                        {% if req.status == 'pending' %}
+                        <span class="status-badge status-warning">Pending</span>
+                        {% elif req.status == 'approved' %}
+                        <span class="status-badge status-success">Approved</span>
+                        {% elif req.status == 'rejected' %}
+                        <span class="status-badge status-danger">Rejected</span>
+                        {% endif %}
                     </td>
                     <td>
                         <div class="action-btns">
-                            <a href="{% url 'admin_owner_detail' owner.user.id %}" class="btn btn-outline btn-icon"
-                                title="View Details">
+                            <a href="{% url 'admin_owner_detail' req.id %}?pending=1" class="btn btn-outline btn-icon" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </a>
-
-                            {% if not owner.user.is_active %}
+                            
+                            {% if req.status == 'pending' %}
                             <form method="POST" action="{% url 'admin_owner_action' %}" class="confirm-action"
                                 data-confirm-msg="Approve this owner registration?" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="approve">
-                                <input type="hidden" name="owner_id" value="{{ owner.user.id }}">
+                                <input type="hidden" name="request_id" value="{{ req.id }}">
                                 <button type="submit" class="btn btn-success btn-icon" title="Approve"><i
                                         class="fas fa-check"></i></button>
                             </form>
 
-                            <button type="button" class="btn btn-danger btn-icon btn-reject-owner"
-                                data-ownerid="{{ owner.user.id }}" title="Reject">
+                            <button type="button" class="btn btn-danger btn-icon btn-reject-request"
+                                data-requestid="{{ req.id }}" title="Reject">
                                 <i class="fas fa-times"></i>
                             </button>
                             {% endif %}
                         </div>
                     </td>
                 </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No owners
-                        found.</td>
-                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+{% else %}
+<div class="data-table-container">
+    <div style="padding: 3rem; text-align: center; color: var(--text-muted);">
+        <i class="fas fa-id-card" style="font-size: 3rem; color: var(--secondary); opacity: 0.5; margin-bottom: 1rem;"></i>
+        <h3>No Registrations Found</h3>
+        <p>No owner registrations have been submitted yet.</p>
+    </div>
+</div>
+{% endif %}
+
+
 
 <!-- Reject Modal -->
 <div class="modal-overlay" id="rejectModal">
@@ -130,7 +168,49 @@
                     rejectInput.value = this.dataset.ownerid;
                 }
                 if (rejectModal) {
-                    rejectModal.classList.add("show");
+                    rejectModal.classList.add("active");
+                }
+            });
+        });
+
+        const rejectRequestBtns = document.querySelectorAll(".btn-reject-request");
+        const rejectRequestInput = document.getElementById("rejectRequestId");
+
+        rejectRequestBtns.forEach(btn => {
+            btn.addEventListener("click", function () {
+                if (rejectRequestInput) {
+                    rejectRequestInput.value = this.dataset.requestid;
+                }
+                if (rejectModal) {
+                    // Update form action and name if we are using the same modal
+                    // We need to set name="request_id" instead of "owner_id"
+                    rejectModal.querySelector('form').innerHTML = `
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reject">
+                        <input type="hidden" name="request_id" value="${this.dataset.requestid}">
+                        
+                        <div class="modal-header" style="border-bottom-color: var(--danger-bg);">
+                            <h2 style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Reject Registration</h2>
+                            <button type="button" class="modal-close"><i class="fas fa-times"></i></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <p style="margin-bottom: 1rem; color: var(--text-muted);">Please confirm you want to reject this registration request.</p>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline modal-close">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                        </div>
+                    `;
+                    // Reattach close listeners to new buttons
+                    rejectModal.querySelectorAll('.modal-close').forEach(btn => {
+                        btn.addEventListener("click", function () {
+                            const overlay = this.closest('.modal-overlay');
+                            if (overlay) overlay.classList.remove("active");
+                        });
+                    });
+                    rejectModal.classList.add("active");
                 }
             });
         });
@@ -139,7 +219,7 @@
         document.querySelectorAll('.modal-close').forEach(btn => {
             btn.addEventListener("click", function () {
                 const overlay = this.closest('.modal-overlay');
-                if (overlay) overlay.classList.remove("show");
+                if (overlay) overlay.classList.remove("active");
             });
         });
     });

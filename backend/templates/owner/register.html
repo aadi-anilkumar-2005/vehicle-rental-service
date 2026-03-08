@@ -287,21 +287,25 @@
 
             btn.disabled = true;
 
-            const payload = {
-                shopName: document.getElementById("shopName").value,
-                ownerName: document.getElementById("ownerName").value,
-                email: document.getElementById("email").value,
-                phone: document.getElementById("phone").value,
-                password: passwordValue
-            };
+            const formData = new FormData();
+            formData.append("shopName", document.getElementById("shopName").value);
+            formData.append("ownerName", document.getElementById("ownerName").value);
+            formData.append("email", document.getElementById("email").value);
+            formData.append("phone", document.getElementById("phone").value);
+            formData.append("password", passwordValue);
+            formData.append("certificateId", document.getElementById("certificateId").value);
+            
+            const fileInput = document.getElementById("licenseFile");
+            if (fileInput.files.length > 0) {
+                formData.append("licenseFile", fileInput.files[0]);
+            }
 
             fetch("{% url 'owner_register' %}", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     "X-CSRFToken": "{{ csrf_token }}"
                 },
-                body: JSON.stringify(payload)
+                body: formData
             })
                 .then(response => response.json())
                 .then(data => {

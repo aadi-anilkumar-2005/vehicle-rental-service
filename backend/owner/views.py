@@ -61,52 +61,49 @@ from django.http import JsonResponse
 def register_view(request):
     if request.method == 'POST':
         try:
-            # We are receiving data via a FormData POST request or JSON
-            import json
-            if request.content_type == 'application/json':
-                data = json.loads(request.body)
-                email = data.get('email')
-                password = data.get('password')
-                shop_name = data.get('shopName')
-                owner_name = data.get('ownerName')
-                phone = data.get('phone')
-                # Ignoring files here if JSON, but the form likely posts using FormData or custom fetch
-            else:
-                email = request.POST.get('email')
-                password = request.POST.get('password')
-                shop_name = request.POST.get('shopName')
-                owner_name = request.POST.get('ownerName')
-                phone = request.POST.get('phone')
-                # files = request.FILES
+            # We are expecting FormData since there's a file upload
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            shop_name = request.POST.get('shopName')
+            owner_name = request.POST.get('ownerName')
+            phone = request.POST.get('phone')
+            certificate_id = request.POST.get('certificateId')
+            certificate_file = request.FILES.get('licenseFile')
 
-            if User.objects.filter(email=email).exists():
+            if not email or not password or not owner_name:
+                # Fallback for JSON requests if the frontend sends JSON instead of FormData
+                import json
+                if request.content_type == 'application/json':
+                    data = json.loads(request.body)
+                    email = data.get('email')
+                    password = data.get('password')
+                    shop_name = data.get('shopName')
+                    owner_name = data.get('ownerName')
+                    phone = data.get('phone')
+                    certificate_id = data.get('certificateId')
+                    # Cannot reliably get file from simple JSON without base64 decoding
+
+            if not email:
+                return JsonResponse({"error": "Email is required"}, status=400)
                 return JsonResponse({"error": "Email already registered"}, status=400)
+                
+            from rentals.models import OwnerRegistrationRequest
+            if OwnerRegistrationRequest.objects.filter(email=email, status='pending').exists():
+                return JsonResponse({"error": "Registration request already pending for this email"}, status=400)
 
-            name_parts = owner_name.split(' ', 1) if owner_name else ["", ""]
-            first_name = name_parts[0]
-            last_name = name_parts[1] if len(name_parts) > 1 else ''
+            from django.contrib.auth.hashers import make_password
+            hashed_password = make_password(password)
 
-            user = User.objects.create_user(
-                username=email,
+            OwnerRegistrationRequest.objects.create(
+                owner_name=owner_name,
+                shop_name=shop_name,
                 email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name
+                phone=phone,
+                password_hash=hashed_password,
+                certificate_id=certificate_id,
+                certificate_file=certificate_file,
+                status='pending'
             )
-            # Make the user inactive so they cannot log in immediately
-            user.is_active = False
-            user.save()
-
-            # The UserProfile might be created automatically by a signal.
-            # We will update it if it exists or create if missing.
-            from rentals.models import UserProfile, RentalShop
-            profile, created = UserProfile.objects.get_or_create(user=user)
-            profile.role = 'owner'
-            profile.phone = phone
-            profile.save()
-
-            # Also create a default shop tied to this owner if requested
-            RentalShop.objects.create(name=shop_name, address="Pending", latitude=0, longitude=0)
 
             return JsonResponse({"success": "Registration successful. Please wait for admin approval."})
 

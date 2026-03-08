@@ -1,6 +1,6 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Owner Detail - {{ owner.user.first_name }} {{ owner.user.last_name }}{% endblock %}
+{% block title %}Owner Detail - {% if is_pending %}{{ pending_request.owner_name }}{% else %}{{ owner.user.first_name }} {{ owner.user.last_name }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="page-header" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
@@ -9,15 +9,34 @@
             style="margin-bottom: 1rem; padding: 0.35rem 0.75rem;">
             <i class="fas fa-arrow-left"></i> Back
         </a>
-        <h1 class="page-title">Owner Registration Review</h1>
-        <p style="color: var(--text-muted); margin-top: 0.25rem;">Registered on {{ owner.user.date_joined|date:"M d, Y H:i" }}</p>
+        <h1 class="page-title">Owner {% if is_pending %}Registration Review{% else %}Detail{% endif %}</h1>
+        <p style="color: var(--text-muted); margin-top: 0.25rem;">
+            {% if is_pending %}Requested on {{ pending_request.created_at|date:"M d, Y H:i" }}
+            {% else %}Registered on {{ owner.user.date_joined|date:"M d, Y H:i" }}{% endif %}
+        </p>
     </div>
 
     <div class="actions-group">
+        {% if is_pending %}
+            {% if pending_request.status == 'pending' %}
+            <span class="status-badge status-warning" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                Pending Approval
+            </span>
+            {% elif pending_request.status == 'approved' %}
+            <span class="status-badge status-success" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                Approved Registration
+            </span>
+            {% elif pending_request.status == 'rejected' %}
+            <span class="status-badge status-danger" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                Rejected Registration
+            </span>
+            {% endif %}
+        {% else %}
         <span class="status-badge status-{{ owner.user.is_active|yesno:'success,danger' }}"
             style="font-size: 1rem; padding: 0.5rem 1rem;">
-            {{ owner.user.is_active|yesno:'Active,Inactive / Pending' }}
+            {{ owner.user.is_active|yesno:'Active,Inactive / Suspended' }}
         </span>
+        {% endif %}
     </div>
 </div>
 
@@ -31,32 +50,39 @@
             <div class="info-grid" style="grid-template-columns: 1fr;">
                 <div class="info-col">
                     <span class="info-label">Full Name</span>
-                    <span class="info-value">{{ owner.user.first_name }} {{ owner.user.last_name }}</span>
+                    <span class="info-value">{% if is_pending %}{{ pending_request.owner_name }}{% else %}{{ owner.user.first_name }} {{ owner.user.last_name }}{% endif %}</span>
                 </div>
                 <div class="info-col">
                     <span class="info-label">Phone</span>
-                    <span class="info-value">{{ owner.phone|default:"Not Provided" }}</span>
+                    <span class="info-value">{% if is_pending %}{{ pending_request.phone }}{% else %}{{ owner.phone|default:"Not Provided" }}{% endif %}</span>
                 </div>
                 <div class="info-col">
                     <span class="info-label">Email</span>
-                    <span class="info-value">{{ owner.user.email }}</span>
+                    <span class="info-value">{% if is_pending %}{{ pending_request.email }}{% else %}{{ owner.user.email }}{% endif %}</span>
                 </div>
             </div>
 
-            {% if not owner.user.is_active %}
+            {% if is_pending %}
+                {% if pending_request.status == 'pending' %}
+                <div
+                    style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 1rem;">
+                    <form method="POST" action="{% url 'admin_owner_action' %}" class="confirm-action"
+                        data-confirm-msg="Approve this owner registration?">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="approve">
+                        <input type="hidden" name="request_id" value="{{ pending_request.id }}">
+                        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Approve Owner</button>
+                    </form>
+
+                    <button type="button" class="btn btn-danger btn-reject-request" data-requestid="{{ pending_request.id }}">
+                        <i class="fas fa-times"></i> Reject Owner
+                    </button>
+                </div>
+                {% endif %}
+            {% elif not owner.user.is_active %}
             <div
                 style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 1rem;">
-                <form method="POST" action="{% url 'admin_owner_action' %}" class="confirm-action"
-                    data-confirm-msg="Approve this owner registration?">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="approve">
-                    <input type="hidden" name="owner_id" value="{{ owner.user.id }}">
-                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Approve Owner</button>
-                </form>
-
-                <button type="button" class="btn btn-danger btn-reject-owner" data-ownerid="{{ owner.user.id }}">
-                    <i class="fas fa-times"></i> Reject Owner
-                </button>
+                <!-- Existing owner approve/reject logic would go here if needed -->
             </div>
             {% endif %}
         </div>
@@ -68,7 +94,30 @@
             <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--primary);"><i class="fas fa-store"></i>
                 Associated Shop Context</h3>
 
-            {% if shop %}
+            {% if is_pending %}
+            <div class="info-grid" style="grid-template-columns: 1fr;">
+                <div class="info-col">
+                    <span class="info-label">Shop Name</span>
+                    <span class="info-value" style="font-size: 1.1rem;">{{ pending_request.shop_name }}</span>
+                </div>
+                
+                <div class="info-col">
+                    <span class="info-label">Certificate ID</span>
+                    <span class="info-value">{{ pending_request.certificate_id|default:"Not Provided" }}</span>
+                </div>
+
+                {% if pending_request.certificate_file %}
+                <div class="info-col">
+                    <span class="info-label">Certificate Document</span>
+                    <span class="info-value">
+                        <a href="{{ pending_request.certificate_file.url }}" target="_blank" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                            <i class="fas fa-file-download"></i> View Document
+                        </a>
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+            {% elif shop %}
             <div class="info-grid" style="grid-template-columns: 1fr;">
                 <div class="info-col">
                     <span class="info-label">Shop Name</span>
@@ -126,26 +175,76 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const rejectBtns = document.querySelectorAll(".btn-reject-owner");
+        const rejectOwnerBtns = document.querySelectorAll(".btn-reject-owner");
+        const rejectRequestBtns = document.querySelectorAll(".btn-reject-request");
         const rejectModal = document.getElementById("rejectModal");
-        const rejectInput = document.getElementById("rejectOwnerId");
-
-        rejectBtns.forEach(btn => {
+        
+        rejectOwnerBtns.forEach(btn => {
             btn.addEventListener("click", function () {
-                if (rejectInput) {
-                    rejectInput.value = this.dataset.ownerid;
-                }
                 if (rejectModal) {
-                    rejectModal.classList.add("show");
+                    rejectModal.querySelector('form').innerHTML = `
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reject">
+                        <input type="hidden" name="owner_id" value="${this.dataset.ownerid}">
+                        
+                        <div class="modal-header" style="border-bottom-color: var(--danger-bg);">
+                            <h2 style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Suspend Owner</h2>
+                            <button type="button" class="modal-close"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="margin-bottom: 1rem; color: var(--text-muted);">Please confirm you want to suspend this owner.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline modal-close">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Confirm Suspension</button>
+                        </div>
+                    `;
+                    rebindCloseLinks(rejectModal);
+                    rejectModal.classList.add("active");
                 }
             });
         });
 
-        // Add close listeners for all modals
+        rejectRequestBtns.forEach(btn => {
+            btn.addEventListener("click", function () {
+                if (rejectModal) {
+                    rejectModal.querySelector('form').innerHTML = `
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reject">
+                        <input type="hidden" name="request_id" value="${this.dataset.requestid}">
+                        
+                        <div class="modal-header" style="border-bottom-color: var(--danger-bg);">
+                            <h2 style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Reject Registration</h2>
+                            <button type="button" class="modal-close"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="margin-bottom: 1rem; color: var(--text-muted);">Please confirm you want to reject this registration request.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline modal-close">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                        </div>
+                    `;
+                    rebindCloseLinks(rejectModal);
+                    rejectModal.classList.add("active");
+                }
+            });
+        });
+
+        function rebindCloseLinks(modal) {
+            modal.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener("click", function () {
+                    const overlay = this.closest('.modal-overlay');
+                    if (overlay) overlay.classList.remove("active");
+                });
+            });
+        }
+
+        // Initial close listeners
         document.querySelectorAll('.modal-close').forEach(btn => {
             btn.addEventListener("click", function () {
                 const overlay = this.closest('.modal-overlay');
-                if (overlay) overlay.classList.remove("show");
+                if (overlay) overlay.classList.remove("active");
             });
         });
     });

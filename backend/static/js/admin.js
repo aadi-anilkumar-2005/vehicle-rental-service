@@ -106,8 +106,26 @@ document.addEventListener('DOMContentLoaded', () => {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const actionMsg = form.dataset.confirmMsg || "Are you sure you want to perform this action?";
-            if (confirm(actionMsg)) {
-                form.submit();
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Confirm Action',
+                    text: actionMsg,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#4F46E5',
+                    cancelButtonColor: '#64748B',
+                    confirmButtonText: 'Yes, proceed'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            } else {
+                // Fallback if Swal failed to load
+                if (confirm(actionMsg)) {
+                    form.submit();
+                }
             }
         });
     });

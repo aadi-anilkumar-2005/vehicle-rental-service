@@ -35,9 +35,14 @@
             <span>Payments</span>
         </a>
 
-        <a href="{% url 'admin_owner_management' %}" class="menu-item">
+        <a href="{% url 'admin_owner_management' %}" class="menu-item {% if current_page == 'owners' %}active{% endif %}">
             <i class="fas fa-user-shield"></i>
-            <span>Owner Management</span>
+            <span>Pending Registrations</span>
+        </a>
+
+        <a href="{% url 'admin_approved_owners' %}" class="menu-item {% if current_page == 'approved_owners' %}active{% endif %}">
+            <i class="fas fa-users-cog"></i>
+            <span>Approved Owners</span>
         </a>
 
         <a href="{% url 'admin_kyc_management' %}" class="menu-item">

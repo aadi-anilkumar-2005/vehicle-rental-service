@@ -8,6 +8,7 @@ __pycache__/
 
 # custom remove
 *.sqlite3
+media/
 
 # Distribution / packaging
 .Python
