@@ -13,6 +13,34 @@ const getBaseUrl = () => {
 
 const API_BASE_URL = getBaseUrl();
 
+export const makeAbsoluteUrl = (url?: string | null): string => {
+  if (!url) return "";
+
+  const origin = API_BASE_URL.replace(/\/api\/?$/, "");
+
+  // If the backend returns a full URL with localhost or 127.0.0.1, replace the host
+  // with our dynamic origin (which has the correct IP for the device/emulator).
+  if (url.startsWith("http://localhost") || url.startsWith("http://127.0.0.1")) {
+    try {
+      const urlPath = url.replace(/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, "");
+      return `${origin}${urlPath}`;
+    } catch (e) {
+      // ignore parsing errors
+    }
+  }
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("file://") ||
+    url.startsWith("data:")
+  ) {
+    return url;
+  }
+  const prefix = url.startsWith("/") ? "" : "/";
+  return `${origin}${prefix}${url}`;
+};
+
 export const api = {
   async getVehicles(): Promise<Vehicle[]> {
     const response = await fetch(`${API_BASE_URL}/vehicles/`);
@@ -223,7 +251,7 @@ const mapBackendVehicleToFrontend = (data: any): Vehicle => {
     brand: data.brand,
     model: data.model,
     number: data.number,
-    images: data.images || [],
+    images: (data.images || []).map(makeAbsoluteUrl),
     pricePerHour: parseFloat(data.price_per_hour),
     pricePerDay: parseFloat(data.price_per_day),
     fuelType: data.fuel_type,
@@ -243,7 +271,7 @@ const mapBackendShopToFrontend = (data: any): RentalShop => {
     latitude: data.latitude,
     longitude: data.longitude,
     phone: data.phone,
-    image: data.image,
+    image: makeAbsoluteUrl(data.image),
     rating: data.rating,
     reviewCount: data.review_count,
     operatingHours: data.operating_hours,
@@ -307,7 +335,7 @@ const mapMessage = (data: any, myUserId: string): ChatMessage => ({
   senderName: data.sender_name ?? "",
   senderRole: data.sender_role,
   text: data.text ?? "",
-  imageUrl: data.image_url ?? undefined,
+  imageUrl: data.image_url ? makeAbsoluteUrl(data.image_url) : undefined,
   isRead: data.is_read,
   createdAt: data.created_at,
   sender: data.sender_id.toString() === myUserId ? "me" : "them",

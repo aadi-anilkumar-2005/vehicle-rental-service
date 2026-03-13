@@ -7,11 +7,14 @@ class RentalShop(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
     phone = models.CharField(max_length=20, blank=True, null=True)
-    image = models.URLField(blank=True, null=True)
+    image = models.ImageField(upload_to='owner_img/', blank=True, null=True)
     rating = models.FloatField(default=0.0)
     review_count = models.IntegerField(default=0)
     operating_hours = models.CharField(max_length=100, blank=True, null=True)
     is_open = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'rental_shop'
 
     def __str__(self):
         return self.name
@@ -35,9 +38,12 @@ class Vehicle(models.Model):
     seating = models.IntegerField(null=True, blank=True)
     is_available = models.BooleanField(default=True)
 
+    class Meta:
+        db_table = 'vehicle'
+
     @property
     def images(self):
-        return [img.image_url for img in self.image_set.all()]
+        return [img.image.url for img in self.image_set.all() if img.image]
 
     @property
     def features(self):
@@ -48,7 +54,10 @@ class Vehicle(models.Model):
 
 class VehicleImage(models.Model):
     vehicle = models.ForeignKey(Vehicle, related_name='image_set', on_delete=models.CASCADE)
-    image_url = models.URLField(max_length=500)
+    image = models.ImageField(upload_to='vehicles_img/')
+
+    class Meta:
+        db_table = 'vehicle_image'
 
     def __str__(self):
         return f"Image for {self.vehicle.brand} {self.vehicle.model}"
@@ -56,6 +65,9 @@ class VehicleImage(models.Model):
 class VehicleFeature(models.Model):
     vehicle = models.ForeignKey(Vehicle, related_name='feature_set', on_delete=models.CASCADE)
     feature_name = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = 'vehicle_feature'
 
     def __str__(self):
         return self.feature_name
@@ -116,6 +128,7 @@ class Booking(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = 'booking'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -130,6 +143,9 @@ class UserSettings(models.Model):
     payment_alerts = models.BooleanField(default=True)
     promotions = models.BooleanField(default=True)
     reminders = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'user_settings'
 
     def __str__(self):
         return f"{self.user.username}'s settings"
@@ -151,6 +167,9 @@ class PaymentMethod(models.Model):
     is_default = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'payment_method'
+
     def __str__(self):
         return f"{self.name} - {self.user.username}"
 
@@ -169,6 +188,9 @@ class SavedLocation(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'saved_location'
 
     def __str__(self):
         return f"{self.name} - {self.user.username}"
@@ -203,6 +225,9 @@ class KYCDocument(models.Model):
     reviewed_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name='kyc_reviews'
     )
+
+    class Meta:
+        db_table = 'kyc_document'
 
     @property
     def full_name(self):
@@ -242,6 +267,7 @@ class Conversation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = 'conversation'
         ordering = ['-updated_at']
 
     def __str__(self):
@@ -282,6 +308,7 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = 'message'
         ordering = ['created_at']
 
     def __str__(self):
@@ -300,7 +327,11 @@ class UserProfile(models.Model):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     address = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='user_img/', blank=True, null=True)
     
+    class Meta:
+        db_table = 'user_profile'
+
     def __str__(self):
         return f"{self.user.username} - {self.role}"
 
@@ -331,6 +362,7 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = 'review'
         ordering = ['-created_at']
         unique_together = ('user', 'shop')
 
@@ -369,6 +401,7 @@ class Complaint(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = 'complaint'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -382,6 +415,7 @@ class FavoriteShop(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = 'favorite_shop'
         unique_together = ('user', 'shop')
         ordering = ['-created_at']
 
@@ -413,6 +447,7 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
+        db_table = 'notification'
         app_label = 'rentals'
         ordering = ['-created_at']
         
@@ -438,6 +473,9 @@ class OwnerRegistrationRequest(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'owner_registration_request'
 
     def __str__(self):
         return f"{self.shop_name} - {self.owner_name} ({self.status})"

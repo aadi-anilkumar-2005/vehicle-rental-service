@@ -24,6 +24,9 @@ class StaffTask(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        db_table = 'staff_task'
+
     def __str__(self):
         return f"Task #{self.id} - {self.type} - {self.staff.username}"
 

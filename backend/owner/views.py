@@ -315,9 +315,9 @@ def vehicle_management_view(request):
                 features = [f.strip() for f in request.POST.get('features', '').split(',') if f.strip()]
                 for f in features:
                     VehicleFeature.objects.create(vehicle=vehicle, feature_name=f)
-                images = [i.strip() for i in request.POST.get('images', '').split(',') if i.strip()]
-                for i in images:
-                    VehicleImage.objects.create(vehicle=vehicle, image_url=i)
+                images = request.FILES.getlist('images')
+                for img in images:
+                    VehicleImage.objects.create(vehicle=vehicle, image=img)
                 messages.success(request, f"Vehicle {request.POST.get('name')} added successfully!")
             except Exception as e:
                 messages.error(request, f"Error adding vehicle: {str(e)}")
@@ -345,10 +345,11 @@ def vehicle_management_view(request):
                 for f in features:
                     VehicleFeature.objects.create(vehicle=vehicle, feature_name=f)
                     
-                vehicle.image_set.all().delete()
-                images = [i.strip() for i in request.POST.get('images', '').split(',') if i.strip()]
-                for i in images:
-                    VehicleImage.objects.create(vehicle=vehicle, image_url=i)
+                images = request.FILES.getlist('images')
+                if images:
+                    vehicle.image_set.all().delete()
+                    for img in images:
+                        VehicleImage.objects.create(vehicle=vehicle, image=img)
                 messages.success(request, f"Vehicle {vehicle.name} updated successfully!")
             except Exception as e:
                 messages.error(request, f"Error updating vehicle: {str(e)}")
@@ -393,6 +394,10 @@ def profile_view(request):
                 
                 profile = user.user_profile
                 profile.phone = request.POST.get('phone', profile.phone)
+                
+                if 'profile_picture' in request.FILES:
+                    profile.profile_picture = request.FILES.get('profile_picture')
+                    
                 profile.save()
                 
                 messages.success(request, "General profile updated successfully!")
@@ -411,6 +416,9 @@ def profile_view(request):
                 lng = request.POST.get('longitude')
                 if lat: shop.latitude = float(lat)
                 if lng: shop.longitude = float(lng)
+                
+                if 'image' in request.FILES:
+                    shop.image = request.FILES.get('image')
                 
                 shop.save()
                 messages.success(request, "Shop information updated successfully!")

@@ -34,9 +34,14 @@
 <div class="card border-0 mb-4 pb-0">
     <div class="profile-header mb-5">
         <div class="profile-avatar-wrapper position-relative">
-            <img src="https://ui-avatars.com/api/?name=Admin&background=4F46E5&color=fff&size=200"
-                alt="User Profile Image">
-            <button class="profile-avatar-btn"><i class="bi bi-camera-fill fs-6"></i></button>
+            {% if request.user.user_profile.profile_picture %}
+                <img src="{{ request.user.user_profile.profile_picture.url }}" alt="User Profile Image">
+            {% else %}
+                <img src="https://ui-avatars.com/api/?name={% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}&background=4F46E5&color=fff&size=200" alt="User Profile Image">
+            {% endif %}
+            <button type="button" class="profile-avatar-btn" onclick="document.getElementById('profilePictureInput').click()">
+                <i class="bi bi-camera-fill fs-6"></i>
+            </button>
         </div>
     </div>
     <div class="px-4 pb-2" style="margin-top: -10px;">
@@ -65,9 +70,10 @@
         <div class="tab-content" id="profileTabsContent">
             <!-- General Info -->
             <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-                <form id="profileForm" method="POST" action="{% url 'owner_profile' %}">
+                <form id="profileForm" method="POST" action="{% url 'owner_profile' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="update_general">
+                    <input type="file" id="profilePictureInput" name="profile_picture" style="display: none;" accept="image/*" onchange="previewImage(this)">
                     <div class="row g-4">
                         <div class="col-md-6 form-group mb-0">
                             <label for="firstName" class="form-label">First Name</label>
@@ -99,7 +105,7 @@
 
             <!-- Shop Info -->
             <div class="tab-pane fade" id="shop" role="tabpanel" aria-labelledby="shop-tab">
-                <form id="shopForm" method="POST" action="{% url 'owner_profile' %}">
+                <form id="shopForm" method="POST" action="{% url 'owner_profile' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="update_shop">
                     <div class="row g-4">
@@ -107,6 +113,13 @@
                             <label for="shopName" class="form-label">Shop Name</label>
                             <input type="text" class="form-control" name="shop_name" id="shopName"
                                 value="{{ shop.name }}" required>
+                        </div>
+                        <div class="col-md-12 form-group mb-0">
+                            <label for="shopImage" class="form-label">Shop Image</label>
+                            <input type="file" class="form-control" name="image" id="shopImage" accept="image/*">
+                            {% if shop.image %}
+                            <small class="text-muted d-block mt-2">Current image: <a href="{{ shop.image.url }}" target="_blank">View image</a></small>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 form-group mb-0">
                             <label for="operatingHours" class="form-label">Operating Hours</label>
@@ -166,4 +179,16 @@
         </div>
     </div>
 </div>
+
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            document.querySelector('.profile-avatar-wrapper img').src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 {% endblock %}

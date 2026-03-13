@@ -103,7 +103,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <form method="POST" action="{% url 'owner_vehicles' %}">
+                <form method="POST" action="{% url 'owner_vehicles' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="add">
                     <div class="row g-3">
@@ -164,9 +164,8 @@
                                 placeholder="GPS, Bluetooth">
                         </div>
                         <div class="col-12 form-group mb-3">
-                            <label for="vehicleImages" class="form-label">Image URLs (Comma-separated)</label>
-                            <textarea class="form-control" name="images" id="vehicleImages" rows="2"
-                                placeholder="https://image1.jpg, https://image2.jpg"></textarea>
+                            <label for="vehicleImages" class="form-label">Vehicle Images</label>
+                            <input type="file" class="form-control" name="images" id="vehicleImages" accept="image/*" multiple>
                         </div>
                         <div class="col-12 form-check mb-2">
                             <input class="form-check-input" name="is_available" type="checkbox" id="isAvailable"
@@ -193,7 +192,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <form method="POST" action="{% url 'owner_vehicles' %}">
+                <form method="POST" action="{% url 'owner_vehicles' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="edit">
                     <input type="hidden" name="vehicle_id" id="editVehicleId">
@@ -248,8 +247,9 @@
                             <input type="text" name="features" class="form-control" id="editVehicleFeatures">
                         </div>
                         <div class="col-12 form-group mb-3">
-                            <label for="editVehicleImages" class="form-label">Image URLs (Comma-separated)</label>
-                            <textarea class="form-control" name="images" id="editVehicleImages" rows="2"></textarea>
+                            <label for="editVehicleImages" class="form-label">Vehicle Images</label>
+                            <input type="file" class="form-control" name="images" id="editVehicleImages" accept="image/*" multiple>
+                            <small class="text-muted">Leave empty to keep existing images.</small>
                         </div>
                         <div class="col-12 form-check mb-2">
                             <input class="form-check-input" name="is_available" type="checkbox" id="editIsAvailable">
@@ -315,7 +315,7 @@
     }
     document.querySelectorAll('.edit-vehicle-btn').forEach(btn => {
         btn.addEventListener('click', function () {
-            ['editVehicleId', 'id', 'editVehicleType', 'type', 'editVehicleName', 'name', 'editVehicleBrand', 'brand', 'editVehicleModel', 'model', 'editVehicleRegNumber', 'number', 'editPricePerHour', 'price_per_hour', 'editPricePerDay', 'price_per_day', 'editFuelType', 'fuel_type', 'editTransmission', 'transmission', 'editSeating', 'seating', 'editVehicleFeatures', 'features', 'editVehicleImages', 'images'].reduce((a, v, i, arr) => {
+            ['editVehicleId', 'id', 'editVehicleType', 'type', 'editVehicleName', 'name', 'editVehicleBrand', 'brand', 'editVehicleModel', 'model', 'editVehicleRegNumber', 'number', 'editPricePerHour', 'price_per_hour', 'editPricePerDay', 'price_per_day', 'editFuelType', 'fuel_type', 'editTransmission', 'transmission', 'editSeating', 'seating', 'editVehicleFeatures', 'features'].reduce((a, v, i, arr) => {
                 if (i % 2 === 0) { const el = document.getElementById(v); if (el) el.value = this.dataset[arr[i + 1]]; }
                 return a;
             }, null, null);
