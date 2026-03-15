@@ -68,8 +68,7 @@
                                     <i class="bi bi-car-front-fill fs-5"></i>
                                 </div>
                                 <div>
-                                    <div class="font-bold text-dark">{{ booking.vehicle.brand }} {{
-                                        booking.vehicle.model }}</div>
+                                    <div class="font-bold text-dark">{{ booking.vehicle.brand }} {{ booking.vehicle.model }}</div>
                                     <div class="small text-muted text-uppercase"
                                         style="font-size:0.7rem;letter-spacing:0.5px;"><i
                                             class="bi bi-info-circle me-1"></i>Reg: {{ booking.vehicle.number }}</div>
@@ -81,8 +80,7 @@
                                 <img src="https://ui-avatars.com/api/?name={{ booking.user.first_name|default:booking.user.username|urlencode }}&background=random&color=fff&rounded=true"
                                     width="36" height="36" alt="Avatar" class="shadow-sm">
                                 <div>
-                                    <div class="font-semibold text-dark">{{ booking.user.first_name }} {{
-                                        booking.user.last_name }}</div>
+                                    <div class="font-semibold text-dark">{{ booking.user.first_name }} {{ booking.user.last_name }}</div>
                                     <div class="small text-muted">{{ booking.user.email }}</div>
                                 </div>
                             </div>
@@ -91,14 +89,12 @@
                             <div class="d-flex align-items-center gap-2">
                                 <div class="d-flex flex-column">
                                     <span class="small font-medium text-dark">{{ booking.start_date|date:"M d" }}</span>
-                                    <span class="text-muted" style="font-size:0.7rem;">{{ booking.start_date|time:"H:i"
-                                        }}</span>
+                                    <span class="text-muted" style="font-size:0.7rem;">{{ booking.start_date|time:"H:i" }}</span>
                                 </div>
                                 <i class="bi bi-arrow-right text-muted mx-2"></i>
                                 <div class="d-flex flex-column">
                                     <span class="small font-medium text-dark">{{ booking.end_date|date:"M d" }}</span>
-                                    <span class="text-muted" style="font-size:0.7rem;">{{ booking.end_date|time:"H:i"
-                                        }}</span>
+                                    <span class="text-muted" style="font-size:0.7rem;">{{ booking.end_date|time:"H:i" }}</span>
                                 </div>
                             </div>
                         </td>
@@ -121,8 +117,7 @@
                                     style="width:32px;height:32px;font-size:12px;border-radius:50%;">
                                     {{ task.staff.first_name|first|default:task.staff.username|first|upper }}
                                 </div>
-                                <span class="small fw-medium text-dark">{{ task.staff.first_name }} {{
-                                    task.staff.last_name }}</span>
+                                <span class="small fw-medium text-dark">{{ task.staff.first_name }} {{ task.staff.last_name }}</span>
                             </div>
                             {% else %}
                             <span class="badge bg-light text-muted border px-2 py-1"><i
@@ -201,8 +196,7 @@
                             id="assignStaffSelect" required>
                             <option value="">Choose staff member...</option>
                             {% for staff in staff_members %}
-                            <option value="{{ staff.id }}">{{ staff.first_name }} {{ staff.last_name }} ({{
-                                staff.user_profile.role|title }})</option>
+                            <option value="{{ staff.id }}">{{ staff.first_name }} {{ staff.last_name }} ({{ staff.user_profile.role|title }})</option>
                             {% endfor %}
                         </select>
                         <div class="form-text mt-2 text-muted small"><i class="bi bi-info-circle me-1"></i>Only

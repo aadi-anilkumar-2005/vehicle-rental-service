@@ -3,10 +3,12 @@ import { CommonActions, useNavigation } from "@react-navigation/native";
 import { Calendar, Home, Search, User } from "lucide-react-native";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const BottomNav = (props: Partial<BottomTabBarProps>) => {
   const nativeNavigation = useNavigation();
   const { state, descriptors, navigation } = props;
+  const insets = useSafeAreaInsets();
 
   const getRouteConfig = (routeName: string) => {
     switch (routeName) {
@@ -37,7 +39,7 @@ export const BottomNav = (props: Partial<BottomTabBarProps>) => {
     ];
 
     return (
-      <View style={styles.navContainer}>
+      <View style={[styles.navContainer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <View style={styles.navContent}>
           {navItems.map((item) => (
             <TouchableOpacity
@@ -62,7 +64,7 @@ export const BottomNav = (props: Partial<BottomTabBarProps>) => {
 
   // Tab navigator mode
   return (
-    <View style={styles.navContainer}>
+    <View style={[styles.navContainer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
       <View style={styles.navContent}>
         {state.routes.map((route, index) => {
           const { options } = descriptors![route.key];
@@ -138,7 +140,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#0f172a",
     borderTopWidth: 1,
     borderTopColor: "#1e293b",
-    paddingBottom: 20,
     paddingTop: 12,
   },
 

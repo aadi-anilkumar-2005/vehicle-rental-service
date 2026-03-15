@@ -85,14 +85,12 @@
                                     style="width: 32px; height: 32px; font-size: 14px;">
                                     {{ booking.user.first_name|first|default:booking.user.username|first|upper }}
                                 </div>
-                                <span class="font-medium">{{ booking.user.first_name }} {{ booking.user.last_name
-                                    }}</span>
+                                <span class="font-medium">{{ booking.user.first_name }} {{ booking.user.last_name }}</span>
                             </div>
                         </td>
                         <td>{{ booking.vehicle.brand }} {{ booking.vehicle.model }}</td>
                         <td><span
-                                class="badge {% if booking.status == 'active' %}bg-success{% elif booking.status == 'upcoming' %}bg-warning{% elif booking.status == 'completed' %}bg-secondary{% else %}bg-danger{% endif %}">{{
-                                booking.get_status_display }}</span></td>
+                                class="badge {% if booking.status == 'active' %}bg-success{% elif booking.status == 'upcoming' %}bg-warning{% elif booking.status == 'completed' %}bg-secondary{% else %}bg-danger{% endif %}">{{ booking.get_status_display }}</span></td>
                         <td class="text-muted">{{ booking.created_at|date:"Y-m-d" }}</td>
                     </tr>
                     {% empty %}
