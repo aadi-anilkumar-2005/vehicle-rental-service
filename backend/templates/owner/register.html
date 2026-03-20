@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<<<<<<< HEAD
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -99,11 +98,11 @@
                     <div class="row g-3 mb-3">
                         <div class="col-sm-6">
                             <label class="form-label fw-semibold small">Email Address</label>
-                            <input type="email" class="form-control" id="email" placeholder="example@gmail.com" required />
+                            <input type="email" class="form-control" id="email" placeholder="admin@rentxplore.com" required />
                         </div>
                         <div class="col-sm-6">
                             <label class="form-label fw-semibold small">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" placeholder="enter phone number" required />
+                            <input type="tel" class="form-control" id="phone" placeholder="9876543210" required />
                         </div>
                     </div>
 
@@ -111,14 +110,14 @@
                         <div class="col-sm-6">
                             <label class="form-label fw-semibold small">Password</label>
                             <div class="input-group">
-                                <input type="password" class="form-control border-end-0" id="password" placeholder="create password" required />
+                                <input type="password" class="form-control border-end-0" id="password" placeholder="Create password" required />
                                 <button class="btn btn-outline-secondary border-start-0" type="button" id="togglePassword"><i class="bi bi-eye"></i></button>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <label class="form-label fw-semibold small">Confirm Password</label>
                             <div class="input-group">
-                                <input type="password" class="form-control border-end-0" id="confirmPassword" placeholder="confirm password" required />
+                                <input type="password" class="form-control border-end-0" id="confirmPassword" placeholder="Repeat password" required />
                                 <button class="btn btn-outline-secondary border-start-0" type="button" id="toggleConfirmPassword"><i class="bi bi-eye"></i></button>
                             </div>
                         </div>
@@ -188,293 +187,6 @@
             const btn = document.getElementById("registerBtn");
             const originalBtnText = btn.innerHTML;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registering...';
-=======
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Vehicle Rental - Partner Registration</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-
-</head>
-
-
-<body>
-
-    <div class="auth-split">
-
-        <!-- LEFT PANEL -->
-        <div class="auth-split-left">
-
-            <i class="bi bi-car-front-fill mb-4" style="font-size:3rem;"></i>
-
-            <h1 class="font-bold mb-4" style="font-size:2.5rem; line-height:1.2;">
-                Join our growing <br>rental network
-            </h1>
-
-            <p class="mb-5 opacity-75" style="max-width:400px;">
-                Manage your fleet, staff, and bookings all in one place with our comprehensive dashboard.
-            </p>
-
-            <div class="d-flex flex-column gap-3">
-
-                <div class="d-flex align-items-center gap-3">
-                    <div class="bg-white bg-opacity-10 p-2 rounded-circle">
-                        <i class="bi bi-check-lg"></i>
-                    </div>
-                    <span>Streamlined Fleet Management</span>
-                </div>
-
-                <div class="d-flex align-items-center gap-3">
-                    <div class="bg-white bg-opacity-10 p-2 rounded-circle">
-                        <i class="bi bi-check-lg"></i>
-                    </div>
-                    <span>Real-time Booking Insights</span>
-                </div>
-
-                <div class="d-flex align-items-center gap-3">
-                    <div class="bg-white bg-opacity-10 p-2 rounded-circle">
-                        <i class="bi bi-check-lg"></i>
-                    </div>
-                    <span>Secure Staff Coordination</span>
-                </div>
-
-            </div>
-        </div>
-
-
-
-        <!-- RIGHT PANEL -->
-        <div class="auth-split-right">
-
-            <div style="width:100%; max-width:480px;">
-
-                <div class="mb-5">
-                    <h2 class="font-bold mb-2">Create an Account</h2>
-                    <p class="text-muted">Fill in your details to register your shop</p>
-                </div>
-
-
-
-                <form id="registerForm">
-
-                    <div class="row g-3 mb-3">
-
-                        <div class="col-sm-6">
-                            <label class="form-label">Shop Name</label>
-                            <input type="text" class="form-control" id="shopName" required>
-                        </div>
-
-                        <div class="col-sm-6">
-                            <label class="form-label">Owner Name</label>
-                            <input type="text" class="form-control" id="ownerName" required>
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="form-group mb-3">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" class="form-control" id="email" required>
-                    </div>
-
-
-
-                    <div class="form-group mb-3">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone" required>
-                    </div>
-
-
-
-                    <!-- PASSWORD SECTION -->
-
-                    <div class="row g-3 mb-3">
-
-                        <div class="col-sm-6">
-
-                            <label class="form-label">Password</label>
-
-                            <div class="input-group">
-
-                                <input type="password" class="form-control" id="password" required>
-
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
-
-                        <div class="col-sm-6">
-
-                            <label class="form-label">Confirm Password</label>
-
-                            <div class="input-group">
-
-                                <input type="password" class="form-control" id="confirmPassword" required>
-
-                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div class="form-group mb-3">
-                        <label class="form-label">Business Certificate ID</label>
-                        <input type="text" class="form-control" id="certificateId" placeholder="e.g. CERT-12345"
-                            required>
-                    </div>
-
-
-
-                    <div class="form-group mb-4">
-
-                        <label class="form-label">Upload Shop License/Certificate</label>
-
-                        <input type="file" class="form-control" id="licenseFile" accept=".pdf,.jpg,.jpeg,.png" required>
-
-                        <div class="form-text text-muted small">
-                            Accepted formats: PDF, JPG, PNG (Max 5MB)
-                        </div>
-
-                        <div id="fileName" class="small text-success fw-semibold mt-1"></div>
-
-                    </div>
-
-
-
-                    <div class="form-check mb-4">
-
-                        <input class="form-check-input" type="checkbox" id="terms" required>
-
-                        <label class="form-check-label text-muted small">
-                            I agree to the Terms and Conditions
-                        </label>
-
-                    </div>
-
-
-
-                    <button type="submit" class="btn btn-primary w-100 py-2 mb-4" id="registerBtn">
-                        Create Account
-                    </button>
-
-
-
-                    <div class="text-center">
-                        <p class="text-muted small">
-                            Already have an account?
-                            <a href="{% url 'owner_login' %}" class="text-primary fw-semibold">Sign In</a>
-                        </p>
-                    </div>
-
-                </form>
-
-            </div>
-        </div>
-
-    </div>
-
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
-
-    <script>
-
-        /* FILE NAME PREVIEW */
-
-        document.getElementById("licenseFile").addEventListener("change", function (e) {
-
-            const fileName = e.target.files[0]?.name || "";
-            document.getElementById("fileName").textContent = fileName ? "Selected: " + fileName : "";
-
-        });
-
-
-
-        /* PASSWORD TOGGLE */
-
-        const togglePassword = document.getElementById("togglePassword");
-        const password = document.getElementById("password");
-
-        togglePassword.addEventListener("click", function () {
-
-            const type = password.type === "password" ? "text" : "password";
-            password.type = type;
-
-            this.querySelector("i").classList.toggle("bi-eye");
-            this.querySelector("i").classList.toggle("bi-eye-slash");
-
-        });
-
-
-
-        /* CONFIRM PASSWORD TOGGLE */
-
-        const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
-        const confirmPassword = document.getElementById("confirmPassword");
-
-        toggleConfirmPassword.addEventListener("click", function () {
-
-            const type = confirmPassword.type === "password" ? "text" : "password";
-            confirmPassword.type = type;
-
-            this.querySelector("i").classList.toggle("bi-eye");
-            this.querySelector("i").classList.toggle("bi-eye-slash");
-
-        });
-
-
-
-        /* FORM SUBMIT */
-
-        document.getElementById("registerForm").addEventListener("submit", function (e) {
-
-            e.preventDefault();
-
-            const passwordValue = password.value;
-            const confirmValue = confirmPassword.value;
-
-            if (passwordValue !== confirmValue) {
-
-                Swal.fire({
-                    icon: "error",
-                    title: "Passwords do not match"
-                });
-
-                return;
-
-            }
-
-
-
-            const btn = document.getElementById("registerBtn");
-
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registering...';
-
->>>>>>> 9a45d5ff7d5c5a7578b1ebf61997834118e6e3a9
             btn.disabled = true;
 
             const formData = new FormData();
@@ -482,11 +194,7 @@
             formData.append("ownerName", document.getElementById("ownerName").value);
             formData.append("email", document.getElementById("email").value);
             formData.append("phone", document.getElementById("phone").value);
-<<<<<<< HEAD
             formData.append("password", pass);
-=======
-            formData.append("password", passwordValue);
->>>>>>> 9a45d5ff7d5c5a7578b1ebf61997834118e6e3a9
             formData.append("certificateId", document.getElementById("certificateId").value);
             
             const fileInput = document.getElementById("licenseFile");
@@ -497,7 +205,6 @@
             fetch("{% url 'owner_register' %}", {
                 method: "POST",
                 headers: {
-<<<<<<< HEAD
                     "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
                 body: formData
@@ -523,50 +230,3 @@
     </script>
 </body>
 </html>
-=======
-                    "X-CSRFToken": "{{ csrf_token }}"
-                },
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    btn.innerHTML = 'Create Account';
-                    btn.disabled = false;
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Success!",
-                            text: data.success,
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = "{% url 'owner_login' %}";
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Registration Failed",
-                            text: data.error || "An unknown error occurred."
-                        });
-                    }
-                })
-                .catch(err => {
-                    btn.innerHTML = 'Create Account';
-                    btn.disabled = false;
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "Could not connect to the server."
-                    });
-                });
-
-        });
-
-    </script>
-
-</body>
-
-</html>
-```
->>>>>>> 9a45d5ff7d5c5a7578b1ebf61997834118e6e3a9
