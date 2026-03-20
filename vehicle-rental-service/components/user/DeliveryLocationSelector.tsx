@@ -1,14 +1,6 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  SafeAreaView,
-  Alert,
-  TextInput,
-} from "react-native";
+import { StyleSheet, View, Text, Modal, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { MapPin, Navigation, X, Check } from "lucide-react-native";
 
 import { SavedLocation } from "@/services/api";

@@ -1,3 +1,4 @@
+import { getImageSource } from '@/lib/utils';
 import { chatApi, ChatMessage } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -262,7 +263,7 @@ export default function ChatDetail() {
                   onPress={() => setSelectedImage(item.imageUrl!)}
                 >
                   <Image
-                    source={{ uri: item.imageUrl }}
+                    source={getImageSource(item.imageUrl)}
                     style={{ width: 200, height: 200, borderRadius: 8 }}
                     resizeMode="cover"
                   />
@@ -353,7 +354,7 @@ export default function ChatDetail() {
           >
             {selectedImage && (
               <Image
-                source={{ uri: selectedImage }}
+                source={getImageSource(selectedImage)}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="contain"
               />

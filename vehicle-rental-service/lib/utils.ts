@@ -12,3 +12,9 @@ export function formatCurrency(amount: number | string): string {
   // Format as Indian format (e.g., 1,00,000)
   return `₹ ${numberAmount.toLocaleString("en-IN")}`;
 }
+
+export function getImageSource(uri?: string | null) {
+  return uri && uri.trim() !== ""
+    ? { uri }
+    : require("../assets/images/imageNotFound.png");
+}

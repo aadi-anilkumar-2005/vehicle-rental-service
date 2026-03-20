@@ -34,7 +34,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getImageSource } from '@/lib/utils';
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -114,7 +114,7 @@ export default function VehicleDetails() {
         {/* Image Gallery */}
         <View style={styles.imageGalleryContainer}>
           <Image
-            source={{ uri: vehicle.images[activeImageIndex] }}
+            source={getImageSource(vehicle.images[activeImageIndex])}
             style={styles.mainImage}
             resizeMode="cover"
           />

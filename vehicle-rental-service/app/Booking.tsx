@@ -33,9 +33,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { DeliveryLocationSelector } from "@/components/user/DeliveryLocationSelector";
 
 import { PaymentMethod, SavedLocation } from "@/services/api";
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getImageSource } from '@/lib/utils';
 
-type DeliveryOption = "pickup" | "delivery";
+type DeliveryOption = "delivery";
 
 export default function Booking() {
   const navigation = useNavigation();
@@ -57,6 +57,7 @@ export default function Booking() {
 
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [kycVerified, setKycVerified] = useState(false);
 
   // Calendar State
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -67,7 +68,7 @@ export default function Booking() {
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
 
   const [deliveryOption, setDeliveryOption] =
-    useState<DeliveryOption>("pickup");
+    useState<DeliveryOption>("delivery");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [showDeliverySelector, setShowDeliverySelector] = useState(false);
 
@@ -76,6 +77,25 @@ export default function Booking() {
       const fetchData = async () => {
         try {
           if (!id) throw new Error("No vehicle ID provided");
+
+          // Check KYC status first
+          const kycData = await profileApi.getKYCDocument();
+          if (kycData.status !== "verified") {
+            Alert.alert(
+              "KYC Verification Required",
+              "You need to complete KYC verification before booking a vehicle. Please verify your identity in your profile.",
+              [
+                {
+                  text: "Complete KYC",
+                  onPress: () => router.push("/user/KYCVerification"),
+                },
+                { text: "Cancel", onPress: () => navigation.goBack() },
+              ]
+            );
+            return;
+          }
+          setKycVerified(true);
+
           const vehicleData = await api.getVehicle(id);
           setVehicle(vehicleData);
           if (vehicleData.shopId) {
@@ -202,7 +222,7 @@ export default function Booking() {
   };
 
   const handleConfirmBooking = async () => {
-    if (deliveryOption === "delivery" && !deliveryAddress) {
+    if (!deliveryAddress) {
       Alert.alert("Error", "Please set a delivery location");
       return;
     }
@@ -227,9 +247,8 @@ export default function Booking() {
         booking_type: bookingType as "hour" | "day",
         start_date: startDateTime.toISOString(),
         duration: duration,
-        delivery_option: deliveryOption,
-        delivery_address:
-          deliveryOption === "delivery" ? deliveryAddress : undefined,
+        delivery_option: "delivery" as const,
+        delivery_address: deliveryAddress,
         payment_method:
           savedPaymentMethods.find((p) => p.id === paymentMethodId)?.type ||
           "card",
@@ -279,7 +298,7 @@ export default function Booking() {
         <View style={styles.card}>
           <View style={styles.row}>
             <Image
-              source={{ uri: vehicle.images[0] }}
+              source={getImageSource(vehicle.images[0])}
               style={styles.vehicleImage}
             />
             <View style={styles.vehicleInfo}>
@@ -509,61 +528,21 @@ export default function Booking() {
             <Truck size={20} color="#2dd4bf" />
             <Text style={styles.sectionTitle}>Vehicle Delivery</Text>
           </View>
-          <View style={styles.grid}>
-            <TouchableOpacity
-              onPress={() => setDeliveryOption("pickup")}
-              style={[
-                styles.gridItemHalf,
-                deliveryOption === "pickup"
-                  ? styles.outlineActive
-                  : styles.outlineInactive,
-              ]}
-            >
-              <Text
-                style={
-                  deliveryOption === "pickup"
-                    ? styles.outlineTextActive
-                    : styles.outlineTextInactive
-                }
-              >
-                Self Pickup
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setDeliveryOption("delivery");
-                if (!deliveryAddress) setShowDeliverySelector(true);
-              }}
-              style={[
-                styles.gridItemHalf,
-                deliveryOption === "delivery"
-                  ? styles.outlineActive
-                  : styles.outlineInactive,
-              ]}
-            >
-              <Text
-                style={
-                  deliveryOption === "delivery"
-                    ? styles.outlineTextActive
-                    : styles.outlineTextInactive
-                }
-              >
-                Home Delivery (+{formatCurrency(10)})
-              </Text>
-            </TouchableOpacity>
+          <View style={[styles.outlineActive, { paddingVertical: 12, alignItems: "center" }]}>
+            <Text style={styles.outlineTextActive}>
+              Home Delivery (+{formatCurrency(10)})
+            </Text>
           </View>
 
-          {deliveryOption === "delivery" && (
-            <TouchableOpacity
-              onPress={() => setShowDeliverySelector(true)}
-              style={styles.locationSelectorBtn}
-            >
-              <MapPin size={20} color="#2dd4bf" />
-              <Text style={styles.locationSelectorText}>
-                {deliveryAddress || "Set delivery location..."}
-              </Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            onPress={() => setShowDeliverySelector(true)}
+            style={styles.locationSelectorBtn}
+          >
+            <MapPin size={20} color="#2dd4bf" />
+            <Text style={styles.locationSelectorText}>
+              {deliveryAddress || "Set delivery location..."}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Price summary */}
@@ -791,32 +770,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
   },
-  gridItemHalf: {
-    width: "48%",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
   outlineActive: {
     backgroundColor: "rgba(45, 212, 191, 0.05)",
     borderWidth: 1,
     borderColor: "#2dd4bf",
     borderRadius: 12,
   },
-  outlineInactive: {
-    backgroundColor: "#1e293b",
-    borderWidth: 1,
-    borderColor: "#334155",
-    borderRadius: 12,
-  },
   outlineTextActive: {
     color: "#2dd4bf",
     fontWeight: "600",
-    fontSize: 14,
-  },
-  outlineTextInactive: {
-    color: "#94a3b8",
-    fontWeight: "500",
     fontSize: 14,
   },
   durationControl: { flexDirection: "row", alignItems: "center", gap: 16 },

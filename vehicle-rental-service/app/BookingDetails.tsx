@@ -33,7 +33,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api, profileApi, SavedLocation } from "@/services/api";
 import { Booking } from "@/types";
 import { DeliveryLocationSelector } from "@/components/user/DeliveryLocationSelector";
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getImageSource } from '@/lib/utils';
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -238,7 +238,7 @@ export default function BookingDetails() {
           <View style={styles.card}>
             <View style={styles.vehicleCardContent}>
               <Image
-                source={{ uri: booking.vehicle.images[0] }}
+                source={getImageSource(booking.vehicle.images[0])}
                 style={styles.vehicleImage}
               />
               <View style={styles.vehicleInfo}>
@@ -327,7 +327,7 @@ export default function BookingDetails() {
             <Text style={styles.sectionTitle}>Pickup Location</Text>
             <View style={styles.shopContainer}>
               <Image
-                source={{ uri: booking.shop.image }}
+                source={getImageSource(booking.shop.image)}
                 style={styles.shopImage}
               />
               <View style={styles.shopInfo}>

@@ -326,7 +326,7 @@ def vehicle_management_view(request):
                     fuel_type=fuel_type,
                     transmission=transmission,
                     seating=int(seating) if seating else None,
-                    is_available=request.POST.get('is_available', '') == 'on'
+                    is_available=True  # Always available when first added; bookings control this automatically
                 )
                 from rentals.models import VehicleFeature, VehicleImage
                 features = [f.strip() for f in request.POST.get('features', '').split(',') if f.strip()]
@@ -371,7 +371,7 @@ def vehicle_management_view(request):
                 vehicle.fuel_type = fuel_type
                 vehicle.transmission = transmission
                 vehicle.seating = int(seating) if seating else None
-                vehicle.is_available = request.POST.get('is_available', '') == 'on'
+                # is_available is managed automatically by booking signals — do not set it here
                 vehicle.save()
                 
                 from rentals.models import VehicleFeature, VehicleImage

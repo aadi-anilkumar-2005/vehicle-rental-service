@@ -1,16 +1,8 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown } from "lucide-react-native";
 import * as React from "react";
-import {
-  Modal,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface SelectContextValue {
   value: string;

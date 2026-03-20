@@ -1,3 +1,4 @@
+import { getImageSource } from '@/lib/utils';
 import { cn } from "@/lib/utils";
 import { RentalShop } from "@/types";
 import { Bike, Car, ChevronRight, MapPin, Star } from "lucide-react-native";
@@ -17,7 +18,7 @@ export const ShopCard = ({ shop, onClick }: ShopCardProps) => {
     >
       <View className="relative h-48">
         <Image
-          source={{ uri: shop.image }}
+          source={getImageSource(shop.image)}
           className="h-full w-full"
           resizeMode="cover"
         />

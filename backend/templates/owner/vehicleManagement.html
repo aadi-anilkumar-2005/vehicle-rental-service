@@ -66,8 +66,7 @@
                             data-transmission="{{ vehicle.transmission }}"
                             data-seating="{% if vehicle.seating %}{{ vehicle.seating }}{% endif %}"
                             data-features="{{ vehicle.features|join:'\x2c' }}"
-                            data-images="{{ vehicle.images|join:'\x2c' }}"
-                            data-is_available="{{ vehicle.is_available }}">
+                            data-images="{{ vehicle.images|join:'\x2c' }}">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <form method="POST" action="{% url 'owner_vehicles' %}" id="deleteForm-{{ vehicle.id }}"
@@ -178,11 +177,6 @@
                             <label for="vehicleImages" class="form-label">Vehicle Images</label>
                             <input type="file" class="form-control" name="images" id="vehicleImages" accept="image/*" multiple>
                         </div>
-                        <div class="col-12 form-check mb-2">
-                            <input class="form-check-input" name="is_available" type="checkbox" id="isAvailable"
-                                checked>
-                            <label class="form-check-label" for="isAvailable">Is Available for Rental</label>
-                        </div>
                     </div>
                     <div class="modal-footer border-top-0 p-0 pt-3 bg-white">
                         <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
@@ -274,10 +268,6 @@
                             <input type="file" class="form-control" name="images" id="editVehicleImages" accept="image/*" multiple>
                             <small class="text-muted">Leave empty to keep existing images.</small>
                         </div>
-                        <div class="col-12 form-check mb-2">
-                            <input class="form-check-input" name="is_available" type="checkbox" id="editIsAvailable">
-                            <label class="form-check-label" for="editIsAvailable">Is Available for Rental</label>
-                        </div>
                     </div>
                     <div class="modal-footer border-top-0 p-0 pt-3 bg-white">
                         <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
@@ -342,7 +332,7 @@
                 if (i % 2 === 0) { const el = document.getElementById(v); if (el) el.value = this.dataset[arr[i + 1]]; }
                 return a;
             }, null, null);
-            document.getElementById('editIsAvailable').checked = this.dataset.is_available === 'True';
+            document.getElementById('editIsAvailable') && (document.getElementById('editIsAvailable').checked = this.dataset.is_available === 'True');
             new bootstrap.Modal(document.getElementById('editVehicleModal')).show();
         });
     });

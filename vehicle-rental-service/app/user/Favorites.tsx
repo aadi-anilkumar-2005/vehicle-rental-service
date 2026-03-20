@@ -1,3 +1,4 @@
+import { getImageSource } from '@/lib/utils';
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -57,7 +58,7 @@ export default function Favorites() {
       activeOpacity={0.85}
       onPress={() => navigation.navigate("ShopDetails", { id: item.shop_id })}
     >
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image source={getImageSource(item.image)} style={styles.image} />
       <View style={styles.cardBody}>
         <View style={styles.cardRow}>
           <Text style={styles.shopName} numberOfLines={1}>

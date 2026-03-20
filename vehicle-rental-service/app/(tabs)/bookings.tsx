@@ -17,7 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "@/services/api";
 import { Booking } from "@/types";
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getImageSource } from '@/lib/utils';
 
 type BookingsNavigationProp = NativeStackNavigationProp<
   UserStackParamList,
@@ -103,7 +103,7 @@ export default function Bookings() {
                   <View key={booking.id} style={styles.card}>
                     <View style={styles.cardContent}>
                       <Image
-                        source={{ uri: booking.vehicle.images[0] }}
+                        source={getImageSource(booking.vehicle.images[0])}
                         style={styles.vehicleImage}
                         resizeMode="cover"
                       />
@@ -195,7 +195,7 @@ export default function Bookings() {
                   >
                     <View style={styles.cardContent}>
                       <Image
-                        source={{ uri: booking.vehicle.images[0] }}
+                        source={getImageSource(booking.vehicle.images[0])}
                         style={styles.vehicleImage}
                         resizeMode="cover"
                       />
@@ -265,7 +265,7 @@ export default function Bookings() {
                   <View key={booking.id} style={styles.card}>
                     <View style={styles.cardContent}>
                       <Image
-                        source={{ uri: booking.vehicle.images[0] }}
+                        source={getImageSource(booking.vehicle.images[0])}
                         style={[styles.vehicleImage, styles.grayscale]}
                         resizeMode="cover"
                       />

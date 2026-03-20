@@ -1,3 +1,4 @@
+import { getImageSource } from '@/lib/utils';
 import { VehicleCard } from "@/components/VehicleCard";
 import { api, chatApi, favoritesApi } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
@@ -202,7 +203,7 @@ export default function ShopDetails() {
         {/* Hero Image */}
         <View className="relative">
           <Image
-            source={{ uri: shop.image }}
+            source={getImageSource(shop.image)}
             className="w-full h-72"
             resizeMode="cover"
           />

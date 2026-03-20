@@ -6,7 +6,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 // import { Vehicle } from "@/types";
 
 import { Vehicle } from "@/types";
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getImageSource } from '@/lib/utils';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -18,7 +18,7 @@ export const VehicleCard = ({ vehicle, onPress }: VehicleCardProps) => {
     <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={styles.card}>
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: vehicle.images[0] }}
+          source={getImageSource(vehicle.images[0])}
           style={styles.image}
           resizeMode="cover"
         />

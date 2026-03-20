@@ -148,11 +148,27 @@ class BookingViewSet(viewsets.ModelViewSet):
 @permission_classes([IsAuthenticated])
 def create_booking(request):
     """
-    Create a new booking
+    Create a new booking.
+    Requires KYC to be verified before a booking can be made.
     """
     from .serializers import BookingCreateSerializer, BookingSerializer
-    from .models import Booking, Notification
-    
+    from .models import Booking, Notification, KYCDocument
+
+    # ── KYC gate ──────────────────────────────────────────────────────────────
+    try:
+        kyc = KYCDocument.objects.get(user=request.user)
+        if kyc.status != 'verified':
+            return Response(
+                {'error': 'KYC verification required. Please complete KYC verification before booking.', 'code': 'kyc_not_verified'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+    except KYCDocument.DoesNotExist:
+        return Response(
+            {'error': 'KYC verification required. Please complete KYC verification before booking.', 'code': 'kyc_not_verified'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    # ──────────────────────────────────────────────────────────────────────────
+
     serializer = BookingCreateSerializer(data=request.data)
     
     if serializer.is_valid():
@@ -167,7 +183,6 @@ def create_booking(request):
                 type='booking',
                 is_read=False
             )
-            
 
             # Return booking details
             response_serializer = BookingSerializer(booking)

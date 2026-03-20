@@ -85,7 +85,7 @@ export const api = {
     booking_type: "hour" | "day";
     start_date: string;
     duration: number;
-    delivery_option: "pickup" | "delivery";
+    delivery_option: "delivery";
     delivery_address?: string;
     payment_method: "card" | "upi" | "wallet";
   }): Promise<any> {
@@ -935,6 +935,21 @@ export const profileApi = {
       longitude: loc.longitude,
       created_at: loc.created_at,
     }));
+  },
+
+  /** Get KYC document status for the current user */
+  async getKYCDocument(): Promise<{ status: string; [key: string]: any }> {
+    const token = await getAuthToken();
+    if (!token) throw new Error("No authentication token found");
+
+    const response = await fetch(`${API_BASE_URL}/kyc/`, {
+      headers: authHeaders(token),
+    });
+    if (!response.ok) {
+      // If 404 or any error, KYC doesn't exist → not verified
+      return { status: "not_submitted" };
+    }
+    return await response.json();
   },
 };
 

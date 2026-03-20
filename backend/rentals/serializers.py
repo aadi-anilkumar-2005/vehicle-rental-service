@@ -161,7 +161,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
     booking_type = serializers.ChoiceField(choices=Booking.BOOKING_TYPES)
     start_date = serializers.DateTimeField()
     duration = serializers.IntegerField(min_value=1)
-    delivery_option = serializers.ChoiceField(choices=Booking.DELIVERY_OPTIONS, default='self')
+    delivery_option = serializers.ChoiceField(choices=Booking.DELIVERY_OPTIONS, default='delivery')
     delivery_address = serializers.CharField(required=False, allow_blank=True)
     payment_method = serializers.ChoiceField(choices=Booking.PAYMENT_METHODS)
     
@@ -232,6 +232,20 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         }
         
         return booking_data
+
+    def create(self, validated_data):
+        """Create booking and immediately mark vehicle as unavailable."""
+        booking = Booking.objects.create(**validated_data)
+
+        # Belt-and-suspenders: mark unavailable right away.
+        # The post_save signal on Booking will also fire, but this ensures
+        # the vehicle is unavailable even if the signal hasn't run yet.
+        vehicle = booking.vehicle
+        if vehicle.is_available:
+            vehicle.is_available = False
+            vehicle.save(update_fields=['is_available'])
+
+        return booking
 
 
 # ── Chat Serializers ───────────────────────────────────────────────────────────

@@ -364,6 +364,25 @@ def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'user_profile'):
         instance.user_profile.save()
 
+@receiver(post_save, sender='rentals.Booking')
+def update_vehicle_availability(sender, instance, **kwargs):
+    """
+    Automatically manage vehicle availability based on booking status.
+    - upcoming / active / pickup_requested  → unavailable
+    - completed / cancelled                 → available again
+    """
+    vehicle = instance.vehicle
+    if instance.status in ('upcoming', 'active', 'pickup_requested'):
+        new_value = False
+    elif instance.status in ('completed', 'cancelled'):
+        new_value = True
+    else:
+        return  # Unknown status — do nothing
+
+    if vehicle.is_available != new_value:
+        vehicle.is_available = new_value
+        vehicle.save(update_fields=['is_available'])
+
 
 class Review(models.Model):
     """Customer review for the rental shop, with optional owner reply."""
