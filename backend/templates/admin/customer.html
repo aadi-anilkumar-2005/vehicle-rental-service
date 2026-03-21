@@ -1,71 +1,127 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Customers{% endblock %}
+{% block title %}Customers | RentXplore{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Customers</h1>
-    <div class="actions-group">
+<style>
+    .page-container { padding: 2rem; animation: fadeIn 0.4s ease-out; }
+    
+    /* Header & Filter Bar */
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
+    .page-title { font-size: 1.875rem; font-weight: 800; color: #1e293b; margin: 0; }
+    
+    .filters-bar { display: flex; gap: 0.75rem; }
+    .filter-select { 
+        padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid #e2e8f0; 
+        background: #fff; color: #1e293b; font-size: 0.9rem; font-weight: 500; outline: none; transition: 0.3s;
+    }
+    .filter-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+    /* Table Container */
+    .data-table-container { 
+        background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; 
+    }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .data-table th { 
+        background: #f8fafc; padding: 1rem 1.5rem; font-size: 0.75rem; 
+        font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em;
+    }
+    .data-table td { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .data-table tr:hover { background: #fbfcfd; }
+
+    /* Identity Cell */
+    .user-ident { display: flex; align-items: center; gap: 12px; }
+    .user-avatar-sm { 
+        width: 38px; height: 38px; border-radius: 10px; background: #eff6ff; 
+        color: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: 700;
+        font-size: 0.9rem; border: 1px solid #dbeafe;
+    }
+
+    /* Address Tooltip */
+    .addr-cell { max-width: 220px; font-size: 0.85rem; color: #64748b; line-height: 1.4; }
+
+    /* Status Badges */
+    .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+    .status-success { background: #dcfce7; color: #166534; }
+    .status-danger { background: #fee2e2; color: #991b1b; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Customer Directory</h1>
         <div class="filters-bar">
-            <select class="filter-select" data-filter name="is_active">
-                <option value="">Status (All)</option>
+            <select class="filter-select" name="is_active">
+                <option value="">All Status</option>
                 <option value="True">Active</option>
                 <option value="False">Inactive</option>
             </select>
-            <select class="filter-select" data-sort name="sort">
+            <select class="filter-select" name="sort">
                 <option value="">Sort By</option>
-                <option value="-date_joined">Joined (Newest)</option>
-                <option value="date_joined">Joined (Oldest)</option>
-                <option value="username">Username (A-Z)</option>
+                <option value="-date_joined">Newest Customers</option>
+                <option value="username">Username A-Z</option>
             </select>
         </div>
     </div>
-</div>
 
-<div class="data-table-container">
-    <div class="table-responsive">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>Status</th>
-                    <th>Joined At</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for customer in customers %}
-                <tr>
-                    <td>
-                        <div style="font-weight: 600;">{{ customer.user.username }}</div>
-                    </td>
-                    <td>{{ customer.user.first_name }} {{ customer.user.last_name }}</td>
-                    <td>{{ customer.user.email }}</td>
-                    <td>{{ customer.phone|default:"-" }}</td>
-                    <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                        title="{{ customer.address }}">
-                        {{ customer.address|default:"-" }}
-                    </td>
-                    <td>
-                        <span class="status-badge status-{{ customer.user.is_active|yesno:'success,danger' }}">
-                            {{ customer.user.is_active|yesno:'Active,Inactive' }}
-                        </span>
-                    </td>
-                    <td style="color: var(--text-muted); font-size: 0.8rem;">
-                        {{ customer.user.date_joined|date:"M d, Y" }}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No customers
-                        found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="data-table-container">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Contact Details</th>
+                        <th>Location / Address</th>
+                        <th>Account Status</th>
+                        <th>Joined Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr>
+                        <td>
+                            <div class="user-ident">
+                                <div class="user-avatar-sm">
+                                    {{ customer.user.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 700; color: #1e293b;">{{ customer.user.get_full_name|default:customer.user.username }}</div>
+                                    <div style="font-size: 0.75rem; color: #94a3b8;">@{{ customer.user.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.9rem; color: #1e293b; font-weight: 500;">{{ customer.user.email }}</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">{{ customer.phone|default:"No Phone" }}</div>
+                        </td>
+                        <td>
+                            <div class="addr-cell" title="{{ customer.address }}">
+                                {{ customer.address|default:"<span style='color:#cbd5e1'>No address set</span>" }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ customer.user.is_active|yesno:'success,danger' }}">
+                                {{ customer.user.is_active|yesno:'Active,Inactive' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.85rem; color: #1e293b; font-weight: 500;">{{ customer.user.date_joined|date:"M d, Y" }}</div>
+                            <div style="font-size: 0.7rem; color: #94a3b8;">{{ customer.user.date_joined|timesince }} ago</div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #94a3b8; padding: 5rem;">
+                            <i class="fas fa-user-friends" style="font-size: 3rem; display: block; margin-bottom: 1.5rem; opacity: 0.2;"></i>
+                            <p style="font-weight: 500;">No customers registered yet.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

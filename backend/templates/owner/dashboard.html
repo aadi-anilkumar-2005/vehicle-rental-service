@@ -1,101 +1,120 @@
 {% extends 'owner/base.html' %}
 {% load static %}
 
-{% block title %}Vehicle Rental - Admin Dashboard{% endblock %}
+{% block title %}RentXplore - Partner Dashboard{% endblock %}
 {% block page_title %}Dashboard Overview{% endblock %}
 
 {% block content %}
-<!-- Statistics Cards -->
 <div class="row g-4 mb-4">
     <div class="col-md-6 col-xl-3 animate-fade" style="animation-delay: 0.1s">
-        <div class="stat-card">
-            <div class="stat-icon icon-primary">
+        <div class="stat-card" style="background: #fff; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div class="stat-icon" style="width: 48px; height: 48px; border-radius: 0.75rem; background: #dbeafe; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
                 <i class="bi bi-currency-dollar"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-label">Total Revenue</div>
-                <div class="stat-value" id="totalRevenue">₹{{ total_revenue }}</div>
-                <div class="stat-trend trend-up"><i class="bi bi-arrow-up-short"></i> 12.5%</div>
+                <div class="stat-label" style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Total Revenue</div>
+                <div class="stat-value" id="totalRevenue" style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">₹{{ total_revenue }}</div>
+                <div class="stat-trend trend-up" style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 4px;">
+                    <i class="bi bi-arrow-up-short"></i> 12.5%
+                </div>
             </div>
         </div>
     </div>
+
     <div class="col-md-6 col-xl-3 animate-fade" style="animation-delay: 0.2s">
-        <div class="stat-card">
-            <div class="stat-icon icon-success">
+        <div class="stat-card" style="background: #fff; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div class="stat-icon" style="width: 48px; height: 48px; border-radius: 0.75rem; background: #d1fae5; color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
                 <i class="bi bi-calendar-check"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-label">Active Bookings</div>
-                <div class="stat-value" id="activeBookings">{{ active_bookings }}</div>
-                <div class="stat-trend trend-up"><i class="bi bi-arrow-up-short"></i> 5.2%</div>
+                <div class="stat-label" style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Active Bookings</div>
+                <div class="stat-value" id="activeBookings" style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">{{ active_bookings }}</div>
+                <div class="stat-trend trend-up" style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 4px;">
+                    <i class="bi bi-arrow-up-short"></i> 5.2%
+                </div>
             </div>
         </div>
     </div>
+
     <div class="col-md-6 col-xl-3 animate-fade" style="animation-delay: 0.3s">
-        <div class="stat-card">
-            <div class="stat-icon icon-warning">
+        <div class="stat-card" style="background: #fff; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div class="stat-icon" style="width: 48px; height: 48px; border-radius: 0.75rem; background: #fffbeb; color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
                 <i class="bi bi-truck"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-label">Total Vehicles</div>
-                <div class="stat-value" id="totalVehicles">{{ total_vehicles }}</div>
-                <div class="stat-trend trend-up"><i class="bi bi-arrow-up-short"></i> 2 added</div>
+                <div class="stat-label" style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Total Vehicles</div>
+                <div class="stat-value" id="totalVehicles" style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">{{ total_vehicles }}</div>
+                <div class="stat-trend trend-up" style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 4px;">
+                    <i class="bi bi-arrow-up-short"></i> 2 added
+                </div>
             </div>
         </div>
     </div>
+
     <div class="col-md-6 col-xl-3 animate-fade" style="animation-delay: 0.4s">
-        <div class="stat-card">
-            <div class="stat-icon icon-info">
+        <div class="stat-card" style="background: #fff; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div class="stat-icon" style="width: 48px; height: 48px; border-radius: 0.75rem; background: #f5f3ff; color: #8b5cf6; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
                 <i class="bi bi-people"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-label">Total Staff</div>
-                <div class="stat-value" id="totalStaff">{{ total_staff }}</div>
-                <div class="stat-trend text-muted"><i class="bi bi-dash"></i> No change</div>
+                <div class="stat-label" style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Total Staff</div>
+                <div class="stat-value" id="totalStaff" style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">{{ total_staff }}</div>
+                <div class="stat-trend text-muted" style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-top: 4px;">
+                    <i class="bi bi-dash"></i> No change
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Recent Activity -->
-<div class="card animate-fade" style="animation-delay: 0.5s">
-    <div class="card-header">
-        <h5 class="m-0 font-semibold text-dark">Recent Bookings</h5>
-        <button class="btn btn-sm btn-secondary text-primary bg-primary bg-opacity-10 border-0">View All</button>
+<div class="card animate-fade" style="animation-delay: 0.5s; background: #fff; border-radius: 1rem; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div class="card-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; background: #fff; display: flex; justify-content: space-between; align-items: center;">
+        <h5 class="m-0" style="font-weight: 700; color: #0f172a; font-size: 1.1rem;">Recent Bookings</h5>
+        <button class="btn btn-sm" style="background: #eff6ff; color: #3b82f6; font-weight: 700; border: none; padding: 0.4rem 1rem; border-radius: 0.5rem;">View All</button>
     </div>
     <div class="card-body p-0">
-        <div class="table-container border-0 rounded-0">
-            <table class="table mb-0 border-0">
-                <thead>
+        <div class="table-responsive">
+            <table class="table mb-0" style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #f8fafc;">
                     <tr>
-                        <th>Booking ID</th>
-                        <th>Customer</th>
-                        <th>Vehicle</th>
-                        <th>Status</th>
-                        <th>Date</th>
+                        <th style="padding: 1rem; font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px;">Booking ID</th>
+                        <th style="padding: 1rem; font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px;">Customer</th>
+                        <th style="padding: 1rem; font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px;">Vehicle</th>
+                        <th style="padding: 1rem; font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px;">Status</th>
+                        <th style="padding: 1rem; font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px;">Date</th>
                     </tr>
                 </thead>
-                <tbody id="recentBookings">
+                <tbody>
                     {% for booking in recent_bookings %}
                     <tr>
-                        <td class="font-semibold text-dark">#BKG-{{ booking.id|stringformat:"04d" }}</td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
+                        <td style="padding: 1rem; font-weight: 700; color: #3b82f6;">#BKG-{{ booking.id|stringformat:"04d" }}</td>
+                        <td style="padding: 1rem;">
+                            <div class="d-flex align-items-center gap-3">
                                 <div class="avatar bg-primary text-white d-flex align-items-center justify-content-center text-uppercase fw-bold"
-                                    style="width: 32px; height: 32px; font-size: 14px;">
+                                    style="width: 32px; height: 32px; font-size: 12px; border-radius: 8px; background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;">
                                     {{ booking.user.first_name|first|default:booking.user.username|first|upper }}
                                 </div>
-                                <span class="font-medium">{{ booking.user.first_name }} {{ booking.user.last_name }}</span>
+                                <span style="font-weight: 600; color: #1e293b;">{{ booking.user.first_name }} {{ booking.user.last_name }}</span>
                             </div>
                         </td>
-                        <td>{{ booking.vehicle.brand }} {{ booking.vehicle.model }}</td>
-                        <td><span
-                                class="badge {% if booking.status == 'active' %}bg-success{% elif booking.status == 'upcoming' %}bg-warning{% elif booking.status == 'completed' %}bg-secondary{% else %}bg-danger{% endif %}">{{ booking.get_status_display }}</span></td>
-                        <td class="text-muted">{{ booking.created_at|date:"Y-m-d" }}</td>
+                        <td style="padding: 1rem; color: #475569; font-weight: 500;">{{ booking.vehicle.brand }} {{ booking.vehicle.model }}</td>
+                        <td style="padding: 1rem;">
+                            <span class="badge" style="padding: 0.4rem 0.8rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+                                {% if booking.status == 'active' %} background: #dcfce7; color: #166534;
+                                {% elif booking.status == 'upcoming' %} background: #fef3c7; color: #92400e;
+                                {% elif booking.status == 'completed' %} background: #f1f5f9; color: #475569;
+                                {% else %} background: #fee2e2; color: #991b1b; {% endif %}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </td>
+                        <td style="padding: 1rem; color: #64748b; font-weight: 500;">{{ booking.created_at|date:"M d, Y" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">No recent bookings found.</td>
+                        <td colspan="5" style="text-align: center; padding: 3rem; color: #94a3b8; font-weight: 500;">
+                            <i class="bi bi-calendar-x d-block fs-2 mb-2"></i>
+                            No recent bookings found.
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

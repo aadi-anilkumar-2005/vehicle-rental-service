@@ -1,71 +1,184 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Rental Shops{% endblock %}
+{% block title %}Rental Shops | RentXplore{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Rental Shops</h1>
-    <div class="actions-group">
+<style>
+    /* Design System Sync */
+    :root {
+        --accent-color: #3b82f6;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --bg-card: #ffffff;
+        --border-color: #e2e8f0;
+    }
+
+    .shops-container { padding: 1rem; animation: fadeIn 0.4s ease-out; }
+    
+    /* Header & Filter Bar Sync */
+    .page-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 2rem; 
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .page-title { font-size: 1.875rem; font-weight: 800; color: var(--text-main); margin: 0; }
+    
+    .filters-bar { display: flex; gap: 0.75rem; }
+    
+    /* Filter Select Sync with Sidebar/Tables */
+    .filter-select { 
+        padding: 0.6rem 1rem; 
+        border-radius: 12px; 
+        border: 1px solid var(--border-color); 
+        background: var(--bg-card); 
+        color: var(--text-main); 
+        font-size: 0.9rem; 
+        font-weight: 600; 
+        outline: none; 
+        transition: 0.3s;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .filter-select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+    /* Premium Grid Layout */
+    .shop-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+        gap: 1.5rem; 
+    }
+    
+    /* Card Design Sync with Dashboard Cards */
+    .shop-card { 
+        background: var(--bg-card); 
+        border-radius: 20px; 
+        overflow: hidden; 
+        border: 1px solid var(--border-color); 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        cursor: pointer; 
+        position: relative;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .shop-card:hover { 
+        transform: translateY(-8px); 
+        border-color: var(--accent-color); 
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); 
+    }
+    
+    /* Image Section Sync */
+    .shop-img-wrapper { position: relative; width: 100%; height: 200px; background: #f8fafc; overflow: hidden; }
+    .shop-img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s ease; }
+    .shop-card:hover .shop-img { transform: scale(1.08); }
+    
+    /* Status Badges Sync with Table States */
+    .status-badge-overlay { 
+        position: absolute; top: 15px; left: 15px; 
+        padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; 
+        font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+        backdrop-filter: blur(8px);
+        z-index: 10;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .badge-open { background: rgba(34, 197, 94, 0.9); color: white; }
+    .badge-closed { background: rgba(239, 68, 68, 0.9); color: white; }
+
+    /* Content Body Sync */
+    .shop-body { padding: 1.5rem; }
+    .shop-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
+    
+    .shop-location { 
+        display: flex; align-items: flex-start; gap: 8px; 
+        color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; 
+        min-height: 45px;
+    }
+    .shop-location i { color: var(--accent-color); margin-top: 3px; font-size: 1rem; }
+
+    /* Card Footer Sync */
+    .shop-footer { 
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 1.25rem 1.5rem; background: #fbfcfd; border-top: 1px solid var(--border-color); 
+    }
+    .stat-item { display: flex; flex-direction: column; gap: 2px; }
+    .stat-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .stat-value { font-size: 1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 4px; }
+    .rating-star { color: #f59e0b; }
+
+    /* Empty State Sync */
+    .empty-state {
+        grid-column: 1/-1; text-align: center; padding: 6rem 2rem; 
+        background: var(--bg-card); border-radius: 24px; border: 2px dashed #cbd5e1;
+    }
+    .empty-state i { color: #cbd5e1; margin-bottom: 1.5rem; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="shops-container">
+    <div class="page-header">
+        <h1 class="page-title">Rental Shops</h1>
         <div class="filters-bar">
-            <select class="filter-select" data-filter name="is_open">
+            <select class="filter-select">
                 <option value="">Status (All)</option>
-                <option value="True">Open</option>
-                <option value="False">Closed</option>
+                <option value="open">Open Now</option>
+                <option value="closed">Closed</option>
             </select>
-            <select class="filter-select" data-sort name="sort">
+            <select class="filter-select">
                 <option value="">Sort By</option>
-                <option value="name">Name (A-Z)</option>
-                <option value="-rating">Rating (Highest)</option>
-                <option value="-review_count">Reviews (Most)</option>
+                <option value="rating">Top Rated</option>
+                <option value="newest">Newest</option>
             </select>
         </div>
+    </div>
+
+    <div class="shop-grid">
+        {% for shop in shops %}
+        <div class="shop-card" onclick="location.href='{% url 'admin_shop_detail' shop.id %}'">
+            <div class="shop-img-wrapper">
+                {% if shop.owner.profile_picture %}
+                    <img src="{{ shop.owner.profile_picture.url }}" class="shop-img" alt="{{ shop.name }}">
+                {% else %}
+                    <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
+                        <i class="fas fa-store fa-4x" style="color: var(--accent-color); opacity: 0.3;"></i>
+                    </div>
+                {% endif %}
+                
+                <div class="status-badge-overlay {% if shop.is_open %}badge-open{% else %}badge-closed{% endif %}">
+                    <i class="fas {% if shop.is_open %}fa-door-open{% else %}fa-door-closed{% endif %}"></i>
+                    {{ shop.is_open|yesno:"Open,Closed" }}
+                </div>
+            </div>
+
+            <div class="shop-body">
+                <div class="shop-title">{{ shop.name }}</div>
+                <div class="shop-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>{{ shop.address }}</span>
+                </div>
+            </div>
+
+            <div class="shop-footer">
+                <div class="stat-item">
+                    <span class="stat-label">Performance</span>
+                    <span class="stat-value">
+                        <i class="fas fa-star rating-star"></i> {{ shop.rating|default:"0.0" }}
+                    </span>
+                </div>
+                <div class="stat-item" style="text-align: right;">
+                    <span class="stat-label">Total Reviews</span>
+                    <span class="stat-value">{{ shop.review_count|default:"0" }}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-store-alt-slash fa-4x"></i>
+            <h2 style="color: var(--text-main); font-weight: 800;">No active shops found</h2>
+            <p style="color: var(--text-muted); max-width: 400px; margin: 0.5rem auto;">Verified owners will appear here once they complete their shop setup.</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
-
-<!-- Shop List Grid -->
-<div class="items-grid">
-    {% for shop in shops %}
-    <div class="item-card" data-href="{% url 'admin_shop_detail' shop.id %}">
-        <div class="item-img-container">
-            {% if shop.owner.profile_picture %}
-            <img src="{{ shop.owner.profile_picture.url }}" alt="{{ shop.owner.user.username }}" class="item-img">
-            {% else %}
-            <div class="item-img" style="display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-store" style="font-size: 3rem; color: #94A3B8;"></i>
-            </div>
-            {% endif %}
-            <div class="item-img-overlay">
-                <span class="status-badge status-{{ shop.is_open|yesno:'success,danger' }}">
-                    {{ shop.is_open|yesno:'Open,Closed' }}
-                </span>
-            </div>
-            <div
-                style="position: absolute; bottom: 1rem; right: 1rem; background: rgba(0,0,0,0.6); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 600;">
-                <i class="fas fa-star" style="color: #FBBF24;"></i> {{ shop.rating }}
-            </div>
-        </div>
-        <div class="item-content">
-            <div class="item-title">{{ shop.name }}</div>
-            <div class="item-subtitle" style="align-items: flex-start;">
-                <i class="fas fa-map-marker-alt" style="margin-top: 0.25rem;"></i> {{ shop.address }}
-            </div>
-
-            <div class="item-details">
-                <div class="detail-block">
-                    <span class="detail-label">Phone</span>
-                    <span class="detail-value">{{ shop.phone|default:"N/A" }}</span>
-                </div>
-                <div class="detail-block">
-                    <span class="detail-label">Reviews</span>
-                    <span class="detail-value">{{ shop.review_count }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <div
-        style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius); border: 1px dashed var(--border);">
-        <p style="color: var(--text-muted);">No rental shops found.</p>
-    </div>
-    {% endfor %}
 {% endblock %}

@@ -7,142 +7,262 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <style>
         :root {
-            --primary-blue: #0d6efd;
-            --dark-bg: #0a192f;
-            --accent-green: #4ade80;
+            --primary-blue: #3b82f6; /* Synced Blue */
+            --dark-bg: #0f172a;    /* Synced Navy */
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
         }
-        body { font-family: "Inter", sans-serif; background-color: #f8f9fa; margin: 0; overflow-x: hidden; }
-        .auth-split { display: flex; min-height: 100vh; width: 100vw; }
+
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            overflow-x: hidden;
+            color: #1e293b;
+        }
+
+        .auth-split {
+            display: flex;
+            min-height: 100vh;
+            width: 100vw;
+        }
+
+        /* LEFT PANEL: The Brand Experience */
         .auth-split-left {
             flex: 1;
-            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--primary-blue) 100%);
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
             color: white;
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding: 5% 8%;
+            position: relative;
+            overflow: hidden;
         }
-        .auth-title { font-size: 2.8rem; font-weight: 700; line-height: 1.2; }
+
+        /* Ambient Light Effect */
+        .auth-split-left::after {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .auth-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+
+        .brand-accent { color: #3b82f6; } /* Keeping the green accent for 'Registration' success feel */
+
         .feature-icon {
-            width: 32px; height: 32px; min-width: 32px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        /* RIGHT PANEL: Form Area */
         .auth-split-right {
-            flex: 1.2;
+            flex: 1.3;
             background: white;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 3rem 2rem;
         }
-        .register-card { width: 100%; max-width: 550px; }
-        .form-control { padding: 0.65rem 1rem; border-radius: 8px; }
-        .btn-primary { padding: 0.75rem; font-weight: 600; border-radius: 8px; }
+
+        .register-card {
+            width: 100%;
+            max-width: 600px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: #fbfcfd;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+
+        .input-group-text {
+            background: #fbfcfd;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            border: none;
+            padding: 0.85rem;
+            font-weight: 700;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         @media (max-width: 991.98px) {
             .auth-split { flex-direction: column; }
             .auth-split-left { padding: 4rem 2rem; text-align: center; align-items: center; }
-            .auth-split-left .d-flex { align-items: center; text-align: left; }
+            .auth-title { font-size: 2.4rem; }
         }
     </style>
 </head>
 
 <body>
     <div class="auth-split">
+        
         <div class="auth-split-left">
             <div class="mb-4">
-                <i class="bi bi-car-front-fill" style="font-size: 3.5rem; color: var(--accent-green)"></i>
+                <div style="background: var(--primary-blue); width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);">
+                    <i class="bi bi-car-front-fill" style="font-size: 2.2rem; color: white;"></i>
+                </div>
             </div>
-            <h1 class="auth-title mb-4">Join our <span style="color: var(--accent-green)">RentXplore</span> network</h1>
-            <p class="mb-5 opacity-75 fs-5">Manage your fleet, staff, and bookings in one place.</p>
-            <div class="d-flex flex-column gap-3">
+
+            <h1 class="auth-title mb-4">
+                Scale your Business <br />
+                with <span class="brand-accent">RentXplore</span>
+            </h1>
+
+            <p class="mb-5 opacity-75 fs-5" style="max-width: 480px; line-height: 1.6;">
+                Join our network of elite rental providers and get access to enterprise-grade management tools.
+            </p>
+
+            <div class="d-flex flex-column gap-4">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="feature-icon"><i class="bi bi-check-lg text-white"></i></div>
-                    <span class="fw-medium">Streamlined Fleet Management</span>
+                    <div class="feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                    <span class="fw-semibold">Increase Utilization by up to 40%</span>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <div class="feature-icon"><i class="bi bi-check-lg text-white"></i></div>
-                    <span class="fw-medium">Real-time Booking Insights</span>
+                    <div class="feature-icon"><i class="bi bi-lightning-charge"></i></div>
+                    <span class="fw-semibold">Instant Booking Confirmations</span>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <div class="feature-icon"><i class="bi bi-check-lg text-white"></i></div>
-                    <span class="fw-medium">Secure Staff Coordination</span>
+                    <div class="feature-icon"><i class="bi bi-headset"></i></div>
+                    <span class="fw-semibold">24/7 Priority Partner Support</span>
                 </div>
             </div>
         </div>
 
         <div class="auth-split-right">
             <div class="register-card">
-                <div class="mb-4">
-                    <h2 class="fw-bold mb-2">Create an Account</h2>
-                    <p class="text-muted">Fill in your details to register your shop</p>
+                <div class="mb-5">
+                    <h2 style="font-weight: 800; letter-spacing: -0.5px;">Register your Shop</h2>
+                    <p class="text-muted fw-500">Provide your business details to get started.</p>
                 </div>
 
                 <form id="registerForm" enctype="multipart/form-data">
                     {% csrf_token %}
+                    
                     <div class="row g-3 mb-3">
                         <div class="col-sm-6">
-                            <label class="form-label fw-semibold small">Shop Name</label>
-                            <input type="text" class="form-control" id="shopName" placeholder="e.g. Kerala Rentals" required />
+                            <label class="form-label">Shop Legal Name</label>
+                            <input type="text" class="form-control" id="shopName" placeholder="e.g. Royal Travels" required />
                         </div>
                         <div class="col-sm-6">
-                            <label class="form-label fw-semibold small">Owner Name</label>
-                            <input type="text" class="form-control" id="ownerName" placeholder="Full Name" required />
+                            <label class="form-label">Full Name of Owner</label>
+                            <input type="text" class="form-control" id="ownerName" placeholder="As per ID" required />
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-sm-6">
-                            <label class="form-label fw-semibold small">Email Address</label>
+                            <label class="form-label">Business Email</label>
                             <input type="email" class="form-control" id="email" placeholder="example@gmail.com" required />
                         </div>
                         <div class="col-sm-6">
-                            <label class="form-label fw-semibold small">Phone Number</label>
+                            <label class="form-label">Primary Phone</label>
                             <input type="tel" class="form-control" id="phone" placeholder="enter phone number" required />
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-sm-6">
-                            <label class="form-label fw-semibold small">Password</label>
+                            <label class="form-label">Password</label>
                             <div class="input-group">
-                                <input type="password" class="form-control border-end-0" id="password" placeholder="create password" required />
-                                <button class="btn btn-outline-secondary border-start-0" type="button" id="togglePassword"><i class="bi bi-eye"></i></button>
+                                <input type="password" class="form-control border-end-0" id="password" placeholder="enter password" required />
+                                <span class="input-group-text border-start-0" id="togglePassword"><i class="bi bi-eye"></i></span>
                             </div>
                         </div>
                         <div class="col-sm-6">
-                            <label class="form-label fw-semibold small">Confirm Password</label>
+                            <label class="form-label">Verify Password</label>
                             <div class="input-group">
                                 <input type="password" class="form-control border-end-0" id="confirmPassword" placeholder="confirm password" required />
-                                <button class="btn btn-outline-secondary border-start-0" type="button" id="toggleConfirmPassword"><i class="bi bi-eye"></i></button>
+                                <span class="input-group-text border-start-0" id="toggleConfirmPassword"><i class="bi bi-eye"></i></span>
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Business Certificate ID</label>
-                        <input type="text" class="form-control" id="certificateId" placeholder="e.g. CERT-12345" required />
+                        <label class="form-label">Shop License / Certificate ID</label>
+                        <input type="text" class="form-control" id="certificateId" placeholder="e.g. REG-2024-XXXX" required />
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold small">Upload Shop License (PDF/Image)</label>
-                        <input type="file" class="form-control" id="licenseFile" accept=".pdf,.jpg,.jpeg,.png" required />
-                        <div id="fileName" class="small text-success fw-semibold mt-1"></div>
-                        <div class="form-text text-muted small">Accepted formats: PDF, JPG, PNG (Max 5MB)</div>
+                    <div class="mb-4">
+                        <label class="form-label">Upload Business License (PDF/JPG)</label>
+                        <div class="p-3 border rounded-3 bg-light text-center" style="border-style: dashed !important; border-width: 2px !important;">
+                             <input type="file" class="form-control d-none" id="licenseFile" accept=".pdf,.jpg,.jpeg,.png" required />
+                             <label for="licenseFile" style="cursor: pointer;" class="mb-0">
+                                 <i class="bi bi-cloud-arrow-up fs-2 text-primary"></i>
+                                 <div id="fileName" class="fw-bold mt-2">Click to select file</div>
+                                 <div class="small text-muted">Maximum file size: 5MB</div>
+                             </label>
+                        </div>
                     </div>
 
                     <div class="form-check mb-4">
-                        <input class="form-check-input" type="checkbox" id="terms" required />
-                        <label class="form-check-label text-muted small" for="terms">I agree to the Terms and Conditions</label>
+                        <input class="form-check-input" type="checkbox" id="terms" required style="cursor: pointer;"/>
+                        <label class="form-check-label text-muted small fw-500" for="terms" style="cursor: pointer;">
+                            I accept the RentXplore <a href="#" class="text-primary text-decoration-none fw-bold">Terms of Service</a>
+                        </label>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 mb-3" id="registerBtn">Create Account</button>
+                    <button type="submit" class="btn btn-primary w-100 mb-4" id="registerBtn">Create Business Account</button>
+
                     <div class="text-center">
-                        <p class="text-muted small">Already have an account? <a href="{% url 'owner_login' %}" class="fw-semibold text-primary text-decoration-none">Sign In</a></p>
+                        <p class="text-muted small fw-500">Already a Partner? <a href="{% url 'owner_login' %}" class="fw-bold text-primary text-decoration-none">Sign In Here</a></p>
                     </div>
                 </form>
             </div>
@@ -153,10 +273,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // File selection preview
+        // File selection name update
         document.getElementById("licenseFile").addEventListener("change", (e) => {
             const file = e.target.files[0]?.name || "";
-            document.getElementById("fileName").textContent = file ? "Selected: " + file : "";
+            document.getElementById("fileName").textContent = file ? file : "Click to select file";
         });
 
         // Password Toggles
@@ -172,21 +292,19 @@
         setupToggle("togglePassword", "password");
         setupToggle("toggleConfirmPassword", "confirmPassword");
 
-        // FORM SUBMIT
+        // Form Submit
         document.getElementById("registerForm").addEventListener("submit", function (e) {
             e.preventDefault();
-            
             const pass = document.getElementById("password").value;
             const confirm = document.getElementById("confirmPassword").value;
 
             if (pass !== confirm) {
-                Swal.fire({ icon: "error", title: "Error", text: "Passwords do not match!" });
+                Swal.fire({ icon: "error", title: "Wait!", text: "Your passwords do not match.", confirmButtonColor: '#3b82f6' });
                 return;
             }
 
             const btn = document.getElementById("registerBtn");
-            const originalBtnText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registering...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating account...';
             btn.disabled = true;
 
             const formData = new FormData();
@@ -198,33 +316,29 @@
             formData.append("certificateId", document.getElementById("certificateId").value);
             
             const fileInput = document.getElementById("licenseFile");
-            if (fileInput.files.length > 0) {
-                formData.append("licenseFile", fileInput.files[0]);
-            }
+            if (fileInput.files.length > 0) formData.append("licenseFile", fileInput.files[0]);
 
             fetch("{% url 'owner_register' %}", {
                 method: "POST",
-                headers: {
-                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
+                headers: { "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value },
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
-                btn.innerHTML = originalBtnText;
+                btn.innerHTML = 'Create Business Account';
                 btn.disabled = false;
 
                 if (data.success) {
-                    Swal.fire({ icon: "success", title: "Success!", text: data.success, timer: 2000, showConfirmButton: false })
+                    Swal.fire({ icon: "success", title: "Registration Sent!", text: "Our team will verify your license and activate your account.", confirmButtonColor: '#3b82f6' })
                     .then(() => { window.location.href = "{% url 'owner_login' %}"; });
                 } else {
-                    Swal.fire({ icon: "error", title: "Registration Failed", text: data.error || "Please try again." });
+                    Swal.fire({ icon: "error", title: "Error", text: data.error || "Something went wrong.", confirmButtonColor: '#ef4444' });
                 }
             })
-            .catch(err => {
-                btn.innerHTML = originalBtnText;
+            .catch(() => {
+                btn.innerHTML = 'Create Business Account';
                 btn.disabled = false;
-                Swal.fire({ icon: "error", title: "Error", text: "Could not connect to the server." });
+                Swal.fire({ icon: "error", title: "Connection Error", text: "Please check your internet and try again." });
             });
         });
     </script>

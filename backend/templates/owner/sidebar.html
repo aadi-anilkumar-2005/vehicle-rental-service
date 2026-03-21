@@ -1,56 +1,215 @@
-<!-- Sidebar Component -->
+<style>
+    :root {
+        --sidebar-bg: #0f172a; 
+        --sidebar-width: 280px;
+        --accent-blue: #3b82f6;
+        --text-muted: #94a3b8;
+        --sidebar-hover: rgba(255, 255, 255, 0.08);
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: var(--sidebar-bg);
+        color: white;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+        font-family: 'Inter', sans-serif;
+        transition: transform 0.3s ease;
+    }
+
+    /* Brand Header - Alignment Fix */
+    .sidebar-brand {
+        height: 75px;
+        display: flex;
+        align-items: center;
+        padding: 0 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        gap: 12px;
+    }
+
+    .brand-icon-box {
+        background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;      /* Vertically centers the icon glyph */
+        justify-content: center;   /* Horizontally centers the icon glyph */
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        padding: 0;
+        overflow: hidden;
+    }
+
+    /* Fixed Car Icon Positioning */
+    .brand-icon-box i {
+        font-size: 1.4rem; 
+        line-height: 1;           /* Removes extra vertical space from font-metrics */
+        display: flex;            /* Makes the icon act as a flex container */
+        margin: 0;
+        padding: 0;
+    }
+
+    .brand-text {
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        white-space: nowrap;
+    }
+
+    .brand-text span { color: var(--accent-blue); }
+
+    /* Menu Navigation */
+    .sidebar-menu {
+        flex: 1;
+        padding: 1.5rem 1rem;
+        overflow-y: auto;
+    }
+
+    /* Theme Synced Scrollbar */
+    .sidebar-menu::-webkit-scrollbar { width: 4px; }
+    .sidebar-menu::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-menu::-webkit-scrollbar-thumb { 
+        background: rgba(59, 130, 246, 0.2); 
+        border-radius: 10px; 
+    }
+    .sidebar-menu::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
+
+    .menu-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 1.2px;
+        margin: 1.5rem 0 0.75rem 0.75rem;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        color: var(--text-muted);
+        text-decoration: none !important;
+        border-radius: 12px;
+        margin-bottom: 4px;
+        transition: 0.2s all;
+        font-weight: 500;
+        font-size: 0.95rem;
+        gap: 12px;
+    }
+
+    .sidebar-item i {
+        font-size: 1.1rem;
+        width: 20px;
+        text-align: center;
+    }
+
+    .sidebar-item:hover {
+        background: var(--sidebar-hover);
+        color: white;
+        transform: translateX(5px);
+    }
+
+    .sidebar-item.active {
+        background: rgba(59, 130, 246, 0.15);
+        color: var(--accent-blue);
+        font-weight: 700;
+    }
+
+    .sidebar-item.active i {
+        color: var(--accent-blue);
+    }
+
+    /* Footer Layout */
+    .sidebar-footer {
+        padding: 1.25rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-logout {
+        width: 100%;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-logout:hover {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+    }
+</style>
+
 <nav class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-        <i class="bi bi-car-front-fill"></i>
-        <span>Owner</span>
+        <div class="brand-icon-box">
+            <i class="bi bi-car-front-fill text-white"></i>
+        </div>
+        <div class="brand-text">Rent<span>X</span>plore</div>
     </div>
+
     <div class="sidebar-menu">
-        <a href="{% url 'owner_dashboard' %}"
-            class="sidebar-item {% if request.resolver_match.url_name == 'owner_dashboard' %}active{% endif %}"
-            data-section="dashboard">
-            <i class="bi bi-grid-1x2"></i> Overview
+        <div class="menu-label">Main Dashboard</div>
+        <a href="{% url 'owner_dashboard' %}" 
+           class="sidebar-item {% if request.resolver_match.url_name == 'owner_dashboard' %}active{% endif %}">
+            <i class="bi bi-grid-1x2-fill"></i> Overview
         </a>
-        <a href="{% url 'owner_staff' %}"
-            class="sidebar-item {% if request.resolver_match.url_name == 'owner_staff' %}active{% endif %}"
-            data-section="staff">
-            <i class="bi bi-people"></i> Staff
+        <a href="{% url 'owner_bookings' %}" 
+           class="sidebar-item {% if request.resolver_match.url_name == 'owner_bookings' %}active{% endif %}">
+            <i class="bi bi-calendar-check-fill"></i> Bookings
         </a>
-        <a href="{% url 'owner_vehicles' %}"
-            class="sidebar-item {% if request.resolver_match.url_name == 'owner_vehicles' %}active{% endif %}"
-            data-section="vehicles">
-            <i class="bi bi-truck"></i> Vehicles
+
+        <div class="menu-label">Inventory & Team</div>
+        <a href="{% url 'owner_vehicles' %}" 
+           class="sidebar-item {% if request.resolver_match.url_name == 'owner_vehicles' %}active{% endif %}">
+            <i class="bi bi-truck-front-fill"></i> Fleet Management
         </a>
-        <a href="{% url 'owner_bookings' %}"
-            class="sidebar-item {% if request.resolver_match.url_name == 'owner_bookings' %}active{% endif %}"
-            data-section="bookings">
-            <i class="bi bi-calendar-check"></i> Bookings
+        <a href="{% url 'owner_staff' %}" 
+           class="sidebar-item {% if request.resolver_match.url_name == 'owner_staff' %}active{% endif %}">
+            <i class="bi bi-people-fill"></i> Staff Directory
         </a>
-        <a href="{% url 'owner_chat' %}"
-            class="sidebar-item {% if request.resolver_match.url_name == 'owner_chat' %}active{% endif %}"
-            data-section="chat">
-            <i class="bi bi-chat-dots"></i> Chat
+
+        <div class="menu-label">Engagement</div>
+        <a href="{% url 'owner_chat' %}" 
+           class="sidebar-item {% if request.resolver_match.url_name == 'owner_chat' %}active{% endif %}">
+            <i class="bi bi-chat-dots-fill"></i> Message Center
         </a>
-        <a href="{% url 'owner_reviews' %}"
-            class="sidebar-item {% if request.resolver_match.url_name == 'owner_reviews' %}active{% endif %}"
-            data-section="reviews">
-            <i class="bi bi-star-half"></i> Reviews
+        <a href="{% url 'owner_reviews' %}" 
+           class="sidebar-item {% if request.resolver_match.url_name == 'owner_reviews' %}active{% endif %}">
+            <i class="bi bi-star-fill"></i> Reviews
         </a>
-        <a href="{% url 'owner_complaints' %}"
-            class="sidebar-item {% if request.resolver_match.url_name == 'owner_complaints' %}active{% endif %}"
-            data-section="complaints">
-            <i class="bi bi-exclamation-triangle"></i> Complaints
+        <a href="{% url 'owner_complaints' %}" 
+           class="sidebar-item {% if request.resolver_match.url_name == 'owner_complaints' %}active{% endif %}">
+            <i class="bi bi-exclamation-triangle-fill"></i> Support Issues
         </a>
-        <a href="{% url 'owner_profile' %}"
-            class="sidebar-item {% if request.resolver_match.url_name == 'owner_profile' %}active{% endif %}"
-            data-section="profile">
-            <i class="bi bi-person-gear"></i> Settings
+
+        <div class="menu-label">System</div>
+        <a href="{% url 'owner_profile' %}" 
+           class="sidebar-item {% if request.resolver_match.url_name == 'owner_profile' %}active{% endif %}">
+            <i class="bi bi-person-fill-gear"></i> Profile
         </a>
     </div>
+
     <div class="sidebar-footer">
-        <button
-            class="btn btn-sm text-white bg-white bg-opacity-10 w-full justify-center hover:bg-opacity-20 flex gap-2"
-            id="logoutBtn">
-            <i class="bi bi-box-arrow-right"></i> Logout
-        </button>
+        <a href="{% url 'owner_logout' %}" class="btn-logout" id="logoutBtn">
+            <i class="bi bi-box-arrow-right"></i> 
+            <span>Log Out</span>
+        </a>
     </div>
 </nav>

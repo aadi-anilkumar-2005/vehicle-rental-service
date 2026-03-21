@@ -1,96 +1,267 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard | RentXplore{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Dashboard Overview</h1>
-</div>
+<style>
+    :root {
+        --bg-main: #f8fafc;
+        --card-bg: #ffffff;
+        --accent: #3b82f6;
+        --text-dark: #1e293b;
+        --text-light: #64748b;
+        --border-color: #e2e8f0;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
 
-<div class="metrics-grid">
-    <div class="metric-card">
-        <div class="metric-icon icon-blue">
-            <i class="fas fa-users"></i>
+    .dashboard-wrapper {
+        padding: 2rem;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        letter-spacing: -0.025em;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .metric-card {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--accent);
+    }
+
+    .metric-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    /* Modern Color Palette for Icons */
+    .icon-blue { background: #eff6ff; color: #3b82f6; }
+    .icon-green { background: #f0fdf4; color: #22c55e; }
+    .icon-red { background: #fef2f2; color: #ef4444; }
+    .icon-orange { background: #fff7ed; color: #f59e0b; }
+
+    .metric-info h3 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-light);
+        margin: 0 0 4px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .metric-info p {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    /* Table Container */
+    .data-table-container {
+        background: var(--card-bg);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .table-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .data-table th {
+        background: #f1f5f9;
+        padding: 1rem 1.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-light);
+        letter-spacing: 0.05em;
+    }
+
+    .data-table td {
+        padding: 1rem 1.5rem;
+        font-size: 0.875rem;
+        color: var(--text-dark);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .data-table tr:hover { background: #f8fafc; }
+
+    /* Premium Status Badges */
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-completed { background: #dcfce7; color: #166534; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .status-info { background: #e0f2fe; color: #075985; }
+
+    .amount-text {
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="page-header">
+        <h1 class="page-title">Dashboard Overview</h1>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon icon-blue">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="metric-info">
+                <h3>Total Users</h3>
+                <p>{{ total_users|default:"0" }}</p>
+            </div>
         </div>
-        <div class="metric-info">
-            <h3>Role Users</h3>
-            <p>{{ total_users|default:"0" }}</p>
+
+        <div class="metric-card">
+            <div class="metric-icon icon-green">
+                <i class="fas fa-store"></i>
+            </div>
+            <div class="metric-info">
+                <h3>Total Rental Shops</h3>
+                <p>{{ total_shops|default:"0" }}</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon icon-red">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <div class="metric-info">
+                <h3>Pending KYC</h3>
+                <p>{{ pending_kyc|default:"0" }}</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon icon-orange">
+                <i class="fas fa-user-clock"></i>
+            </div>
+            <div class="metric-info">
+                <h3>Pending Registrations</h3>
+                <p>{{ registration_pending|default:"0" }}</p>
+            </div>
         </div>
     </div>
 
-    <div class="metric-card">
-        <div class="metric-icon icon-green">
-            <i class="fas fa-store"></i>
+    <div class="data-table-container">
+        <div class="table-header">
+            <h2 class="table-title">Recent Activity</h2>
+            <button style="background:none; border:none; color:var(--accent); font-weight:600; cursor:pointer;">View All</button>
         </div>
-        <div class="metric-info">
-            <h3>Total Rental Shops</h3>
-            <p>{{ total_shops|default:"0" }}</p>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Customer</th>
+                        <th>Vehicle</th>
+                        <th>Shop</th>
+                        <th>Schedule</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in recent_bookings %}
+                    <tr>
+                        <td style="font-family: monospace; font-weight: 600;">#{{ booking.id }}</td>
+                        <td>{{ booking.user.username }}</td>
+                        <td>
+                            <div style="font-weight:600;">{{ booking.vehicle.brand }}</div>
+                            <div style="font-size:0.75rem; color:var(--text-light);">{{ booking.vehicle.model }}</div>
+                        </td>
+                        <td>{{ booking.shop.name }}</td>
+                        <td>
+                            <div style="font-size:0.8rem;">{{ booking.start_date|date:"M d" }} - {{ booking.end_date|date:"M d, Y" }}</div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ booking.status|default:'info'|lower }}">
+                                {{ booking.status|title }}
+                            </span>
+                        </td>
+                        <td class="amount-text">₹{{ booking.total_price }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-light); padding: 3rem;">
+                            <i class="fas fa-inbox" style="display:block; font-size: 2rem; margin-bottom: 10px; opacity: 0.3;"></i>
+                            No recent bookings found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </div>
-
-    <div class="metric-card">
-        <div class="metric-icon icon-red">
-            <i class="fas fa-id-card"></i>
-        </div>
-        <div class="metric-info">
-            <h3>KYC Pending</h3>
-            <p>{{ pending_kyc|default:"0" }}</p>
-        </div>
-    </div>
-
-    <div class="metric-card">
-        <div class="metric-icon icon-orange">
-            <i class="fas fa-user-clock"></i>
-        </div>
-        <div class="metric-info">
-            <h3>Registration Pending</h3>
-            <p>{{ registration_pending|default:"0" }}</p>
-        </div>
-    </div>
-</div>
-
-<div class="data-table-container">
-    <div class="table-header">
-        <h2 class="table-title">Recent Bookings</h2>
-    </div>
-    <div class="table-responsive">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Customer</th>
-                    <th>Vehicle</th>
-                    <th>Shop</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Status</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for booking in recent_bookings %}
-                <tr>
-                    <td>#{{ booking.id }}</td>
-                    <td>{{ booking.user.username }}</td>
-                    <td>{{ booking.vehicle.brand }} {{ booking.vehicle.model }}</td>
-                    <td>{{ booking.shop.name }}</td>
-                    <td>{{ booking.start_date|date:"M d, Y H:i" }}</td>
-                    <td>{{ booking.end_date|date:"M d, Y H:i" }}</td>
-                    <td>
-                        <span class="status-badge status-{{ booking.status|default:'info' }}">
-                            {{ booking.status|title }}
-                        </span>
-                    </td>
-                    <td>₹{{ booking.total_price }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No recent
-                        bookings found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
     </div>
 </div>
 {% endblock %}

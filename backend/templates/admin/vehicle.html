@@ -1,117 +1,205 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Vehicles{% endblock %}
+{% block title %}Fleet Management | RentXplore{% endblock %}
 
 {% block content %}
+<style>
+    :root {
+        --accent: #3b82f6;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --card-bg: #ffffff;
+        --border: #e2e8f0;
+    }
 
-<div class="page-header">
-    <div class="actions-group">
+    .fleet-container { padding: 1rem; animation: fadeIn 0.4s ease-out; }
+
+    /* Header & Filters Sync */
+    .page-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+    .page-title { font-size: 1.875rem; font-weight: 800; color: var(--text-main); margin: 0; }
+
+    .filters-bar { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    
+    .filter-select { 
+        padding: 0.6rem 1rem; 
+        border-radius: 12px; 
+        border: 1px solid var(--border); 
+        background: var(--card-bg); 
+        color: var(--text-main); 
+        font-size: 0.85rem; 
+        font-weight: 600; 
+        outline: none; 
+        transition: 0.3s;
+        cursor: pointer;
+    }
+    .filter-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+    /* Vehicle Grid */
+    .items-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+        gap: 1.5rem; 
+    }
+
+    /* Premium Vehicle Card */
+    .item-card { 
+        background: var(--card-bg); 
+        border-radius: 24px; 
+        border: 1px solid var(--border); 
+        overflow: hidden; 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .item-card:hover { 
+        transform: translateY(-8px); 
+        border-color: var(--accent); 
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
+    }
+
+    /* Image Wrapper */
+    .item-img-container { position: relative; height: 200px; background: #f8fafc; overflow: hidden; }
+    .item-img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s ease; }
+    .item-card:hover .item-img { transform: scale(1.08); }
+
+    /* Badges & Overlays */
+    .type-pill {
+        position: absolute; bottom: 12px; left: 12px;
+        background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+        color: white; padding: 4px 10px; border-radius: 8px;
+        font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+    }
+    .price-tag {
+        position: absolute; bottom: 12px; right: 12px;
+        background: var(--accent); color: white;
+        padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 0.85rem;
+    }
+
+    /* Content Area */
+    .item-content { padding: 1.5rem; }
+    .item-title { font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+    .item-subtitle { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; }
+
+    .plate-box {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: #f1f5f9; padding: 4px 10px; border-radius: 8px;
+        font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.75rem; color: #475569;
+    }
+
+    /* Stats Grid */
+    .item-specs {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        padding: 1rem 0; margin: 1rem 0;
+        border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;
+    }
+    .spec-item { text-align: center; display: flex; flex-direction: column; gap: 4px; }
+    .spec-item i { color: var(--accent); font-size: 0.9rem; }
+    .spec-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+
+    .shop-link { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+    .shop-link i { color: var(--accent); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="fleet-container">
+    <div class="page-header">
+        <h1 class="page-title">Global Fleet</h1>
+        
         <div class="filters-bar">
-            <!-- Filters -->
-            <select class="filter-select" data-filter name="type">
-                <option value="">Any Type</option>
-                <option value="car">Car</option>
-                <option value="bike">Bike</option>
+            <select class="filter-select" name="type">
+                <option value="">All Types</option>
+                <option value="car">Cars</option>
+                <option value="bike">Bikes</option>
             </select>
-            <select class="filter-select" data-filter name="is_available">
+            <select class="filter-select" name="is_available">
                 <option value="">Availability</option>
                 <option value="True">Available</option>
-                <option value="False">Unavailable</option>
+                <option value="False">In Use</option>
             </select>
-            <select class="filter-select" data-filter name="fuel_type">
-                <option value="">Fuel Type</option>
+            <select class="filter-select" name="fuel_type">
+                <option value="">Fuel</option>
                 <option value="petrol">Petrol</option>
                 <option value="diesel">Diesel</option>
-                <option value="electric">Electric</option>
-                <option value="cng">CNG</option>
+                <option value="electric">EV</option>
             </select>
-            <select class="filter-select" data-filter name="transmission">
-                <option value="">Transmission</option>
-                <option value="manual">Manual</option>
-                <option value="automatic">Automatic</option>
-            </select>
-            <!-- Sort -->
-            <select class="filter-select" data-sort name="sort">
+            <select class="filter-select" name="sort">
                 <option value="">Sort By</option>
-                <option value="price_per_hour">Price/Hr (Low-High)</option>
-                <option value="-price_per_hour">Price/Hr (High-Low)</option>
-                <option value="price_per_day">Price/Day (Low-High)</option>
-                <option value="-price_per_day">Price/Day (High-Low)</option>
+                <option value="price_per_hour">Cheapest/Hr</option>
+                <option value="-price_per_day">Luxury First</option>
             </select>
         </div>
+    </div>
+
+    <div class="items-grid">
+        {% for vehicle in vehicles %}
+        <div class="item-card" onclick="location.href='{% url 'admin_vehicle_detail' vehicle.id %}'">
+            <div class="item-img-container">
+                {% if vehicle.images and vehicle.images.0 %}
+                    <img src="{{ vehicle.images.0 }}" alt="{{ vehicle.name }}" class="item-img">
+                {% else %}
+                    <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: #eff6ff;">
+                        <i class="fas {% if vehicle.type == 'bike' %}fa-motorcycle{% else %}fa-car{% endif %} fa-3x" style="color: #bfdbfe;"></i>
+                    </div>
+                {% endif %}
+
+                <div style="position: absolute; top: 12px; left: 12px;">
+                    <span class="status-badge status-{{ vehicle.is_available|yesno:'success,danger' }}">
+                        {{ vehicle.is_available|yesno:'Available,Unavailable' }}
+                    </span>
+                </div>
+                <div class="type-pill">{{ vehicle.type }}</div>
+                <div class="price-tag">₹{{ vehicle.price_per_day }}/day</div>
+            </div>
+
+            <div class="item-content">
+                <div class="item-title">{{ vehicle.name|default:vehicle.brand }}</div>
+                <div class="item-subtitle">{{ vehicle.brand }} {{ vehicle.model }}</div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="plate-box">
+                        <i class="fas fa-fingerprint"></i> {{ vehicle.number }}
+                    </div>
+                    <div style="font-weight: 800; color: var(--accent); font-size: 0.9rem;">
+                        ₹{{ vehicle.price_per_hour }}<small>/hr</small>
+                    </div>
+                </div>
+
+                <div class="item-specs">
+                    <div class="spec-item">
+                        <i class="fas fa-gas-pump"></i>
+                        <span class="spec-label">{{ vehicle.fuel_type }}</span>
+                    </div>
+                    <div class="spec-item" style="border-left: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9;">
+                        <i class="fas fa-cog"></i>
+                        <span class="spec-label">{{ vehicle.transmission|slice:":3" }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <i class="fas fa-users"></i>
+                        <span class="spec-label">{{ vehicle.seating|default:"-" }} Seater</span>
+                    </div>
+                </div>
+
+                <div class="shop-link">
+                    <i class="fas fa-store"></i>
+                    <span>{{ vehicle.shop.name }}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 6rem 2rem; background: white; border-radius: 24px; border: 2px dashed #cbd5e1;">
+            <i class="fas fa-car-crash fa-4x" style="color: #cbd5e1; margin-bottom: 1.5rem;"></i>
+            <h3 style="color: #64748b;">No vehicles found</h3>
+            <p style="color: #94a3b8;">Try adjusting your filters to find what you're looking for.</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
-
-<div class="items-grid">
-    {% for vehicle in vehicles %}
-    <div class="item-card" data-href="{% url 'admin_vehicle_detail' vehicle.id %}">
-        <div class="item-img-container">
-            {% if vehicle.images and vehicle.images.0 %}
-            <img src="{{ vehicle.images.0 }}" alt="{{ vehicle.name }}" class="item-img">
-            {% else %}
-            <div class="item-img" style="display: flex; align-items: center; justify-content: center;">
-                <i class="fas {% if vehicle.type == 'bike' %}fa-motorcycle{% else %}fa-car{% endif %}"
-                    style="font-size: 3rem; color: #94A3B8;"></i>
-            </div>
-            {% endif %}
-
-            <div class="item-img-overlay">
-                <span class="status-badge status-{{ vehicle.is_available|yesno:'success,danger' }}">
-                    {{ vehicle.is_available|yesno:'Available,Unavailable' }}
-                </span>
-            </div>
-
-            <div
-                style="position: absolute; bottom: 1rem; left: 1rem; background: rgba(0,0,0,0.6); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">
-                {{ vehicle.type }}
-            </div>
-
-            <div
-                style="position: absolute; bottom: 1rem; right: 1rem; background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 600;">
-                ₹{{ vehicle.price_per_day }}/d
-            </div>
-        </div>
-
-        <div class="item-content">
-            <div class="item-title" style="margin-bottom: 0;">{{ vehicle.name }}</div>
-            <div class="item-subtitle" style="margin-bottom: 0.75rem;">
-                {{ vehicle.brand }} {{ vehicle.model }}
-            </div>
-
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: center;">
-                <span
-                    style="font-family: monospace; background: var(--background); padding: 0.2rem 0.5rem; border-radius: 0.25rem; border: 1px solid var(--border); font-size: 0.75rem; font-weight: 600;">
-                    <i class="fas fa-hashtag" style="color: var(--text-muted); margin-right: 0.25rem;"></i>{{ vehicle.number }}
-                </span>
-                <span style="font-size: 0.875rem; font-weight: 600; color: var(--primary);">₹{{ vehicle.price_per_hour }}/h</span>
-            </div>
-
-            <div class="item-details" style="grid-template-columns: repeat(3, 1fr); padding-top: 0.75rem;">
-                <div class="detail-block" style="text-align: center;">
-                    <i class="fas fa-gas-pump" style="color: var(--text-muted); margin-bottom: 0.25rem;"></i>
-                    <span class="detail-value" style="font-size: 0.8rem;">{{ vehicle.fuel_type|title }}</span>
-                </div>
-                <div class="detail-block"
-                    style="text-align: center; border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
-                    <i class="fas fa-cogs" style="color: var(--text-muted); margin-bottom: 0.25rem;"></i>
-                    <span class="detail-value" style="font-size: 0.8rem;">{{ vehicle.transmission|title }}</span>
-                </div>
-                <div class="detail-block" style="text-align: center;">
-                    <i class="fas fa-users" style="color: var(--text-muted); margin-bottom: 0.25rem;"></i>
-                    <span class="detail-value" style="font-size: 0.8rem;">{{ vehicle.seating|default:"-" }} Seats</span>
-                </div>
-            </div>
-
-            <div
-                style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-muted);">
-                <i class="fas fa-store" style="margin-right: 0.25rem;"></i> {{ vehicle.shop.name }}
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <div
-        style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius); border: 1px dashed var(--border);">
-        <p style="color: var(--text-muted);">No vehicles found matching the filters.</p>
-    </div>
-    {% endfor %}
 {% endblock %}

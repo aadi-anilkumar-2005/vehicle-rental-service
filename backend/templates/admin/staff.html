@@ -1,73 +1,174 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Staff{% endblock %}
+{% block title %}Staff Management | RentXplore{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Staff</h1>
-    <div class="actions-group">
-        <div class="filters-bar">
-            <select class="filter-select" data-filter name="is_active">
-                <option value="">Status (All)</option>
-                <option value="True">Active</option>
-                <option value="False">Inactive</option>
-            </select>
-            <select class="filter-select" data-sort name="sort">
-                <option value="">Sort By</option>
-                <option value="-date_joined">Joined (Newest)</option>
-                <option value="date_joined">Joined (Oldest)</option>
-                <option value="username">Username (A-Z)</option>
-            </select>
+<style>
+    :root {
+        --accent: #3b82f6;
+        --success: #16a34a;
+        --danger: #ef4444;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --card-bg: #ffffff;
+        --border: #e2e8f0;
+    }
+
+    .staff-container { padding: 1rem; animation: fadeIn 0.4s ease-out; }
+
+    /* Header & Filter Bar Sync */
+    .page-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 2rem; 
+        flex-wrap: wrap; 
+        gap: 1.5rem;
+    }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .btn-back { 
+        display: flex; align-items: center; gap: 8px; color: var(--text-muted); 
+        text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s;
+    }
+    .btn-back:hover { color: var(--accent); transform: translateX(-4px); }
+    .page-title { font-size: 1.875rem; font-weight: 800; color: var(--text-main); margin: 0; }
+    
+    .filters-bar { display: flex; gap: 0.75rem; }
+    
+    /* Filter Select Sync */
+    .filter-select { 
+        padding: 0.6rem 1rem; 
+        border-radius: 12px; 
+        border: 1px solid var(--border); 
+        background: var(--card-bg); 
+        color: var(--text-main); 
+        font-size: 0.85rem; 
+        font-weight: 600; 
+        outline: none; 
+        transition: 0.3s;
+        cursor: pointer;
+    }
+    .filter-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+    /* Table Design Sync */
+    .data-table-container { 
+        background: var(--card-bg); 
+        border-radius: 20px; 
+        border: 1px solid var(--border); 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+        overflow: hidden; 
+    }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .data-table th { 
+        background: #f8fafc; padding: 1rem 1.5rem; font-size: 0.75rem; 
+        font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;
+    }
+    .data-table td { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .data-table tr:hover { background: #fbfcfd; }
+
+    /* Profile Visuals */
+    .staff-ident { display: flex; align-items: center; gap: 12px; }
+    .staff-avatar { 
+        width: 42px; height: 42px; border-radius: 12px; 
+        object-fit: cover; border: 1px solid var(--border);
+    }
+    .avatar-placeholder {
+        width: 42px; height: 42px; border-radius: 12px; background: #eff6ff;
+        color: var(--accent); display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1rem; border: 1px solid #dbeafe;
+    }
+
+    /* Status Badges */
+    .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+    .status-success { background: #dcfce7; color: #166534; }
+    .status-danger { background: #fee2e2; color: #991b1b; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="staff-container">
+    <div class="page-header">
+        <div class="header-left">
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="page-title">Staff Directory</h1>
+        </div>
+
+        <div class="actions-group">
+            <form method="GET" class="filters-bar">
+                <select class="filter-select" name="is_active" onchange="this.form.submit()">
+                    <option value="">All Status</option>
+                    <option value="True" {% if request.GET.is_active == 'True' %}selected{% endif %}>Active</option>
+                    <option value="False" {% if request.GET.is_active == 'False' %}selected{% endif %}>Inactive</option>
+                </select>
+                
+                <select class="filter-select" name="sort" onchange="this.form.submit()">
+                    <option value="">Sort By</option>
+                    <option value="-user__date_joined" {% if request.GET.sort == '-user__date_joined' %}selected{% endif %}>Newest Hire</option>
+                    <option value="username" {% if request.GET.sort == 'username' %}selected{% endif %}>Name A-Z</option>
+                </select>
+            </form>
         </div>
     </div>
-</div>
 
-<div class="data-table-container">
-    <div class="table-responsive">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Profile Picture</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Status</th>
-                    <th>Joined At</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for staff_user in staff_users %}
-                <tr>
-                    <td>
-                        {% if staff_user.profile_picture %}
-                        <img src="{{ staff_user.profile_picture.url }}" alt="{{ staff_user.user.username }}" 
-                             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                        {% else %}
-                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-user" style="color: #94A3B8;"></i>
-                        </div>
-                        {% endif %}
-                    </td>
-                    <td>{{ staff_user.user.first_name }} {{ staff_user.user.last_name }}</td>
-                    <td>{{ staff_user.user.email }}</td>
-                    <td>{{ staff_user.phone|default:"-" }}</td>
-                    <td>
-                        <span class="status-badge status-{{ staff_user.user.is_active|yesno:'success,danger' }}">
-                            {{ staff_user.user.is_active|yesno:'Active,Inactive' }}
-                        </span>
-                    </td>
-                    <td style="color: var(--text-muted); font-size: 0.8rem;">
-                        {{ staff_user.user.date_joined|date:"M d, Y" }}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No staff
-                        found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="data-table-container">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Staff Member</th>
+                        <th>Contact Email</th>
+                        <th>Phone Number</th>
+                        <th>Account Status</th>
+                        <th>Onboarded Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff_user in staff_users %}
+                    <tr>
+                        <td>
+                            <div class="staff-ident">
+                                {% if staff_user.profile_picture %}
+                                    <img src="{{ staff_user.profile_picture.url }}" class="staff-avatar" alt="Avatar">
+                                {% else %}
+                                    <div class="avatar-placeholder">
+                                        {{ staff_user.user.username|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div style="font-weight: 700; color: var(--text-main);">{{ staff_user.user.get_full_name|default:staff_user.user.username }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">@{{ staff_user.user.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-main);">{{ staff_user.user.email }}</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">{{ staff_user.phone|default:"No Phone" }}</div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ staff_user.user.is_active|yesno:'success,danger' }}">
+                                {{ staff_user.user.is_active|yesno:'Active,Disabled' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.85rem; color: var(--text-main); font-weight: 500;">{{ staff_user.user.date_joined|date:"M d, Y" }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ staff_user.user.date_joined|timesince }} ago</div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 5rem;">
+                            <i class="fas fa-user-tie" style="font-size: 3rem; display: block; margin-bottom: 1.5rem; opacity: 0.2;"></i>
+                            <p style="font-weight: 500;">No staff accounts found.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

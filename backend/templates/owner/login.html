@@ -3,64 +3,81 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RentXplore - Login</title>
+    <title>RentXplore - Partner Login</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <style>
         :root {
-            --primary-blue: #0d6efd;
-            --dark-bg: #0a192f;
+            --primary-blue: #3b82f6; /* Synced Blue */
+            --dark-bg: #0f172a;    /* Synced Navy */
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
         }
 
         body {
             font-family: "Inter", sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f8fafc;
             margin: 0;
             overflow-x: hidden;
+            color: #1e293b;
         }
 
-        /* The Main Split Container */
         .auth-split {
             display: flex;
             min-height: 100vh;
             width: 100vw;
         }
 
-        /* LEFT PANEL: Branding & Features */
+        /* LEFT PANEL: The Brand Experience */
         .auth-split-left {
-            flex: 1;
-            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--primary-blue) 100%);
+            flex: 1.2;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
             color: white;
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding: 5% 8%;
             position: relative;
+            overflow: hidden;
+        }
+
+        /* Ambient Light Effect */
+        .auth-split-left::after {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .auth-title {
-            font-size: 2.8rem;
-            font-weight: 700;
-            line-height: 1.2;
+            font-size: 3.2rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1px;
         }
 
-        /* Perfect Circle Icon Style */
+        .brand-accent { color: var(--primary-blue); }
+
         .feature-icon {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: var(--primary-blue);
         }
 
-        /* RIGHT PANEL: Login Form */
+        /* RIGHT PANEL: Minimalist Login */
         .auth-split-right {
             flex: 1;
             background: white;
@@ -72,38 +89,65 @@
 
         .login-card {
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
         }
 
         .form-control {
             padding: 0.75rem 1rem;
-            border-radius: 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: #fbfcfd;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            background: white;
         }
 
         .btn-primary {
-            padding: 0.75rem;
-            font-weight: 600;
-            border-radius: 8px;
+            background: var(--primary-blue);
+            border: none;
+            padding: 0.85rem;
+            font-weight: 700;
+            border-radius: 12px;
+            transition: 0.3s;
         }
 
-        /* Responsive: Stack on small screens */
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            padding: 1rem;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @media (max-width: 991.98px) {
-            .auth-split {
-                flex-direction: column;
-            }
-            .auth-split-left {
-                padding: 3rem 2rem;
-                text-align: center;
-                align-items: center;
-            }
-            .auth-split-left p {
-                margin-left: auto;
-                margin-right: auto;
-            }
-            .auth-split-left .d-flex {
-                align-items: center;
-                text-align: left;
-            }
+            .auth-split { flex-direction: column; }
+            .auth-split-left { padding: 4rem 2rem; text-align: center; align-items: center; }
+            .auth-title { font-size: 2.5rem; }
         }
     </style>
 </head>
@@ -113,38 +157,32 @@
         
         <div class="auth-split-left">
             <div class="mb-4">
-                <i class="bi bi-car-front-fill" style="font-size: 3.5rem; color: #4ade80;"></i>
+                <div style="background: var(--primary-blue); width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);">
+                    <i class="bi bi-car-front-fill" style="font-size: 2.2rem; color: white;"></i>
+                </div>
             </div>
 
             <h1 class="auth-title mb-4">
-                Welcome Back to <br />
-                <span style="color: #4ade80;">RentXplore</span>
+                Welcome Back <br />
+                <span class="brand-accent">RentXplore</span>
             </h1>
 
-            <p class="mb-5 opacity-75 fs-5" style="max-width: 450px">
-                Manage your entire fleet, staff, and bookings in one place with the powerful RentXplore dashboard.
+            <p class="mb-5 opacity-75 fs-5" style="max-width: 480px; font-weight: 400; line-height: 1.6;">
+                The industry's most powerful vehicle rental management system. Access your fleet and performance analytics.
             </p>
 
-            <div class="d-flex flex-column gap-3">
+            <div class="d-flex flex-column gap-4">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="feature-icon">
-                        <i class="bi bi-check-lg text-white"></i>
-                    </div>
-                    <span class="fw-medium">Streamlined Fleet Management</span>
+                    <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                    <span class="fw-semibold">Enterprise-Grade Security</span>
                 </div>
-
                 <div class="d-flex align-items-center gap-3">
-                    <div class="feature-icon">
-                        <i class="bi bi-check-lg text-white"></i>
-                    </div>
-                    <span class="fw-medium">Real-time Booking Insights</span>
+                    <div class="feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                    <span class="fw-semibold">Real-Time Revenue Tracking</span>
                 </div>
-
                 <div class="d-flex align-items-center gap-3">
-                    <div class="feature-icon">
-                        <i class="bi bi-check-lg text-white"></i>
-                    </div>
-                    <span class="fw-medium">Secure Staff Coordination</span>
+                    <div class="feature-icon"><i class="bi bi-people"></i></div>
+                    <span class="fw-semibold">Automated Staff Workflow</span>
                 </div>
             </div>
         </div>
@@ -152,14 +190,15 @@
         <div class="auth-split-right">
             <div class="login-card">
                 <div class="mb-5">
-                    <h2 class="fw-bold mb-2">Sign In</h2>
-                    <p class="text-muted">Enter your account details to access your dashboard</p>
+                    <h2 class="fw-800 mb-2" style="font-weight: 800; letter-spacing: -0.5px;">Partner Sign In</h2>
+                    <p class="text-muted fw-500">Welcome Back! Please enter your credentials.</p>
                 </div>
 
                 {% if messages %}
                 <div class="mb-4">
                     {% for message in messages %}
-                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 small">
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} small d-flex align-items-center gap-2">
+                        <i class="bi bi-exclamation-circle-fill"></i>
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -170,15 +209,15 @@
                     {% csrf_token %}
 
                     <div class="mb-3">
-                        <label for="email" class="form-label fw-semibold small">Email Address</label>
+                        <label for="email" class="form-label">Work Email</label>
                         <input type="email" name="email" id="email" class="form-control" placeholder="example@gmail.com" required />
                     </div>
 
                     <div class="mb-4">
-                        <label for="password" class="form-label fw-semibold small">Password</label>
+                        <label for="password" class="form-label">Security Key</label>
                         <div class="position-relative">
                             <input type="password" name="password" id="password" class="form-control" placeholder="enter password" required />
-                            <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent text-muted" onclick="togglePassword()">
+                            <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y border-0 bg-transparent text-muted px-3" onclick="togglePassword()">
                                 <i class="bi bi-eye" id="passwordIcon"></i>
                             </button>
                         </div>
@@ -186,18 +225,20 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me" />
-                            <label class="form-check-label small text-muted" for="rememberMe">Remember me</label>
+                            <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me" style="cursor: pointer;"/>
+                            <label class="form-check-label small text-muted fw-600" for="rememberMe" style="cursor: pointer;">Stay Logged In</label>
                         </div>
-                        <a href="#" class="text-primary small text-decoration-none fw-semibold">Forgot password?</a>
+                        <a href="#" class="text-primary small text-decoration-none fw-bold">Reset Password</a>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 mb-4" id="loginBtn">Sign In</button>
+                    <button type="submit" class="btn btn-primary w-100 mb-4" id="loginBtn">
+                        Access Dashboard
+                    </button>
 
                     <div class="text-center">
-                        <p class="text-muted small">
-                            Don't have an account? 
-                            <a href="{% url 'owner_register' %}" class="fw-semibold text-primary text-decoration-none">Register as Partner</a>
+                        <p class="text-muted small fw-500">
+                            New Partner? 
+                            <a href="{% url 'owner_register' %}" class="fw-bold text-primary text-decoration-none">Create a Business Account</a>
                         </p>
                     </div>
                 </form>
@@ -221,7 +262,7 @@
         document.getElementById("loginForm").addEventListener("submit", function () {
             const btn = document.getElementById("loginBtn");
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Authenticating...';
         });
     </script>
 </body>

@@ -3,142 +3,200 @@
 {% block title %}Shop: {{ shop.name }}{% endblock %}
 
 {% block content %}
-<!-- Shop Detail View -->
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-    <a href="{% url 'admin_rental_shops' %}" class="btn btn-outline">
-        <i class="fas fa-arrow-left"></i> Back to Shops
-    </a>
-    <a href="{% url 'admin_staff' %}" class="btn btn-primary">
-        <i class="fas fa-users"></i> View Staff
-    </a>
-</div>
+<style>
+    :root {
+        --accent: #3b82f6;
+        --success: #16a34a;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --card-bg: #ffffff;
+        --border: #e2e8f0;
+    }
 
-<div class="detail-view">
-    {% if shop.owner.profile_picture %}
-    <img src="{{ shop.owner.profile_picture.url }}" alt="{{ shop.name }}" class="detail-header-img">
-    {% else %}
-    <div class="detail-header-img"
-        style="background: #E2E8F0; display: flex; align-items: center; justify-content: center;">
-        <i class="fas fa-store" style="font-size: 4rem; color: #94A3B8;"></i>
+    .detail-container { padding: 1rem; animation: fadeIn 0.4s ease-out; }
+
+    /* Header Actions */
+    .action-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .btn-back { 
+        display: flex; align-items: center; gap: 8px; color: var(--text-muted); 
+        text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s;
+    }
+    .btn-back:hover { color: var(--accent); transform: translateX(-4px); }
+
+    /* Premium Detail Card */
+    .shop-info-card { 
+        background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border); 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 3rem;
+    }
+    
+    .shop-banner { height: 200px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); position: relative; }
+    .shop-logo-float {
+        position: absolute; bottom: -40px; left: 40px; width: 100px; height: 100px;
+        background: white; border-radius: 20px; border: 4px solid white;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+    }
+
+    .shop-details-body { padding: 60px 40px 40px 40px; }
+    .shop-badge { padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+
+    /* Info Grid */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 2rem; }
+    .info-label { display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .info-value { font-size: 0.95rem; font-weight: 600; color: var(--text-main); line-height: 1.5; }
+
+    /* Vehicle/Booking Cards */
+    .section-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
+    .section-title i { color: var(--accent); }
+
+    .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+    
+    .item-card { 
+        background: white; border-radius: 20px; border: 1px solid var(--border); 
+        overflow: hidden; transition: 0.3s; cursor: pointer;
+    }
+    .item-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+
+    .item-img-box { height: 180px; background: #f8fafc; position: relative; }
+    .item-img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .price-pill { 
+        background: var(--text-main); color: white; padding: 6px 12px; 
+        border-radius: 10px; font-weight: 700; font-size: 0.85rem;
+    }
+
+    /* Booking Specifics */
+    .booking-card { padding: 1.5rem; background: white; border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+    .booking-user { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text-main); }
+    .booking-meta { font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 5px; line-height: 1.6; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="detail-container">
+    <div class="action-header">
+        <a href="{% url 'admin_rental_shops' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Fleet
+        </a>
+        <a href="{% url 'admin_staff' %}" class="menu-item" style="background: var(--accent); color: white !important; padding: 10px 20px; border-radius: 12px; font-weight: 700;">
+            <i class="fas fa-users"></i> Manage Shop Staff
+        </a>
     </div>
-    {% endif %}
 
-    <div class="detail-body">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
-            <div>
-                <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">{{ shop.name }}</h2>
-                <span class="status-badge status-{{ shop.is_open|yesno:'success,danger' }}">
-                    {{ shop.is_open|yesno:'Open,Closed' }}
-                </span>
+    <div class="shop-info-card">
+        <div class="shop-banner">
+            <div class="shop-logo-float">
+                {% if shop.owner.profile_picture %}
+                    <img src="{{ shop.owner.profile_picture.url }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
+                {% else %}
+                    <i class="fas fa-store fa-2x" style="color: #cbd5e1;"></i>
+                {% endif %}
             </div>
-            <div style="text-align: right; background: var(--background); padding: 1rem; border-radius: 0.5rem;">
-                <div style="font-size: 1.5rem; font-weight: 700; color: #F59E0B;">
-                    <i class="fas fa-star"></i> {{ shop.rating }}
+        </div>
+        
+        <div class="shop-details-body">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <h2 style="font-size: 2rem; font-weight: 800; color: var(--text-main); margin: 0 0 8px 0;">{{ shop.name }}</h2>
+                    <span class="status-badge status-{{ shop.is_open|yesno:'success,danger' }}">
+                        <i class="fas {% if shop.is_open %}fa-circle{% else %}fa-times-circle{% endif %}" style="font-size: 8px; margin-right: 5px;"></i>
+                        {{ shop.is_open|yesno:'Open for Business,Currently Closed' }}
+                    </span>
                 </div>
-                <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
-                    {{ shop.review_count }} reviews
+                <div style="text-align: right;">
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #f59e0b;">
+                        <i class="fas fa-star"></i> {{ shop.rating|default:"0.0" }}
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                        Based on {{ shop.review_count|default:"0" }} Reviews
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="info-grid">
-            <div class="info-col">
-                <span class="info-label">Address</span>
-                <span class="info-value">{{ shop.address }}</span>
-            </div>
-            <div class="info-col">
-                <span class="info-label">Phone</span>
-                <span class="info-value">{{ shop.phone|default:"N/A" }}</span>
-            </div>
-            <div class="info-col">
-                <span class="info-label">Coordinates</span>
-                <span class="info-value">{{ shop.latitude }}, {{ shop.longitude }}</span>
-            </div>
-            <div class="info-col">
-                <span class="info-label">Operating Hours</span>
-                <span class="info-value">{{ shop.operating_hours|default:"N/A" }}</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Vehicles for this shop -->
-<h3 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Vehicles at this Shop</h3>
-<div class="items-grid">
-    {% for vehicle in vehicles %}
-    <div class="item-card" data-href="{% url 'admin_vehicle_detail' vehicle.id %}">
-        <div class="item-img-container">
-            {% if vehicle.images and vehicle.images.0 %}
-            <img src="{{ vehicle.images.0 }}" alt="{{ vehicle.name }}" class="item-img">
-            {% else %}
-            <div class="item-img" style="display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-car" style="font-size: 3rem; color: #94A3B8;"></i>
-            </div>
-            {% endif %}
-            <div class="item-img-overlay">
-                <span class="status-badge status-{{ vehicle.is_available|yesno:'success,danger' }}">
-                    {{ vehicle.is_available|yesno:'Available,Unavailable' }}
-                </span>
-            </div>
-        </div>
-        <div class="item-content">
-            <div class="item-title">{{ vehicle.brand }} {{ vehicle.model }}</div>
-            <div class="item-subtitle">
-                <span style="text-transform: uppercase;">{{ vehicle.type }}</span> &bull;
-                <span
-                    style="font-family: monospace; background: var(--background); padding: 0.1rem 0.4rem; border-radius: 0.25rem; border: 1px solid var(--border);">{{ vehicle.number }}</span>
-            </div>
-
-            <div class="detail-block" style="margin-bottom: 0.75rem;">
-                <span class="detail-label">Pricing</span>
-                <span class="detail-value">
-                    <span style="color: var(--primary);">₹{{ vehicle.price_per_hour }}/hr</span> |
-                    <span>₹{{ vehicle.price_per_day }}/day</span>
-                </span>
-            </div>
-
-            <div class="item-details">
-                <div class="detail-block">
-                    <span class="detail-label">Fuel</span>
-                    <span class="detail-value">{{ vehicle.fuel_type }}</span>
+            <div class="info-grid">
+                <div class="info-col">
+                    <span class="info-label">Physical Address</span>
+                    <span class="info-value">{{ shop.address }}</span>
                 </div>
-                <div class="detail-block">
-                    <span class="detail-label">Transmission</span>
-                    <span class="detail-value">{{ vehicle.transmission }}</span>
+                <div class="info-col">
+                    <span class="info-label">Contact Primary</span>
+                    <span class="info-value">{{ shop.phone|default:"No Phone Registered" }}</span>
+                </div>
+                <div class="info-col">
+                    <span class="info-label">GPS Coordinates</span>
+                    <span class="info-value">{{ shop.latitude }}, {{ shop.longitude }}</span>
+                </div>
+                <div class="info-col">
+                    <span class="info-label">Operating Schedule</span>
+                    <span class="info-value">{{ shop.operating_hours|default:"Not Specified" }}</span>
                 </div>
             </div>
         </div>
     </div>
-    {% empty %}
-    <div
-        style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius); border: 1px dashed var(--border);">
-        <p style="color: var(--text-muted);">No vehicles registered under this shop yet.</p>
-    </div>
-    {% endfor %}
-</div>
 
-<h3 style="margin-bottom: 1.5rem; font-size: 1.25rem; margin-top: 2rem;">Recent Bookings for {{ shop.name }}</h3>
-<div class="items-grid">
-    {% for booking in recent_bookings %}
-    <div class="item-card">
-        <div class="item-content">
-            <div class="item-title" style="margin-bottom: 0.5rem;">
-                <i class="fas fa-user-circle" style="color: var(--text-muted); margin-right: 0.5rem;"></i>{{ booking.user.get_full_name|default:booking.user.username }}
+    <h3 class="section-title"><i class="fas fa-car"></i> Registered Fleet ({{ vehicles|length }})</h3>
+    <div class="items-grid" style="margin-bottom: 4rem;">
+        {% for vehicle in vehicles %}
+        <div class="item-card" onclick="location.href='{% url 'admin_vehicle_detail' vehicle.id %}'">
+            <div class="item-img-box">
+                {% if vehicle.images and vehicle.images.0 %}
+                    <img src="{{ vehicle.images.0 }}" class="item-img">
+                {% else %}
+                    <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: #eff6ff;">
+                        <i class="fas fa-car-side fa-3x" style="color: var(--accent); opacity: 0.2;"></i>
+                    </div>
+                {% endif %}
+                <div style="position: absolute; top: 15px; right: 15px;">
+                    <span class="status-badge status-{{ vehicle.is_available|yesno:'success,danger' }}">
+                        {{ vehicle.is_available|yesno:'Available,In Use' }}
+                    </span>
+                </div>
             </div>
-            <div class="item-subtitle" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span class="status-badge status-{{ booking.status|yesno:'success,warning' }}">{{ booking.status|title }}</span>
-                <span style="font-weight: 600;">₹{{ booking.total_price }}</span>
-            </div>
-            <div class="item-details" style="border-top: 1px solid var(--border); padding-top: 0.75rem; font-size: 0.8rem; color: var(--text-muted);">
-                <i class="fas fa-car" style="margin-right: 0.5rem;"></i>{{ booking.vehicle.brand }} {{ booking.vehicle.model }}<br>
-                <i class="far fa-calendar-alt"></i> {{ booking.start_date|date:"M d, Y" }} <br>to {{ booking.end_date|date:"M d, Y" }}
+            <div style="padding: 1.25rem;">
+                <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 5px;">{{ vehicle.brand }} {{ vehicle.model }}</div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 15px;">
+                    {{ vehicle.type|upper }} • <span style="font-family: monospace; color: var(--accent);">{{ vehicle.number }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="price-pill">₹{{ vehicle.price_per_hour }}<small>/hr</small></span>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
+                        {{ vehicle.fuel_type }} • {{ vehicle.transmission }}
+                    </div>
+                </div>
             </div>
         </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 4rem; background: white; border-radius: 24px; border: 2px dashed var(--border);">
+            <p style="color: var(--text-muted); font-weight: 600;">This shop has no vehicles in its fleet yet.</p>
+        </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; background: var(--surface); border-radius: var(--radius); border: 1px dashed var(--border);">
-        <p style="color: var(--text-muted); margin: 0;">No bookings associated with this shop yet.</p>
+
+    <h3 class="section-title"><i class="fas fa-calendar-check"></i> Recent Activity</h3>
+    <div class="items-grid">
+        {% for booking in recent_bookings %}
+        <div class="booking-card">
+            <div class="booking-user">
+                <div style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-user" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+                </div>
+                {{ booking.user.get_full_name|default:booking.user.username }}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="status-badge status-{{ booking.status|lower }}">{{ booking.status|title }}</span>
+                <span style="font-weight: 800; color: var(--text-main);">₹{{ booking.total_price }}</span>
+            </div>
+            <div class="booking-meta">
+                <i class="fas fa-car" style="margin-right: 8px; color: var(--accent);"></i> {{ booking.vehicle.brand }} {{ booking.vehicle.model }}<br>
+                <i class="far fa-clock" style="margin-right: 8px;"></i> {{ booking.start_date|date:"M d" }} - {{ booking.end_date|date:"M d, Y" }}
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted); font-weight: 600;">
+            No recent booking activity found for this shop.
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 {% endblock %}

@@ -1,16 +1,17 @@
 {% extends 'owner/base.html' %}
 {% load static %}
 
-{% block title %}Vehicle Rental - Vehicle Management{% endblock %}
+{% block title %}RentXplore - Vehicle Management{% endblock %}
 {% block page_title %}Vehicle Management{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="mb-1 font-bold">Vehicle Fleet</h2>
-        <p class="text-muted small">Add, edit, or remove vehicles from your rental availability.</p>
+        <h2 class="mb-1" style="font-weight: 800; color: #0f172a; letter-spacing: -0.5px;">Vehicle Fleet</h2>
+        <p class="text-muted small fw-500">Add, edit, or remove vehicles from your rental availability.</p>
     </div>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVehicleModal" 
+            style="background: #3b82f6; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
         <i class="bi bi-car-front"></i> Add Vehicle
     </button>
 </div>
@@ -18,47 +19,52 @@
 {% if messages %}
 <div class="mb-4">
     {% for message in messages %}
-    <div
-        class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 px-3 small rounded">
-        {{ message }}</div>
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 px-3 small" 
+         style="border-radius: 12px; font-weight: 600; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        {{ message }}
+    </div>
     {% endfor %}
 </div>
 {% endif %}
 
-<div class="row" id="vehicleGrid">
+<div class="row g-4" id="vehicleGrid">
     {% for vehicle in vehicles %}
-    <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
-        <div class="card h-100">
+    <div class="col-md-6 col-lg-4 col-xl-3">
+        <div class="card h-100 shadow-sm" style="border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; transition: 0.3s; background: #fff;">
             <div style="height:200px;overflow:hidden;position:relative;">
                 {% if vehicle.images and vehicle.images.0 %}
-                <img src="{{ vehicle.images.0 }}" alt="{{ vehicle.name }}"
-                    style="width:100%;height:100%;object-fit:cover;">
+                <img src="{{ vehicle.images.0 }}" alt="{{ vehicle.name }}" style="width:100%;height:100%;object-fit:cover;">
                 {% else %}
                 <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=400"
                     alt="{{ vehicle.name }}" style="width:100%;height:100%;object-fit:cover;">
                 {% endif %}
-                <span class="badge {% if vehicle.is_available %}badge-success{% else %}badge-danger{% endif %}"
-                    style="position:absolute;top:12px;right:12px;font-size:0.75rem;">
+                <span class="badge" style="position:absolute;top:12px;right:12px;font-size:0.7rem; font-weight: 800; text-transform: uppercase; padding: 0.5rem 0.8rem; border-radius: 2rem;
+                    {% if vehicle.is_available %} background: #dcfce7; color: #166534; {% else %} background: #fee2e2; color: #991b1b; {% endif %}">
                     {% if vehicle.is_available %}Available{% else %}Unavailable{% endif %}
                 </span>
             </div>
-            <div class="card-body d-flex flex-column">
+            <div class="card-body d-flex flex-column p-4">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div>
-                        <h5 class="mb-1">{{ vehicle.name }}</h5>
-                        <div class="text-muted small"><i class="bi bi-tag-fill me-1"></i>{{ vehicle.brand }} {{ vehicle.model }}</div>
+                        <h5 class="mb-1" style="font-weight: 800; color: #0f172a;">{{ vehicle.name }}</h5>
+                        <div class="text-muted small" style="font-weight: 600;"><i class="bi bi-tag-fill me-1 text-primary"></i>{{ vehicle.brand }} {{ vehicle.model }}</div>
                     </div>
                 </div>
                 <div class="d-flex gap-2 mb-4 mt-2">
-                    <span class="badge badge-secondary"><i class="bi bi-ev-front me-1"></i>{{ vehicle.fuel_type }}</span>
-                    <span class="badge badge-secondary"><i class="bi bi-gear me-1"></i>{{ vehicle.transmission }}</span>
+                    <span class="badge" style="background: #f1f5f9; color: #475569; border-radius: 6px; font-weight: 700; font-size: 0.65rem; padding: 0.4rem 0.6rem;">
+                        <i class="bi bi-ev-front me-1"></i>{{ vehicle.fuel_type }}
+                    </span>
+                    <span class="badge" style="background: #f1f5f9; color: #475569; border-radius: 6px; font-weight: 700; font-size: 0.65rem; padding: 0.4rem 0.6rem;">
+                        <i class="bi bi-gear me-1"></i>{{ vehicle.transmission }}
+                    </span>
                 </div>
-                <div class="mb-3 small text-muted"><i class="bi bi-cash me-1"></i>₹{{ vehicle.price_per_hour }}/hr | ₹{{ vehicle.price_per_day }}/day</div>
-                <div
-                    class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top position-relative">
-                    <small class="text-muted font-monospace" style="font-size:0.75rem;">Reg: {{ vehicle.number }}</small>
+                <div class="mb-3 small text-muted" style="font-weight: 500;">
+                    <i class="bi bi-cash me-1 text-primary"></i>₹{{ vehicle.price_per_hour }}/hr | ₹{{ vehicle.price_per_day }}/day
+                </div>
+                <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+                    <small class="text-muted font-monospace fw-bold" style="font-size:0.75rem; background: #f8fafc; padding: 2px 6px; border-radius: 4px;">Reg: {{ vehicle.number }}</small>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-icon btn-secondary edit-vehicle-btn" data-id="{{ vehicle.id }}"
+                        <button class="btn btn-sm edit-vehicle-btn" data-id="{{ vehicle.id }}"
                             data-type="{{ vehicle.type }}" data-name="{{ vehicle.name }}"
                             data-brand="{{ vehicle.brand }}" data-model="{{ vehicle.model }}"
                             data-number="{{ vehicle.number }}" data-price_per_hour="{{ vehicle.price_per_hour }}"
@@ -66,7 +72,8 @@
                             data-transmission="{{ vehicle.transmission }}"
                             data-seating="{% if vehicle.seating %}{{ vehicle.seating }}{% endif %}"
                             data-features="{{ vehicle.features|join:',' }}"
-                            data-images="{{ vehicle.images|join:',' }}">
+                            data-images="{{ vehicle.images|join:',' }}"
+                            style="background: #eff6ff; color: #3b82f6; border: none; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <form method="POST" action="{% url 'owner_vehicles' %}" id="deleteForm-{{ vehicle.id }}"
@@ -74,8 +81,9 @@
                             {% csrf_token %}
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
-                            <button type="button" class="btn btn-icon btn-danger"
-                                onclick="confirmDelete('{{ vehicle.id }}', '{{ vehicle.name|escapejs }}')">
+                            <button type="button" class="btn btn-sm"
+                                onclick="confirmDelete('{{ vehicle.id }}', '{{ vehicle.name|escapejs }}')"
+                                style="background: #fee2e2; color: #ef4444; border: none; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
@@ -86,19 +94,18 @@
     </div>
     {% empty %}
     <div class="col-12 text-center py-5">
-        <div class="text-muted mb-3"><i class="bi bi-car-front display-4"></i></div>
-        <h5>No Vehicles Found</h5>
+        <div class="text-muted mb-3"><i class="bi bi-car-front" style="font-size: 3rem; opacity: 0.3;"></i></div>
+        <h5 style="font-weight: 700;">No Vehicles Found</h5>
         <p class="text-muted">You haven't added any vehicles to your fleet yet.</p>
     </div>
     {% endfor %}
 </div>
 
-<!-- Add Vehicle Modal -->
 <div class="modal fade" id="addVehicleModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow" style="border-radius:var(--radius-xl);overflow:hidden;">
-            <div class="modal-header bg-light border-bottom-0 p-4">
-                <h5 class="modal-title font-bold text-dark">Vehicle Details</h5>
+        <div class="modal-content border-0 shadow" style="border-radius:20px; overflow:hidden;">
+            <div class="modal-header bg-light border-0 p-4">
+                <h5 class="modal-title font-bold text-dark" style="font-weight: 800;">Vehicle Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
@@ -107,80 +114,79 @@
                     <input type="hidden" name="action" value="add">
                     <div class="row g-3">
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="vehicleType" class="form-label">Vehicle Type</label>
-                            <select class="form-select" name="type" id="vehicleType" required>
+                            <label for="vehicleType" class="form-label fw-bold small text-muted">Vehicle Type</label>
+                            <select class="form-select" name="type" id="vehicleType" required style="border-radius: 10px;">
                                 <option value="" disabled selected>Select Vehicle Type</option>
                                 <option value="car">Car</option>
                                 <option value="bike">Bike</option>
                             </select>
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="vehicleName" class="form-label">Vehicle Name</label>
+                            <label for="vehicleName" class="form-label fw-bold small text-muted">Vehicle Name</label>
                             <input type="text" name="name" class="form-control" id="vehicleName"
-                                placeholder="e.g. Honda Civic 2023" required>
+                                placeholder="e.g. Honda Civic 2023" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="vehicleBrand" class="form-label">Brand</label>
+                            <label for="vehicleBrand" class="form-label fw-bold small text-muted">Brand</label>
                             <input type="text" name="brand" class="form-control" id="vehicleBrand"
-                                placeholder="e.g. Honda" required>
+                                placeholder="e.g. Honda" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="vehicleModel" class="form-label">Model</label>
+                            <label for="vehicleModel" class="form-label fw-bold small text-muted">Model</label>
                             <input type="text" name="model" class="form-control" id="vehicleModel"
-                                placeholder="e.g. Civic" required>
+                                placeholder="e.g. Civic" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="vehicleRegNumber" class="form-label">Registration Number</label>
+                            <label for="vehicleRegNumber" class="form-label fw-bold small text-muted">Registration Number</label>
                             <input type="text" name="number" class="form-control" id="vehicleRegNumber"
-                                placeholder="e.g. ABC 1234" required>
+                                placeholder="e.g. ABC 1234" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="pricePerHour" class="form-label">Price/Hour (₹)</label>
+                            <label for="pricePerHour" class="form-label fw-bold small text-muted">Price/Hour (₹)</label>
                             <input type="number" name="price_per_hour" step="0.01" class="form-control"
-                                id="pricePerHour" required>
+                                id="pricePerHour" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="pricePerDay" class="form-label">Price/Day (₹)</label>
+                            <label for="pricePerDay" class="form-label fw-bold small text-muted">Price/Day (₹)</label>
                             <input type="number" name="price_per_day" step="0.01" class="form-control" id="pricePerDay"
-                                required>
+                                required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-4 form-group mb-3">
-                            <label for="fuelType" class="form-label">Fuel Type</label>
-                            <select name="fuel_type" class="form-select" id="fuelType" required>
+                            <label for="fuelType" class="form-label fw-bold small text-muted">Fuel Type</label>
+                            <select name="fuel_type" class="form-select" id="fuelType" required style="border-radius: 10px;">
                                 <option value="" disabled selected>Select Fuel Type</option>
                                 <option value="petrol">Petrol</option>
                                 <option value="diesel">Diesel</option>
                             </select>
                         </div>
                         <div class="col-sm-4 form-group mb-3">
-                            <label for="transmission" class="form-label">Transmission</label>
-                            <select name="transmission" class="form-select" id="transmission" required>
+                            <label for="transmission" class="form-label fw-bold small text-muted">Transmission</label>
+                            <select name="transmission" class="form-select" id="transmission" required style="border-radius: 10px;">
                                 <option value="" disabled selected>Select Transmission</option>
                                 <option value="auto">Automatic</option>
                                 <option value="manual">Manual</option>
                             </select>
                         </div>
                         <div class="col-sm-4 form-group mb-3" id="seatingField">
-                            <label for="seating" class="form-label">Seating</label>
-                            <select name="seating" class="form-select" id="seating">
+                            <label for="seating" class="form-label fw-bold small text-muted">Seating</label>
+                            <select name="seating" class="form-select" id="seating" style="border-radius: 10px;">
                                 <option value="" disabled selected>Select Seating</option>
                                 <option value="5">5 Seater</option>
                                 <option value="7">7 Seater</option>
                             </select>
                         </div>
                         <div class="col-12 form-group mb-3">
-                            <label for="vehicleFeatures" class="form-label">Features (Comma-separated)</label>
+                            <label for="vehicleFeatures" class="form-label fw-bold small text-muted">Features (Comma-separated)</label>
                             <input type="text" name="features" class="form-control" id="vehicleFeatures"
-                                placeholder="GPS, Bluetooth">
+                                placeholder="GPS, Bluetooth" style="border-radius: 10px;">
                         </div>
                         <div class="col-12 form-group mb-3">
-                            <label for="vehicleImages" class="form-label">Vehicle Images</label>
-                            <input type="file" class="form-control" name="images" id="vehicleImages" accept="image/*" multiple>
+                            <label for="vehicleImages" class="form-label fw-bold small text-muted">Vehicle Images</label>
+                            <input type="file" class="form-control" name="images" id="vehicleImages" accept="image/*" multiple style="border-radius: 10px;">
                         </div>
                     </div>
-                    <div class="modal-footer border-top-0 p-0 pt-3 bg-white">
-                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary px-4">Save Vehicle</button>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.8rem; border-radius: 12px; font-weight: 700; background: #3b82f6; border: none;">Save Vehicle</button>
                     </div>
                 </form>
             </div>
@@ -188,12 +194,11 @@
     </div>
 </div>
 
-<!-- Edit Vehicle Modal -->
 <div class="modal fade" id="editVehicleModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow" style="border-radius:var(--radius-xl);overflow:hidden;">
-            <div class="modal-header bg-light border-bottom-0 p-4">
-                <h5 class="modal-title font-bold text-dark">Edit Vehicle Details</h5>
+        <div class="modal-content border-0 shadow" style="border-radius:20px; overflow:hidden;">
+            <div class="modal-header bg-light border-0 p-4">
+                <h5 class="modal-title font-bold text-dark" style="font-weight: 800;">Edit Vehicle Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
@@ -203,75 +208,74 @@
                     <input type="hidden" name="vehicle_id" id="editVehicleId">
                     <div class="row g-3">
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="editVehicleType" class="form-label">Type</label>
-                            <select class="form-select" name="type" id="editVehicleType" required>
+                            <label for="editVehicleType" class="form-label fw-bold small text-muted">Type</label>
+                            <select class="form-select" name="type" id="editVehicleType" required style="border-radius: 10px;">
                                 <option value="car">Car</option>
                                 <option value="bike">Bike</option>
                             </select>
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="editVehicleName" class="form-label">Vehicle Name</label>
-                            <input type="text" name="name" class="form-control" id="editVehicleName" required>
+                            <label for="editVehicleName" class="form-label fw-bold small text-muted">Vehicle Name</label>
+                            <input type="text" name="name" class="form-control" id="editVehicleName" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="editVehicleBrand" class="form-label">Brand</label>
-                            <input type="text" name="brand" class="form-control" id="editVehicleBrand" required>
+                            <label for="editVehicleBrand" class="form-label fw-bold small text-muted">Brand</label>
+                            <input type="text" name="brand" class="form-control" id="editVehicleBrand" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="editVehicleModel" class="form-label">Model</label>
-                            <input type="text" name="model" class="form-control" id="editVehicleModel" required>
+                            <label for="editVehicleModel" class="form-label fw-bold small text-muted">Model</label>
+                            <input type="text" name="model" class="form-control" id="editVehicleModel" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="editVehicleRegNumber" class="form-label">Registration Number</label>
-                            <input type="text" name="number" class="form-control" id="editVehicleRegNumber" required>
+                            <label for="editVehicleRegNumber" class="form-label fw-bold small text-muted">Registration Number</label>
+                            <input type="text" name="number" class="form-control" id="editVehicleRegNumber" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="editPricePerHour" class="form-label">Price/Hour (₹)</label>
+                            <label for="editPricePerHour" class="form-label fw-bold small text-muted">Price/Hour (₹)</label>
                             <input type="number" name="price_per_hour" step="0.01" class="form-control"
-                                id="editPricePerHour" required>
+                                id="editPricePerHour" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-6 form-group mb-3">
-                            <label for="editPricePerDay" class="form-label">Price/Day (₹)</label>
+                            <label for="editPricePerDay" class="form-label fw-bold small text-muted">Price/Day (₹)</label>
                             <input type="number" name="price_per_day" step="0.01" class="form-control"
-                                id="editPricePerDay" required>
+                                id="editPricePerDay" required style="border-radius: 10px;">
                         </div>
                         <div class="col-sm-4 form-group mb-3">
-                            <label for="editFuelType" class="form-label">Fuel Type</label>
-                            <select name="fuel_type" class="form-select" id="editFuelType" required>
+                            <label for="editFuelType" class="form-label fw-bold small text-muted">Fuel Type</label>
+                            <select name="fuel_type" class="form-select" id="editFuelType" required style="border-radius: 10px;">
                                 <option value="" disabled>Select Fuel Type</option>
                                 <option value="petrol" {% if vehicle.fuel_type == "petrol" %}selected{% endif %}>Petrol</option>
                                 <option value="diesel" {% if vehicle.fuel_type == "diesel" %}selected{% endif %}>Diesel</option>
                             </select>
                         </div>
                         <div class="col-sm-4 form-group mb-3">
-                            <label for="editTransmission" class="form-label">Transmission</label>
-                            <select name="transmission" class="form-select" id="editTransmission" required>
+                            <label for="editTransmission" class="form-label fw-bold small text-muted">Transmission</label>
+                            <select name="transmission" class="form-select" id="editTransmission" required style="border-radius: 10px;">
                                 <option value="" disabled>Select Transmission</option>
                                 <option value="auto" {% if vehicle.transmission == "auto" %}selected{% endif %}>Automatic</option>
                                 <option value="manual" {% if vehicle.transmission == "manual" %}selected{% endif %}>Manual</option>
                             </select>
                         </div>
                         <div class="col-sm-4 form-group mb-3" id="editSeatingField">
-                            <label for="editSeating" class="form-label">Seating</label>
-                            <select name="seating" class="form-select" id="editSeating">
+                            <label for="editSeating" class="form-label fw-bold small text-muted">Seating</label>
+                            <select name="seating" class="form-select" id="editSeating" style="border-radius: 10px;">
                                 <option value="" disabled>Select Seating</option>
                                 <option value="5" {% if vehicle.seating == 5 %}selected{% endif %}>5 Seater</option>
                                 <option value="7" {% if vehicle.seating == 7 %}selected{% endif %}>7 Seater</option>
                             </select>
                         </div>
                         <div class="col-12 form-group mb-3">
-                            <label for="editVehicleFeatures" class="form-label">Features (Comma-separated)</label>
-                            <input type="text" name="features" class="form-control" id="editVehicleFeatures">
+                            <label for="editVehicleFeatures" class="form-label fw-bold small text-muted">Features (Comma-separated)</label>
+                            <input type="text" name="features" class="form-control" id="editVehicleFeatures" style="border-radius: 10px;">
                         </div>
                         <div class="col-12 form-group mb-3">
-                            <label for="editVehicleImages" class="form-label">Vehicle Images</label>
-                            <input type="file" class="form-control" name="images" id="editVehicleImages" accept="image/*" multiple>
+                            <label for="editVehicleImages" class="form-label fw-bold small text-muted">Vehicle Images</label>
+                            <input type="file" class="form-control" name="images" id="editVehicleImages" accept="image/*" multiple style="border-radius: 10px;">
                             <small class="text-muted">Leave empty to keep existing images.</small>
                         </div>
                     </div>
-                    <div class="modal-footer border-top-0 p-0 pt-3 bg-white">
-                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary px-4">Update Vehicle</button>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.8rem; border-radius: 12px; font-weight: 700; background: #3b82f6; border: none;">Update Vehicle</button>
                     </div>
                 </form>
             </div>
@@ -326,12 +330,13 @@
             if (r.isConfirmed) document.getElementById(`deleteForm-${id}`).submit();
         });
     }
+    
     document.querySelectorAll('.edit-vehicle-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             ['editVehicleId', 'id', 'editVehicleType', 'type', 'editVehicleName', 'name', 'editVehicleBrand', 'brand', 'editVehicleModel', 'model', 'editVehicleRegNumber', 'number', 'editPricePerHour', 'price_per_hour', 'editPricePerDay', 'price_per_day', 'editFuelType', 'fuel_type', 'editTransmission', 'transmission', 'editSeating', 'seating', 'editVehicleFeatures', 'features'].reduce((a, v, i, arr) => {
                 if (i % 2 === 0) { const el = document.getElementById(v); if (el) el.value = this.dataset[arr[i + 1]]; }
                 return a;
-            }, null, null);
+            }, null);
             document.getElementById('editIsAvailable') && (document.getElementById('editIsAvailable').checked = this.dataset.is_available === 'True');
             new bootstrap.Modal(document.getElementById('editVehicleModal')).show();
         });

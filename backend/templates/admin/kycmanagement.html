@@ -1,148 +1,212 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}KYC Management{% endblock %}
+{% block title %}KYC Management | RentXplore{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">KYC Verifications</h1>
-    <div class="actions-group">
+<style>
+    .page-container { padding: 2rem; animation: fadeIn 0.4s ease-out; }
+    
+    /* Header & Filter Bar */
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
+    .page-title { font-size: 1.875rem; font-weight: 800; color: #1e293b; margin: 0; }
+    
+    .filters-bar { display: flex; gap: 0.75rem; }
+    .filter-select { 
+        padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid #e2e8f0; 
+        background: #fff; color: #1e293b; font-size: 0.9rem; font-weight: 500; outline: none; transition: 0.3s;
+    }
+    .filter-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+    /* Table Styling */
+    .data-table-container { 
+        background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; 
+    }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .data-table th { 
+        background: #f8fafc; padding: 1rem 1.5rem; font-size: 0.75rem; 
+        font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em;
+    }
+    .data-table td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover { background: #fbfcfd; }
+
+    /* Document Chips */
+    .doc-chip { 
+        display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; 
+        padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: #475569; 
+    }
+
+    /* Status Badges */
+    .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+    .status-success { background: #dcfce7; color: #166534; }
+    .status-danger { background: #fee2e2; color: #991b1b; }
+    .status-warning { background: #fef3c7; color: #92400e; }
+    .status-secondary { background: #f1f5f9; color: #475569; }
+
+    /* Action Buttons */
+    .action-btns { display: flex; gap: 8px; }
+    .btn-icon { 
+        width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; 
+        border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; color: #64748b; transition: 0.2s; cursor: pointer;
+    }
+    .btn-icon:hover { background: #f8fafc; color: #3b82f6; border-color: #3b82f6; }
+    .btn-icon.success:hover { background: #dcfce7; color: #166534; border-color: #22c55e; }
+    .btn-icon.danger:hover { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
+
+    /* Modal Styling */
+    .modal-overlay { 
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+        display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1.5rem;
+    }
+    .modal-content { 
+        background: #fff; border-radius: 20px; width: 100%; max-width: 500px; 
+        overflow: hidden; animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">KYC Verifications</h1>
         <div class="filters-bar">
-            <!-- Filters -->
-            <select class="filter-select" data-filter name="status">
+            <select class="filter-select" name="status">
                 <option value="">Status (All)</option>
                 <option value="pending">Pending</option>
                 <option value="verified">Verified</option>
                 <option value="rejected">Rejected</option>
-                <option value="not_submitted">Not Submitted</option>
             </select>
-            <!-- Sort -->
-            <select class="filter-select" data-sort name="sort">
+            <select class="filter-select" name="sort">
                 <option value="">Sort By</option>
-                <option value="-submitted_at">Date (Newest)</option>
-                <option value="submitted_at">Date (Oldest)</option>
+                <option value="-submitted_at">Newest First</option>
+                <option value="submitted_at">Oldest First</option>
             </select>
+        </div>
+    </div>
+
+    <div class="data-table-container">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>User Account</th>
+                        <th>Documents</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                        <th>Verified At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for kyc in kyc_docs %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 700; color: #1e293b;">{{ kyc.full_name }}</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">{{ kyc.user.email }}</div>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                {% if kyc.driving_license_photo %}
+                                <span class="doc-chip"><i class="fas fa-id-card"></i> DL</span>
+                                {% endif %}
+                                {% if kyc.secondary_doc_type %}
+                                <span class="doc-chip"><i class="fas fa-file-alt"></i> {{ kyc.secondary_doc_type|upper }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td style="font-size: 0.85rem; color: #64748b;">
+                            {{ kyc.submitted_at|date:"M d, Y" }}
+                            <div style="font-size: 0.75rem; opacity: 0.7;">{{ kyc.submitted_at|date:"H:i" }}</div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{% if kyc.status == 'verified' %}success{% elif kyc.status == 'rejected' %}danger{% elif kyc.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                {{ kyc.status|title }}
+                            </span>
+                        </td>
+                        <td style="font-size: 0.85rem; color: #64748b;">
+                            {{ kyc.verified_at|date:"M d, Y"|default:"-" }}
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <a href="{% url 'admin_kyc_detail' kyc.id %}" class="btn-icon" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+
+                                {% if kyc.status == 'pending' %}
+                                <form method="POST" action="{% url 'admin_kyc_action' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <input type="hidden" name="kyc_id" value="{{ kyc.id }}">
+                                    <button type="submit" class="btn-icon success" title="Approve">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+
+                                <button type="button" class="btn-icon danger" onclick="openRejectModal('{{ kyc.id }}')" title="Reject">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #94a3b8; padding: 4rem;">
+                            <i class="fas fa-search" style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            No KYC records found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<div class="data-table-container">
-    <div class="table-responsive">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Full Name</th>
-                    <th>Documents</th>
-                    <th>Submitted At</th>
-                    <th>Status</th>
-                    <th>Verified At</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for kyc in kyc_docs %}
-                <tr>
-                    <td>
-                        <div style="font-weight: 600;">{{ kyc.user.first_name }} {{ kyc.user.last_name }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ kyc.user.email }}</div>
-                    </td>
-                    <td>{{ kyc.full_name }}</td>
-                    <td>
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            {% if kyc.driving_license_photo %}
-                            <span class="status-badge"
-                                style="background: var(--background); color: var(--text-muted); padding: 0.2rem 0.5rem;"><i
-                                    class="fas fa-id-card"></i> DL</span>
-                            {% endif %}
-                            {% if kyc.secondary_doc_type %}
-                            <span class="status-badge"
-                                style="background: var(--background); color: var(--text-muted); padding: 0.2rem 0.5rem;"><i
-                                    class="fas fa-file-alt"></i> {{ kyc.secondary_doc_type|upper }}</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                    <td style="font-size: 0.8rem; color: var(--text-muted);">
-                        {{ kyc.submitted_at|date:"M d, Y H:i" }}
-                    </td>
-                    <td>
-                        <span
-                            class="status-badge status-{% if kyc.status == 'verified' %}success{% elif kyc.status == 'rejected' %}danger{% elif kyc.status == 'pending' %}warning{% else %}secondary{% endif %}">
-                            {{ kyc.status|title }}
-                        </span>
-                        {% if kyc.status == 'rejected' and kyc.rejection_reason %}
-                        <div style="font-size: 0.7rem; color: var(--danger); margin-top: 0.25rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
-                            title="{{ kyc.rejection_reason }}">
-                            {{ kyc.rejection_reason }}
-                        </div>
-                        {% endif %}
-                    </td>
-                    <td style="font-size: 0.8rem; color: var(--text-muted);">
-                        {{ kyc.verified_at|date:"M d, Y H:i"|default:"-" }}
-                    </td>
-                    <td>
-                        <div class="action-btns">
-                            <a href="{% url 'admin_kyc_detail' kyc.id %}" class="btn btn-outline btn-icon"
-                                title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </a>
-
-                            {% if kyc.status == 'pending' %}
-                            <form method="POST" action="{% url 'admin_kyc_action' %}" class="confirm-action"
-                                data-confirm-msg="Approve this KYC request?" style="display: inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="approve">
-                                <input type="hidden" name="kyc_id" value="{{ kyc.id }}">
-                                <button type="submit" class="btn btn-success btn-icon" title="Approve"><i
-                                        class="fas fa-check"></i></button>
-                            </form>
-
-                            <button type="button" class="btn btn-danger btn-icon btn-reject-kyc"
-                                data-kycid="{{ kyc.id }}" title="Reject">
-                                <i class="fas fa-times"></i>
-                            </button>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No KYC records
-                        found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Reject Modal -->
 <div class="modal-overlay" id="rejectModal">
-    <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-content">
         <form method="POST" action="{% url 'admin_kyc_action' %}">
             {% csrf_token %}
             <input type="hidden" name="action" value="reject">
             <input type="hidden" name="kyc_id" id="rejectKycId">
 
-            <div class="modal-header" style="border-bottom-color: var(--danger-bg);">
-                <h2 style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Reject KYC</h2>
-                <button type="button" class="modal-close"><i class="fas fa-times"></i></button>
+            <div style="padding: 1.5rem; background: #fef2f2; border-bottom: 1px solid #fee2e2; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 1.25rem; color: #991b1b; font-weight: 800;">Reject KYC Application</h2>
+                <i class="fas fa-times" style="cursor: pointer; color: #991b1b;" onclick="closeModal()"></i>
             </div>
 
-            <div class="modal-body">
-                <p style="margin-bottom: 1rem; color: var(--text-muted);">Please provide a reason for rejecting this KYC
-                    application. This will be shown to the user.</p>
-                <div class="form-group">
-                    <label class="form-label">Rejection Reason</label>
-                    <textarea name="rejection_reason" class="form-control" rows="4" required
-                        placeholder="e.g., Image is blurry, Document expired, Name mismatch..."></textarea>
-                </div>
+            <div style="padding: 1.5rem;">
+                <p style="margin: 0 0 1rem; color: #64748b; font-size: 0.9rem;">This reason will be shared with the user. Please be specific.</p>
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 8px;">Rejection Reason</label>
+                <textarea name="rejection_reason" class="filter-select" style="width: 100%; height: 120px; resize: none; padding: 12px;" required 
+                          placeholder="e.g. Identity document is expired or blurry..."></textarea>
             </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline modal-close">Cancel</button>
-                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+            <div style="padding: 1.25rem 1.5rem; background: #f8fafc; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-icon" style="width: auto; padding: 0 20px;" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-icon danger" style="width: auto; padding: 0 20px; background: #ef4444; color: #fff; border: none; font-weight: 600;">Confirm Reject</button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    const modal = document.getElementById('rejectModal');
+    
+    function openRejectModal(kycId) {
+        document.getElementById('rejectKycId').value = kycId;
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    // Close on outside click
+    window.onclick = function(event) {
+        if (event.target == modal) closeModal();
+    }
+</script>
 {% endblock %}

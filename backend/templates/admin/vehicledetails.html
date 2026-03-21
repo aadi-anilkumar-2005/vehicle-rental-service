@@ -1,83 +1,170 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Vehicle: {{ vehicle.name }}{% endblock %}
+{% block title %}Vehicle: {{ vehicle.brand }} {{ vehicle.model }}{% endblock %}
 
 {% block content %}
-<div class="page-header" style="margin-bottom: 1.5rem;">
-    <h1 class="page-title">Vehicle Details</h1>
-    <div class="actions-group">
-        <a href="javascript:history.back()" class="btn btn-outline">
-            <i class="fas fa-arrow-left"></i> Back
+<style>
+    :root {
+        --accent: #3b82f6;
+        --success: #16a34a;
+        --danger: #ef4444;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --card-bg: #ffffff;
+        --border: #e2e8f0;
+    }
+
+    .detail-container { padding: 1rem; animation: fadeIn 0.4s ease-out; }
+
+    /* Header Actions */
+    .action-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .btn-back { 
+        display: flex; align-items: center; gap: 8px; color: var(--text-muted); 
+        text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s;
+    }
+    .btn-back:hover { color: var(--accent); transform: translateX(-4px); }
+
+    /* Premium Detail Card */
+    .vehicle-main-card { 
+        background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border); 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden;
+    }
+
+    /* Image Header */
+    .vehicle-hero { 
+        height: 400px; background: #f1f5f9; position: relative; 
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+    }
+    .hero-img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .status-floating {
+        position: absolute; top: 24px; left: 24px;
+        padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 0.8rem;
+        text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(8px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Content Layout */
+    .vehicle-content { padding: 3rem; }
+    
+    .content-header { 
+        display: flex; justify-content: space-between; align-items: flex-start; 
+        padding-bottom: 2rem; border-bottom: 1px solid #f1f5f9; margin-bottom: 2.5rem;
+    }
+
+    .plate-badge {
+        font-family: 'JetBrains Mono', monospace; background: #f1f5f9; 
+        padding: 6px 14px; border-radius: 10px; border: 1px solid var(--border);
+        font-weight: 700; color: #475569; font-size: 1rem; margin-top: 10px; display: inline-block;
+    }
+
+    .price-card {
+        background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border);
+        text-align: right; min-width: 200px;
+    }
+
+    /* Specs Grid */
+    .specs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; }
+    .spec-item { display: flex; flex-direction: column; gap: 6px; }
+    .spec-label { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .spec-value { font-size: 1.1rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+    .spec-value i { color: var(--accent); width: 20px; }
+
+    /* Features List */
+    .feature-pill {
+        display: inline-block; background: #eff6ff; color: var(--accent);
+        padding: 6px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 700;
+        margin: 0 8px 8px 0; border: 1px solid #dbeafe;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="detail-container">
+    <div class="action-header">
+        <a href="javascript:history.back()" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Fleet
         </a>
     </div>
-</div>
 
-<div class="detail-view">
-    {% if vehicle.images and vehicle.images.0 %}
-    <img src="{{ vehicle.images.0 }}" alt="{{ vehicle.name }}" class="detail-header-img">
-    {% else %}
-    <div class="detail-header-img"
-        style="background: #E2E8F0; display: flex; align-items: center; justify-content: center;">
-        <i class="fas {% if vehicle.type == 'bike' %}fa-motorcycle{% else %}fa-car{% endif %}" style="font-size: 4rem; color: #94A3B8;"></i>
-    </div>
-    {% endif %}
+    <div class="vehicle-main-card">
+        <div class="vehicle-hero">
+            {% if vehicle.images and vehicle.images.0 %}
+                <img src="{{ vehicle.images.0 }}" alt="{{ vehicle.name }}" class="hero-img">
+            {% else %}
+                <div style="text-align: center;">
+                    <i class="fas {% if vehicle.type == 'bike' %}fa-motorcycle{% else %}fa-car{% endif %} fa-5x" style="color: #cbd5e1;"></i>
+                    <p style="margin-top: 1rem; color: #94a3b8; font-weight: 600;">No Preview Available</p>
+                </div>
+            {% endif %}
 
-    <div class="detail-body">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
-            <div>
-                <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">{{ vehicle.brand }} {{ vehicle.model }} ({{ vehicle.name }})</h2>
-                <span class="status-badge status-{{ vehicle.is_available|yesno:'success,danger' }}">
-                    {{ vehicle.is_available|yesno:'Available,Unavailable' }}
-                </span>
-                <span style="font-family: monospace; background: var(--background); padding: 0.2rem 0.5rem; border-radius: 0.25rem; border: 1px solid var(--border); font-size: 0.875rem; margin-left: 0.5rem;">
-                    {{ vehicle.number }}
-                </span>
-            </div>
-            <div style="text-align: right; background: var(--background); padding: 1rem; border-radius: 0.5rem;">
-                <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">
-                    ₹{{ vehicle.price_per_day }}<span style="font-size: 0.875rem; color: var(--text-muted);">/day</span>
-                </div>
-                <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
-                    ₹{{ vehicle.price_per_hour }}/hour
-                </div>
+            <div class="status-floating status-{{ vehicle.is_available|yesno:'success,danger' }}">
+                <i class="fas {% if vehicle.is_available %}fa-check-circle{% else %}fa-ban{% endif %}"></i>
+                {{ vehicle.is_available|yesno:'Ready for Rent,Currently Unavailable' }}
             </div>
         </div>
 
-        <div class="info-grid">
-            <div class="info-col">
-                <span class="info-label">Type</span>
-                <span class="info-value" style="text-transform: capitalize;">{{ vehicle.type }}</span>
+        <div class="vehicle-content">
+            <div class="content-header">
+                <div>
+                    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text-main); margin: 0;">{{ vehicle.brand }} {{ vehicle.model }}</h1>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 4px;">Internal Name: {{ vehicle.name }}</p>
+                    <div class="plate-badge">
+                        <i class="fas fa-fingerprint"></i> {{ vehicle.number }}
+                    </div>
+                </div>
+                <div class="price-card">
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">₹{{ vehicle.price_per_day }}<small style="font-size: 0.9rem; color: var(--text-muted);">/day</small></div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-muted); margin-top: 5px;">₹{{ vehicle.price_per_hour }}/hour</div>
+                </div>
             </div>
-            <div class="info-col">
-                <span class="info-label">Fuel Type</span>
-                <span class="info-value" style="text-transform: capitalize;">{{ vehicle.fuel_type }}</span>
-            </div>
-            <div class="info-col">
-                <span class="info-label">Transmission</span>
-                <span class="info-value" style="text-transform: capitalize;">{{ vehicle.transmission }}</span>
-            </div>
-            <div class="info-col">
-                <span class="info-label">Seating</span>
-                <span class="info-value">{{ vehicle.seating|default:"N/A" }} Seats</span>
-            </div>
-            <div class="info-col" style="grid-column: 1 / -1;">
-                <span class="info-label">Features</span>
-                <span class="info-value">
-                    {% if vehicle.features %}
-                        {{ vehicle.features|join:", " }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </span>
-            </div>
-            <div class="info-col" style="grid-column: 1 / -1;">
-                <span class="info-label">Rental Shop</span>
-                <a href="{% url 'admin_shop_detail' vehicle.shop.id %}" class="info-value" style="color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
-                    <i class="fas fa-store"></i>{{ vehicle.shop.name }}
-                </a>
+
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <span class="spec-label">Vehicle Category</span>
+                    <span class="spec-value"><i class="fas {% if vehicle.type == 'bike' %}fa-motorcycle{% else %}fa-car-side{% endif %}"></i> {{ vehicle.type|title }}</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Powertrain</span>
+                    <span class="spec-value"><i class="fas fa-gas-pump"></i> {{ vehicle.fuel_type|title }}</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Gearbox</span>
+                    <span class="spec-value"><i class="fas fa-cog"></i> {{ vehicle.transmission|title }}</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Passenger Capacity</span>
+                    <span class="spec-value"><i class="fas fa-users"></i> {{ vehicle.seating|default:"N/A" }} Adults</span>
+                </div>
+
+                <div class="spec-item" style="grid-column: 1 / -1; margin-top: 1rem;">
+                    <span class="spec-label">Standard Features</span>
+                    <div style="margin-top: 10px;">
+                        {% if vehicle.features %}
+                            {% for feature in vehicle.features %}
+                                <span class="feature-pill">{{ feature }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: var(--text-muted); font-style: italic;">No specific features listed for this vehicle.</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="spec-item" style="grid-column: 1 / -1; margin-top: 1rem; padding-top: 2rem; border-top: 1px solid #f1f5f9;">
+                    <span class="spec-label">Ownership & Origin</span>
+                    <a href="{% url 'admin_shop_detail' vehicle.shop.id %}" style="text-decoration: none; display: flex; align-items: center; gap: 12px; margin-top: 10px;">
+                        <div style="width: 44px; height: 44px; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-store" style="color: var(--accent);"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 800; color: var(--text-main); font-size: 1rem;">{{ vehicle.shop.name }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">View Shop Profile & Location</div>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock %}

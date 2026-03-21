@@ -1,16 +1,17 @@
 {% extends 'owner/base.html' %}
 {% load static %}
 
-{% block title %}Vehicle Rental - Staff Management{% endblock %}
+{% block title %}RentXplore - Staff Management{% endblock %}
 {% block page_title %}Staff Management{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="mb-1 font-bold">Team Members</h2>
-        <p class="text-muted small">Manage your staff directory and roles.</p>
+        <h2 class="mb-1" style="font-weight: 800; color: #0f172a; letter-spacing: -0.5px;">Team Members</h2>
+        <p class="text-muted small fw-500">Manage your staff directory and roles.</p>
     </div>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal"
+            style="background: #3b82f6; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
         <i class="bi bi-plus-lg"></i> Add Staff Member
     </button>
 </div>
@@ -18,63 +19,65 @@
 {% if messages %}
 <div class="mb-4">
     {% for message in messages %}
-    <div
-        class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 px-3 small rounded">
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 px-3 small"
+         style="border-radius: 12px; font-weight: 600; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         {{ message }}
     </div>
     {% endfor %}
 </div>
 {% endif %}
 
-<div class="card">
+<div class="card shadow-sm" style="border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; background: #fff;">
     <div class="card-body p-0">
-        <div class="table-container border-0 rounded-0">
-            <table class="table mb-0 border-0">
-                <thead>
-                    <tr>
-                        <th>Member</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Join Date</th>
-                        <th class="text-end">Actions</th>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead style="background: #f8fafc;">
+                    <tr class="small text-uppercase" style="letter-spacing: 0.5px;">
+                        <th class="ps-4 py-3 border-0" style="color: #64748b; font-weight: 800;">Member</th>
+                        <th class="py-3 border-0" style="color: #64748b; font-weight: 800;">Phone</th>
+                        <th class="py-3 border-0" style="color: #64748b; font-weight: 800;">Status</th>
+                        <th class="py-3 border-0" style="color: #64748b; font-weight: 800;">Join Date</th>
+                        <th class="text-end pe-4 py-3 border-0" style="color: #64748b; font-weight: 800;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for staff in staff_users %}
-                    <tr>
-                        <td>
+                    <tr class="border-bottom border-light">
+                        <td class="ps-4">
                             <div class="d-flex align-items-center gap-3">
-                                <div
-                                    class="avatar bg-primary text-white d-flex align-items-center justify-content-center text-uppercase fw-bold">
+                                <div class="avatar d-flex align-items-center justify-content-center text-uppercase fw-bold shadow-sm"
+                                     style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; font-size: 0.9rem;">
                                     {{ staff.first_name|first|default:staff.username|first }}
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-dark">{{ staff.first_name }} {{ staff.last_name }}
-                                    </div>
-                                    <div class="small text-muted">{{ staff.email }}</div>
+                                    <div style="font-weight: 700; color: #1e293b;">{{ staff.first_name }} {{ staff.last_name }}</div>
+                                    <div class="small text-muted" style="font-weight: 500;">{{ staff.email }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td>{{ staff.user_profile.phone }}</td>
-                        <td><span
-                                class="badge {% if staff.is_active %}badge-success{% else %}badge-secondary{% endif %}">
-                                {% if staff.is_active %}Active{% else %}Inactive{% endif %}
-                            </span></td>
-                        <td class="text-muted">{{ staff.date_joined|date:"M d, Y" }}</td>
+                        <td style="font-weight: 500; color: #475569;">{{ staff.user_profile.phone }}</td>
                         <td>
+                            <span class="badge" style="padding: 0.4rem 0.8rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+                                {% if staff.is_active %} background: #dcfce7; color: #166534; {% else %} background: #f1f5f9; color: #475569; {% endif %}">
+                                {% if staff.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-muted fw-500">{{ staff.date_joined|date:"M d, Y" }}</td>
+                        <td class="pe-4">
                             <div class="d-flex gap-2 justify-content-end">
-                                <button class="btn btn-icon btn-secondary" title="Edit Staff"
-                                    onclick="openEditStaffModal('{{ staff.id }}', '{{ staff.first_name|escapejs }}', '{{ staff.last_name|escapejs }}', '{{ staff.email|escapejs }}', '{{ staff.user_profile.phone|escapejs }}')">
-                                    <i class="bi bi-pencil"></i>
+                                <button class="btn btn-sm" title="Edit Staff"
+                                        onclick="openEditStaffModal('{{ staff.id }}', '{{ staff.first_name|escapejs }}', '{{ staff.last_name|escapejs }}', '{{ staff.email|escapejs }}', '{{ staff.user_profile.phone|escapejs }}')"
+                                        style="background: #eff6ff; color: #3b82f6; border: none; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-pencil-square"></i>
                                 </button>
-                                <form method="POST" action="{% url 'owner_staff' %}" id="deleteForm-{{ staff.id }}"
-                                    style="display:inline;">
+                                <form method="POST" action="{% url 'owner_staff' %}" id="deleteForm-{{ staff.id }}" style="display:inline;">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="user_id" value="{{ staff.id }}">
-                                    <button type="button" class="btn btn-icon btn-danger"
-                                        onclick="confirmDelete('{{ staff.id }}', '{{ staff.first_name|escapejs }} {{ staff.last_name|escapejs }}')">
-                                        <i class="bi bi-trash"></i>
+                                    <button type="button" class="btn btn-sm"
+                                            onclick="confirmDelete('{{ staff.id }}', '{{ staff.first_name|escapejs }} {{ staff.last_name|escapejs }}')"
+                                            style="background: #fee2e2; color: #ef4444; border: none; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-trash3-fill"></i>
                                     </button>
                                 </form>
                             </div>
@@ -82,7 +85,11 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">No staff members found.</td>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="text-muted mb-3"><i class="bi bi-people" style="font-size: 3rem; opacity: 0.2;"></i></div>
+                            <h5 style="font-weight: 800;">No Staff Members</h5>
+                            <p class="text-muted small">Start adding members to your team to manage operations.</p>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -91,58 +98,55 @@
     </div>
 </div>
 
-<!-- Add Staff Modal -->
 <div class="modal fade" id="addStaffModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow" style="border-radius: var(--radius-xl); overflow: hidden;">
-            <div class="modal-header bg-light border-bottom-0 p-4">
-                <h5 class="modal-title font-bold text-dark">Staff Details</h5>
+        <div class="modal-content border-0 shadow" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header bg-light border-0 p-4">
+                <h5 class="modal-title" style="font-weight: 800; color: #0f172a;">Staff Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{% url 'owner_staff' %}">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="add">
                 <div class="modal-body p-4">
-                    <div class="form-group mb-3">
-                        <label for="staffName" class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-control" id="staffName" placeholder="e.g. John Doe"
-                            required>
+                    <div class="mb-3">
+                        <label for="staffName" class="form-label fw-bold small text-muted text-uppercase">Full Name</label>
+                        <input type="text" name="name" class="form-control" id="staffName" placeholder="e.g. John Doe" required style="border-radius: 10px; padding: 0.6rem;">
                     </div>
                     <div class="row g-3">
-                        <div class="col-sm-6 form-group mb-3">
-                            <label for="staffEmail" class="form-label">Email Address</label>
-                            <input type="email" name="email" class="form-control" id="staffEmail"
-                                placeholder="john@example.com" required>
+                        <div class="col-sm-6 mb-3">
+                            <label for="staffEmail" class="form-label fw-bold small text-muted text-uppercase">Email Address</label>
+                            <input type="email" name="email" class="form-control" id="staffEmail" placeholder="example@gmail.com" required style="border-radius: 10px; padding: 0.6rem;">
                         </div>
-                        <div class="col-sm-6 form-group mb-3">
-                            <label for="staffPhone" class="form-label">Phone Number</label>
-                            <input type="tel" name="phone" class="form-control" id="staffPhone"
-                                placeholder="+1 (555) 000-0000" required>
+                        <div class="col-sm-6 mb-3">
+                            <label for="staffPhone" class="form-label fw-bold small text-muted text-uppercase">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control" id="staffPhone" placeholder="enter phone number" required style="border-radius: 10px; padding: 0.6rem;">
                         </div>
                     </div>
-                    <div class="form-group mb-2">
-                        <label for="staffPassword" class="form-label">Initial Password</label>
-                        <input type="password" name="password" class="form-control" id="staffPassword"
-                            placeholder="Minimum 8 characters" required>
-                        <div class="form-text mt-1 text-muted small">The user will be required to change this upon first
-                            login.</div>
+                    <div class="mb-2">
+                        <label for="staffPassword" class="form-label fw-bold small text-muted text-uppercase">enter password</label>
+                        <div class="input-group">
+                            <input type="password" name="password" class="form-control" id="staffPassword" placeholder="Minimum 8 characters" required style="border-radius: 10px 0 0 10px; padding: 0.6rem; border-right: none;">
+                            <span class="input-group-text bg-white" style="border-radius: 0 10px 10px 0; border: 1px solid #dee2e6; cursor: pointer; border-left: none;" onclick="togglePasswordVisibility('staffPassword', this)">
+                                <i class="bi bi-eye-slash text-muted"></i>
+                            </span>
+                        </div>
+                        <div class="form-text mt-2 small text-muted"><i class="bi bi-info-circle me-1"></i>User must change this upon first login.</div>
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 p-4 bg-light pt-0">
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4">Save Member</button>
+                <div class="p-4 bg-light">
+                    <button type="submit" class="btn btn-primary w-100" style="padding: 0.8rem; border-radius: 12px; font-weight: 700; background: #3b82f6; border: none;">Save Member</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Edit Staff Modal -->
 <div class="modal fade" id="editStaffModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow" style="border-radius: var(--radius-xl); overflow: hidden;">
-            <div class="modal-header bg-light border-bottom-0 p-4">
-                <h5 class="modal-title font-bold text-dark">Edit Staff Details</h5>
+        <div class="modal-content border-0 shadow" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header bg-light border-0 p-4">
+                <h5 class="modal-title" style="font-weight: 800; color: #0f172a;">Edit Staff Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{% url 'owner_staff' %}">
@@ -150,29 +154,32 @@
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="user_id" id="editStaffId">
                 <div class="modal-body p-4">
-                    <div class="form-group mb-3">
-                        <label for="editStaffName" class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-control" id="editStaffName" required>
+                    <div class="mb-3">
+                        <label for="editStaffName" class="form-label fw-bold small text-muted text-uppercase">Full Name</label>
+                        <input type="text" name="name" class="form-control" id="editStaffName" required style="border-radius: 10px; padding: 0.6rem;">
                     </div>
                     <div class="row g-3">
-                        <div class="col-sm-6 form-group mb-3">
-                            <label for="editStaffEmail" class="form-label">Email Address</label>
-                            <input type="email" name="email" class="form-control" id="editStaffEmail" required>
+                        <div class="col-sm-6 mb-3">
+                            <label for="editStaffEmail" class="form-label fw-bold small text-muted text-uppercase">Email Address</label>
+                            <input type="email" name="email" class="form-control" id="editStaffEmail" required style="border-radius: 10px; padding: 0.6rem;">
                         </div>
-                        <div class="col-sm-6 form-group mb-3">
-                            <label for="editStaffPhone" class="form-label">Phone Number</label>
-                            <input type="tel" name="phone" class="form-control" id="editStaffPhone" required>
+                        <div class="col-sm-6 mb-3">
+                            <label for="editStaffPhone" class="form-label fw-bold small text-muted text-uppercase">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control" id="editStaffPhone" required style="border-radius: 10px; padding: 0.6rem;">
                         </div>
                     </div>
-                    <div class="form-group mb-2">
-                        <label for="editStaffPassword" class="form-label">New Password (Optional)</label>
-                        <input type="password" name="password" class="form-control" id="editStaffPassword"
-                            placeholder="Leave blank to keep unchanged">
+                    <div class="mb-2">
+                        <label for="editStaffPassword" class="form-label fw-bold small text-muted text-uppercase">New Password (Optional)</label>
+                        <div class="input-group">
+                            <input type="password" name="password" class="form-control" id="editStaffPassword" placeholder="Leave blank to keep unchanged" style="border-radius: 10px 0 0 10px; padding: 0.6rem; border-right: none;">
+                            <span class="input-group-text bg-white" style="border-radius: 0 10px 10px 0; border: 1px solid #dee2e6; cursor: pointer; border-left: none;" onclick="togglePasswordVisibility('editStaffPassword', this)">
+                                <i class="bi bi-eye-slash text-muted"></i>
+                            </span>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 p-4 bg-light pt-0">
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4">Update Member</button>
+                <div class="p-4 bg-light">
+                    <button type="submit" class="btn btn-primary w-100" style="padding: 0.8rem; border-radius: 12px; font-weight: 700; background: #3b82f6; border: none;">Update Member</button>
                 </div>
             </form>
         </div>
@@ -182,6 +189,20 @@
 
 {% block extra_js %}
 <script>
+    function togglePasswordVisibility(inputId, iconContainer) {
+        const passwordInput = document.getElementById(inputId);
+        const icon = iconContainer.querySelector('i');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+            icon.style.color = '#3b82f6';
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+            icon.style.color = '#94a3b8';
+        }
+    }
+
     function openEditStaffModal(id, firstName, lastName, email, phone) {
         document.getElementById('editStaffId').value = id;
         document.getElementById('editStaffName').value = firstName.trim() + " " + lastName.trim();
@@ -194,13 +215,15 @@
 
     function confirmDelete(userId, userName) {
         Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to delete ${userName}?`,
+            title: 'Remove Team Member?',
+            text: `Are you sure you want to delete ${userName}? This action cannot be undone.`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, delete member',
+            background: '#fff',
+            borderRadius: '16px'
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById(`deleteForm-${userId}`).submit();
