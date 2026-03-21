@@ -6,7 +6,6 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   ArrowLeftRight,
   ArrowRight,
-  Chrome,
   Eye,
   EyeOff,
   Lock,
@@ -15,7 +14,14 @@ import {
   User,
 } from "lucide-react-native";
 import React, { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -34,7 +40,6 @@ export default function Signup() {
     password: "",
   });
 
-  // Get register from useAuth
   const { register } = useAuth();
 
   const handleSignup = async () => {
@@ -70,130 +75,155 @@ export default function Signup() {
     }
   };
 
-  const handleGoogleSignup = () => {
-    Toast.show({
-      type: "info",
-      text1: "Info",
-      text2: "Google Signup not implemented in demo",
-    });
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-[#0F1C23]">
-      <ScrollView contentContainerClassName="flex-grow justify-center px-6 py-12">
-        <View className="mb-8 items-center">
-          <View className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#22D3EE] shadow-[0_0_20px_rgba(34,211,238,0.3)]">
-            <ArrowLeftRight color="#0F1C23" size={32} strokeWidth={2.5} />
-          </View>
-   <Text
-  numberOfLines={1}
-  className="text-white text-3xl font-bold text-center"
->
-  Create Account
-</Text>
-          <Text className="text-slate-400 text-base text-center">
-            Start your journey with us today
-          </Text>
-        </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-1 px-8 justify-center py-10">
 
-        {/* Form */}
-        <View className="gap-4">
-          <View>
-            <View className="absolute left-4 top-[18px] z-10">
-              <User color="#94A3B8" size={20} />
+            {/* HEADER */}
+            <View className="items-center mb-10 w-full">
+              <View className="h-20 w-20 rounded-3xl bg-[#22D3EE] items-center justify-center mb-6 shadow-lg shadow-cyan-500/50">
+                <ArrowLeftRight color="#0F1C23" size={32} strokeWidth={2.5} />
+              </View>
+
+              <Text className="text-[#22D3EE] text-4xl font-bold mb-1 text-center">
+                RentXplore
+              </Text>
+
+              {/* HEADER TEXT */}
+              <Text
+                className="text-white text-2xl font-semibold text-center w-full"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
+                Create Account
+              </Text>
+
+              <Text className="text-slate-400 text-sm mt-1 text-center">
+                Start your journey with us today
+              </Text>
             </View>
-            <Input
-              placeholder="Full name"
-              placeholderTextColor="#64748B"
-              value={formData.name}
-              onChangeText={(text) => setFormData({ ...formData, name: text })}
-              className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl focus:border-[#22D3EE]"
-            />
-          </View>
 
-          <View>
-            <View className="absolute left-4 top-[18px] z-10">
-              <Mail color="#94A3B8" size={20} />
+            {/* FORM */}
+            <View className="gap-y-4">
+
+              {/* Full Name */}
+              <View className="relative w-full h-14 justify-center">
+                <View className="absolute left-4 z-10">
+                  <User color="#94A3B8" size={20} />
+                </View>
+                <Input
+                  placeholder="Full Name"
+                  placeholderTextColor="#64748B"
+                  value={formData.name}
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, name: text })
+                  }
+                  className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-full rounded-2xl"
+                />
+              </View>
+
+              {/* Email */}
+              <View className="relative w-full h-14 justify-center">
+                <View className="absolute left-4 z-10">
+                  <Mail color="#94A3B8" size={20} />
+                </View>
+                <Input
+                  placeholder="Email Address"
+                  placeholderTextColor="#64748B"
+                  value={formData.email}
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, email: text })
+                  }
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-full rounded-2xl"
+                />
+              </View>
+
+              {/* Phone */}
+              <View className="relative w-full h-14 justify-center">
+                <View className="absolute left-4 z-10">
+                  <Phone color="#94A3B8" size={20} />
+                </View>
+                <Input
+                  placeholder="Phone Number"
+                  placeholderTextColor="#64748B"
+                  value={formData.phone}
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, phone: text })
+                  }
+                  keyboardType="phone-pad"
+                  className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-full rounded-2xl"
+                />
+              </View>
+
+              {/* Password */}
+              <View className="relative w-full h-14 justify-center">
+                <View className="absolute left-4 z-10">
+                  <Lock color="#94A3B8" size={20} />
+                </View>
+                <Input
+                  secureTextEntry={!showPassword}
+                  placeholder="Create Password"
+                  placeholderTextColor="#64748B"
+                  value={formData.password}
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, password: text })
+                  }
+                  className="pl-12 pr-12 bg-[#16202C] border-slate-700/50 text-white h-full rounded-2xl"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 z-10"
+                >
+                  {showPassword ? (
+                    <EyeOff color="#94A3B8" size={20} />
+                  ) : (
+                    <Eye color="#94A3B8" size={20} />
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* BUTTON TEXT */}
+              <TouchableOpacity
+                onPress={handleSignup}
+                activeOpacity={0.8}
+                className="mt-4 bg-[#22D3EE] h-14 rounded-full items-center justify-center flex-row gap-2"
+              >
+                <Text
+                  className="text-[#0F1C23] text-lg font-bold"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
+                  Create Account
+                </Text>
+                <ArrowRight color="#0F1C23" size={20} strokeWidth={2.5} />
+              </TouchableOpacity>
             </View>
-            <Input
-              placeholder="Email address"
-              placeholderTextColor="#64748B"
-              value={formData.email}
-              onChangeText={(text) => setFormData({ ...formData, email: text })}
-              className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl focus:border-[#22D3EE]"
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-          </View>
 
-          <View>
-            <View className="absolute left-4 top-[18px] z-10">
-              <Phone color="#94A3B8" size={20} />
+            {/* Footer */}
+            <View className="flex-row justify-center mt-10">
+              <Text className="text-slate-400">
+                Already have an account?
+              </Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text className="text-[#22D3EE] font-bold ml-1">
+                  Sign In
+                </Text>
+              </TouchableOpacity>
             </View>
-            <Input
-              placeholder="Phone number (optional)"
-              placeholderTextColor="#64748B"
-              value={formData.phone}
-              onChangeText={(text) => setFormData({ ...formData, phone: text })}
-              className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl focus:border-[#22D3EE]"
-              keyboardType="phone-pad"
-            />
+
           </View>
-
-          <View>
-            <View className="absolute left-4 top-[18px] z-10">
-              <Lock color="#94A3B8" size={20} />
-            </View>
-            <Input
-              secureTextEntry={!showPassword}
-              placeholder="Create password"
-              placeholderTextColor="#64748B"
-              value={formData.password}
-              onChangeText={(text) =>
-                setFormData({ ...formData, password: text })
-              }
-              className="pl-12 pr-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl focus:border-[#22D3EE]"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-[18px] z-10"
-            >
-              {showPassword ? (
-                <EyeOff color="#94A3B8" size={20} />
-              ) : (
-                <Eye color="#94A3B8" size={20} />
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            onPress={handleSignup}
-            className="w-full mt-4 bg-[#22D3EE] h-14 rounded-full items-center justify-center flex-row gap-2 active:opacity-90 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
-          >
-            <Text numberOfLines={1} className="text-[#0F1C23] text-lg font-bold">
-              Create Account
-            </Text>
-            <ArrowRight color="#0F1C23" size={20} strokeWidth={2.5} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Terms */}
-        <View className="mt-8 px-4">
-          <Text className="text-center text-xs text-slate-500 leading-5">
-            By signing up, you agree to our{" "}
-            <Text className="text-[#22D3EE]">Terms of Service</Text> and{" "}
-            <Text className="text-[#22D3EE]">Privacy Policy</Text>
-          </Text>
-        </View>
-
-        {/* Login link */}
-        <View className="mt-6 flex-row justify-center items-center">
-          <Text className="text-slate-400">Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text className="font-bold text-[#22D3EE]">Sign in</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

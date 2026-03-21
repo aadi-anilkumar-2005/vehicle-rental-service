@@ -10,7 +10,14 @@ import {
   Mail,
 } from "lucide-react-native";
 import React, { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -29,21 +36,11 @@ export const Login = () => {
       });
       return;
     }
-
     const result = await login(email, password);
-
     if (result.success) {
-      Toast.show({
-        type: "success",
-        text1: "Success",
-        text2: "Login successful!",
-      });
-
-      if (result.role === "staff") {
-        router.replace("/staff");
-      } else {
-        router.replace("/(tabs)");
-      }
+      result.role === "staff"
+        ? router.replace("/staff")
+        : router.replace("/(tabs)");
     } else {
       Toast.show({
         type: "error",
@@ -54,99 +51,113 @@ export const Login = () => {
   };
 
   return (
-<SafeAreaView className="flex-1 bg-[#0F1C23]">
-  <View className="flex-1 px-6 justify-center">
-
-    {/* HEADER */}
-    <View className="items-center mb-12">
-      <View className="h-20 w-20 rounded-3xl bg-[#22D3EE] items-center justify-center mb-6 shadow-[0_0_20px_rgba(34,211,238,0.3)]">
-        <ArrowLeftRight color="#0F1C23" size={32} strokeWidth={2.5} />
-      </View>
-
-   <Text
-  numberOfLines={1}
-  className="text-white text-3xl font-bold text-center"
->
-  Welcome Back
-</Text>
-
-      <Text className="text-slate-400 text-base mt-2 text-center">
-        Sign in to your account
-      </Text>
-    </View>
-
-    {/* FORM */}
-    <View className="space-y-5">
-
-      {/* EMAIL */}
-      <View className="relative">
-        <View className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-          <Mail color="#94A3B8" size={20} />
-        </View>
-
-        <Input
-          placeholder="Email address"
-          placeholderTextColor="#64748B"
-          value={email}
-          onChangeText={setEmail}
-          className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl"
-        />
-      </View>
-
-      {/* PASSWORD */}
-      <View className="relative">
-        <View className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-          <Lock color="#94A3B8" size={20} />
-        </View>
-
-        <Input
-          secureTextEntry={!showPassword}
-          placeholder="Password"
-          placeholderTextColor="#64748B"
-          value={password}
-          onChangeText={setPassword}
-          className="pl-12 pr-12 bg-[#16202C] border-slate-700/50 text-white h-14 rounded-2xl"
-        />
-
-        <TouchableOpacity
-          onPress={() => setShowPassword(!showPassword)}
-          className="absolute right-4 top-1/2 -translate-y-1/2"
-        >
-          {showPassword ? (
-            <EyeOff color="#94A3B8" size={20} />
-          ) : (
-            <Eye color="#94A3B8" size={20} />
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* BUTTON */}
-      <TouchableOpacity
-        onPress={handleLogin}
-        className="mt-6 bg-[#22D3EE] h-14 rounded-full items-center justify-center flex-row gap-2 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
+    <SafeAreaView className="flex-1 bg-[#0F1C23]">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
       >
-        <Text className="text-[#0F1C23] text-lg font-bold">
-          Sign In
-        </Text>
-        <ArrowRight color="#0F1C23" size={20} />
-      </TouchableOpacity>
-    </View>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-1 px-6 justify-center py-10">
 
-    {/* FOOTER */}
-    <View className="flex-row justify-center mt-10">
-      <Text className="text-slate-400">
-        Don't have an account? 
-      </Text>
+            {/* HEADER SECTION */}
+            <View className="items-center mb-10 w-full">
+              <View className="h-20 w-20 rounded-3xl bg-[#22D3EE] items-center justify-center mb-6 shadow-lg shadow-cyan-500/50">
+                <ArrowLeftRight color="#0F1C23" size={32} strokeWidth={2.5} />
+              </View>
 
-      <TouchableOpacity onPress={() => router.push("/Signup")}>
-        <Text className="text-[#22D3EE] font-bold ml-1">
-          Sign up
-        </Text>
-      </TouchableOpacity>
-    </View>
+              {/* App Name */}
+              <Text className="text-[#22D3EE] text-4xl font-bold mb-1 text-center">
+                RentXplore
+              </Text>
 
-  </View>
-</SafeAreaView>
+              {/* Welcome Back in one line */}
+              <Text
+                className="text-white text-2xl font-semibold text-center w-full"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
+                Welcome Back
+              </Text>
+
+              <Text className="text-slate-400 text-sm mt-1 text-center">
+                Sign in to your account
+              </Text>
+            </View>
+
+            {/* FORM SECTION */}
+            <View className="gap-y-4">
+
+              {/* Email Field */}
+              <View className="relative w-full h-14 justify-center">
+                <View className="absolute left-4 z-10">
+                  <Mail color="#94A3B8" size={20} />
+                </View>
+                <Input
+                  placeholder="Email Address"
+                  placeholderTextColor="#64748B"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  className="pl-12 bg-[#16202C] border-slate-700/50 text-white h-full rounded-2xl"
+                />
+              </View>
+
+              {/* Password Field */}
+              <View className="relative w-full h-14 justify-center">
+                <View className="absolute left-4 z-10">
+                  <Lock color="#94A3B8" size={20} />
+                </View>
+                <Input
+                  secureTextEntry={!showPassword}
+                  placeholder="Password"
+                  placeholderTextColor="#64748B"
+                  value={password}
+                  onChangeText={setPassword}
+                  className="pl-12 pr-12 bg-[#16202C] border-slate-700/50 text-white h-full rounded-2xl"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 z-10"
+                >
+                  {showPassword ? (
+                    <EyeOff color="#94A3B8" size={20} />
+                  ) : (
+                    <Eye color="#94A3B8" size={20} />
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Button */}
+              <TouchableOpacity
+                onPress={handleLogin}
+                className="mt-4 bg-[#22D3EE] h-14 rounded-full items-center justify-center flex-row gap-2"
+              >
+                <Text className="text-[#0F1C23] text-lg font-bold">
+                  Sign In
+                </Text>
+                <ArrowRight color="#0F1C23" size={20} />
+              </TouchableOpacity>
+            </View>
+
+            {/* FOOTER */}
+            <View className="flex-row justify-center mt-12">
+              <Text className="text-slate-400">
+                Don't have an account?
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/Signup")}>
+                <Text className="text-[#22D3EE] font-bold ml-1">
+                  Sign Up
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
