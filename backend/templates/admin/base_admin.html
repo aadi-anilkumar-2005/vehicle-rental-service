@@ -15,15 +15,15 @@
 </head>
 
 <body>
+    <button class="toggle-btn" id="sidebarToggle" style="position: fixed; top: 14px; left: 14px; z-index: 70;">
+        <i class="fas fa-bars"></i>
+    </button>
 
     <!-- Sidebar -->
     {% include 'admin/sidebar.html' %}
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <!-- Header -->
-        {% include 'admin/header.html' %}
-
         <!-- Content Area -->
         <main class="content-wrapper">
             <!-- Messages Display -->

@@ -648,10 +648,16 @@ def conversation_list(request):
         except Exception:
             role = 'user'
 
-        if role in ['staff', 'owner']:
-            # If shop/staff, load all conversations for their shop or assigned tasks
-            # This is simplified: Staff app usually doesn't query the full list, but if they do:
-            convs = Conversation.objects.all().prefetch_related('messages')
+        if role == 'owner':
+            # Owners should only see conversations for shops they own.
+            convs = Conversation.objects.filter(
+                shop__owner=request.user.user_profile
+            ).prefetch_related('messages')
+        elif role == 'staff':
+            # Staff should only see conversations tied to their assigned booking tasks.
+            convs = Conversation.objects.filter(
+                booking__staff_tasks__staff=request.user
+            ).distinct().prefetch_related('messages')
         else:
             convs = Conversation.objects.filter(user=request.user).prefetch_related('messages')
 
@@ -699,6 +705,13 @@ def message_list(request, conversation_id):
 
     if sender_role == 'user' and conv.user != request.user:
         return Response({'error': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
+    if sender_role == 'owner':
+        if not hasattr(request.user, 'user_profile') or conv.shop.owner_id != request.user.user_profile.id:
+            return Response({'error': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
+    if sender_role == 'staff':
+        is_assigned = conv.booking and conv.booking.staff_tasks.filter(staff=request.user).exists()
+        if not is_assigned:
+            return Response({'error': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
         # Mark unread messages from the other side as read

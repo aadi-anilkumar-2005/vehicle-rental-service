@@ -354,15 +354,29 @@ class UserProfile(models.Model):
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+def _get_role_for_user(user):
+    # Superusers/staff should always be represented as admin.
+    # For others, do not force role changes globally (owner/staff/user are managed by flows elsewhere).
+    if user.is_superuser or user.is_staff:
+        return 'admin'
+    return None
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.create(user=instance)
+        default_role = _get_role_for_user(instance) or 'user'
+        UserProfile.objects.create(user=instance, role=default_role)
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'user_profile'):
-        instance.user_profile.save()
+        profile = instance.user_profile
+        desired_role = _get_role_for_user(instance)
+        if desired_role and profile.role != desired_role:
+            profile.role = desired_role
+            profile.save(update_fields=['role'])
+        else:
+            profile.save()
 
 @receiver(post_save, sender='rentals.Booking')
 def update_vehicle_availability(sender, instance, **kwargs):

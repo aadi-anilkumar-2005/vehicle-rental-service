@@ -43,7 +43,7 @@
                 {% for kyc in kyc_docs %}
                 <tr>
                     <td>
-                        <div style="font-weight: 600;">@{{ kyc.user.username }}</div>
+                        <div style="font-weight: 600;">{{ kyc.user.first_name }} {{ kyc.user.last_name }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-muted);">{{ kyc.user.email }}</div>
                     </td>
                     <td>{{ kyc.full_name }}</td>

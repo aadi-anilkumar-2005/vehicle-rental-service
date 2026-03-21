@@ -80,27 +80,4 @@
     </div>
 </div>
 
-<h3 style="margin-bottom: 1.5rem; font-size: 1.25rem; margin-top: 2rem;">Recent Bookings for {{ vehicle.name }}</h3>
-<div class="items-grid">
-    {% for booking in vehicle.bookings.all|slice:":6" %}
-    <div class="item-card">
-        <div class="item-content">
-            <div class="item-title" style="margin-bottom: 0.5rem;">
-                <i class="fas fa-user-circle" style="color: var(--text-muted); margin-right: 0.5rem;"></i>{{ booking.user.get_full_name|default:booking.user.username }}
-            </div>
-            <div class="item-subtitle" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span class="status-badge status-{{ booking.status|yesno:'success,warning' }}">{{ booking.status|title }}</span>
-                <span style="font-weight: 600;">₹{{ booking.total_price }}</span>
-            </div>
-            <div class="item-details" style="border-top: 1px solid var(--border); padding-top: 0.75rem; font-size: 0.8rem; color: var(--text-muted);">
-                <i class="far fa-calendar-alt"></i> {{ booking.start_date|date:"M d, Y" }} <br>to {{ booking.end_date|date:"M d, Y" }}
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; background: var(--surface); border-radius: var(--radius); border: 1px dashed var(--border);">
-        <p style="color: var(--text-muted); margin: 0;">No bookings associated with this vehicle yet.</p>
-    </div>
-    {% endfor %}
-</div>
 {% endblock %}

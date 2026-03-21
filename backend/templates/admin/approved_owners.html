@@ -42,7 +42,7 @@
                 <tr>
                     <td>
                         <div style="font-weight: 600; color: var(--text-main);">{{ profile.user.first_name }} {{ profile.user.last_name }}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">@{{ profile.user.username }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ profile.user.username }}</div>
                     </td>
                     <td>{{ profile.user.email }}</td>
                     <td>{{ profile.phone|default:"-" }}</td>

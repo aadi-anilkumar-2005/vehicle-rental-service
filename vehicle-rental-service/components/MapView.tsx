@@ -1,24 +1,33 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { WebView } from "react-native-webview";
 import { RentalShop } from "@/types";
 
 interface MapViewProps {
   shops: RentalShop[];
+  userLocation?: { latitude: number; longitude: number } | null;
   onShopClick: (shopId: string) => void;
 }
 
-export const NativeMapView = ({ shops, onShopClick }: MapViewProps) => {
+export const NativeMapView = ({ shops, userLocation, onShopClick }: MapViewProps) => {
   const webViewRef = useRef<WebView>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
 
-  // Default coordinate if shop list is empty
-  const defaultLat = 37.78825;
-  const defaultLng = -122.4324;
-  
-  const centerLat = shops.length > 0 && shops[0].latitude ? shops[0].latitude : defaultLat;
-  const centerLng = shops.length > 0 && shops[0].longitude ? shops[0].longitude : defaultLng;
+  const payload = useMemo(
+    () => ({
+      type: "MAP_DATA_UPDATE",
+      userLocation: userLocation || null,
+      shops: shops.map((s) => ({
+        id: s.id,
+        name: s.name,
+        address: s.address,
+        lat: s.latitude,
+        lng: s.longitude,
+      })),
+    }),
+    [shops, userLocation]
+  );
 
-  // We need to inject the shops as markers into the Leaflet map
   const mapHtml = `
     <!DOCTYPE html>
     <html>
@@ -66,13 +75,26 @@ export const NativeMapView = ({ shops, onShopClick }: MapViewProps) => {
     <body>
     <div id="map"></div>
     <script>
-      const map = L.map('map', { zoomControl: false }).setView([${centerLat}, ${centerLng}], 12);
+      const map = L.map('map', { zoomControl: false }).setView([23.8103, 90.4125], 12);
       
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
+      });
+      const fallbackLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO'
+      });
+      let fallbackEnabled = false;
 
-      const stationIcon = L.icon({
+      osmLayer.on('tileerror', () => {
+        if (fallbackEnabled) return;
+        fallbackEnabled = true;
+        map.removeLayer(osmLayer);
+        fallbackLayer.addTo(map);
+      });
+
+      osmLayer.addTo(map);
+
+      const shopIcon = L.icon({
         iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
         iconSize: [25, 41],
@@ -81,37 +103,74 @@ export const NativeMapView = ({ shops, onShopClick }: MapViewProps) => {
         shadowSize: [41, 41]
       });
 
-      const shops = ${JSON.stringify(
-        shops.map(s => ({
-          id: s.id,
-          name: s.name,
-          address: s.address,
-          lat: s.latitude || defaultLat,
-          lng: s.longitude || defaultLng
-        }))
-      )};
-
-      const markers = [];
-
-      shops.forEach(shop => {
-        const marker = L.marker([shop.lat, shop.lng], { icon: stationIcon }).addTo(map);
-        
-        const popupContent = \`
-          <div class="popup-title">\${shop.name}</div>
-          <div class="popup-address">\${shop.address}</div>
-          <button class="popup-btn" onclick="window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'SHOP_CLICK', id: '\${shop.id}' }))">View Details</button>
-        \`;
-        
-        marker.bindPopup(popupContent, { className: 'custom-popup' });
-        markers.push(marker);
+      const userIcon = L.divIcon({
+        className: 'user-marker',
+        html: '<div style="background:#2563EB;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 5px rgba(0,0,0,0.35);"></div>',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
       });
 
-      // Fit bounds if there are markers
-      if (markers.length > 0) {
-        const group = new L.featureGroup(markers);
-        map.fitBounds(group.getBounds(), { padding: [50, 50] });
+      let shopMarkers = [];
+      let userMarker = null;
+
+      window.handleShopClick = function(id) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'SHOP_CLICK', id: id }));
+      };
+
+      function clearShops() {
+        shopMarkers.forEach((m) => map.removeLayer(m));
+        shopMarkers = [];
       }
 
+      function renderMapData(data) {
+        const points = [];
+        clearShops();
+
+        if (data.userLocation && data.userLocation.latitude && data.userLocation.longitude) {
+          const userLatLng = [data.userLocation.latitude, data.userLocation.longitude];
+          points.push(userLatLng);
+          if (!userMarker) {
+            userMarker = L.marker(userLatLng, { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
+          } else {
+            userMarker.setLatLng(userLatLng);
+          }
+        }
+
+        (data.shops || []).forEach((shop) => {
+          if (shop.lat == null || shop.lng == null) return;
+          const marker = L.marker([shop.lat, shop.lng], { icon: shopIcon }).addTo(map);
+          const safeName = (shop.name || '').replace(/"/g, '&quot;');
+          const safeAddress = (shop.address || '').replace(/"/g, '&quot;');
+          const shopId = String(shop.id || '');
+
+          const popupContent = \`
+            <div class="popup-title">\${safeName}</div>
+            <div class="popup-address">\${safeAddress}</div>
+            <button class="popup-btn" onclick="window.handleShopClick('\${shopId}')">View Details</button>
+          \`;
+          marker.bindPopup(popupContent, { className: 'custom-popup' });
+          shopMarkers.push(marker);
+          points.push([shop.lat, shop.lng]);
+        });
+
+        if (points.length === 1) {
+          map.setView(points[0], 14);
+        } else if (points.length > 1) {
+          map.fitBounds(points, { padding: [40, 40] });
+        }
+      }
+
+      function handleData(dataString) {
+        try {
+          const data = JSON.parse(dataString);
+          if (data.type === 'MAP_DATA_UPDATE') {
+            renderMapData(data);
+          }
+        } catch (e) {}
+      }
+
+      document.addEventListener('message', (event) => handleData(event.data));
+      window.addEventListener('message', (event) => handleData(event.data));
     </script>
     </body>
     </html>
@@ -128,15 +187,26 @@ export const NativeMapView = ({ shops, onShopClick }: MapViewProps) => {
     }
   };
 
+  useEffect(() => {
+    if (!isMapReady || !webViewRef.current) return;
+    webViewRef.current.postMessage(JSON.stringify(payload));
+  }, [payload, isMapReady]);
+
   return (
     <View style={styles.container}>
       <WebView
         ref={webViewRef}
-        source={{ html: mapHtml }}
+        source={{ html: mapHtml, baseUrl: "https://localhost" }}
         style={styles.map}
         originWhitelist={['*']}
         javaScriptEnabled={true}
         onMessage={handleMessage}
+        onLoadEnd={() => {
+          setIsMapReady(true);
+          if (webViewRef.current) {
+            webViewRef.current.postMessage(JSON.stringify(payload));
+          }
+        }}
         scrollEnabled={false}
       />
       <View style={styles.overlay}>

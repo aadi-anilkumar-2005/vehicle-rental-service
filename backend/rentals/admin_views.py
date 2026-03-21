@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Sum
 from django.contrib.auth.models import User
+from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from .models import (
@@ -23,22 +24,74 @@ admin_required = user_passes_test(is_admin, login_url='/login/')
 
 @admin_required
 def admin_dashboard(request):
-    total_revenue = Booking.objects.filter(payment_status="completed").aggregate(Sum('total_price'))['total_price__sum'] or 0
-    active_bookings = Booking.objects.filter(status__in=["active", "upcoming"]).count()
-    vehicle_count = Vehicle.objects.count()
-    staff_count = UserProfile.objects.filter(role="staff").count()
+    total_users = UserProfile.objects.filter(role="user").count()
+    total_shops = RentalShop.objects.count()
     pending_kyc = KYCDocument.objects.filter(status="pending").count()
+    registration_pending = OwnerRegistrationRequest.objects.filter(status="pending").count()
     recent_bookings = Booking.objects.select_related("vehicle", "shop", "user").order_by("-start_date")[:10]
 
     context = {
-        'total_revenue': total_revenue,
-        'active_bookings': active_bookings,
-        'total_vehicles': vehicle_count,
-        'total_staff': staff_count,
+        'total_users': total_users,
+        'total_shops': total_shops,
         'pending_kyc': pending_kyc,
+        'registration_pending': registration_pending,
         'recent_bookings': recent_bookings,
     }
     return render(request, 'admin/dashboard.html', context)
+
+@admin_required
+def admin_profile(request):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'update_general':
+            try:
+                user = request.user
+                user.first_name = request.POST.get('first_name', user.first_name).strip()
+                user.last_name = request.POST.get('last_name', user.last_name).strip()
+                user.email = request.POST.get('email', user.email).strip()
+                user.save()
+
+                profile, _ = UserProfile.objects.get_or_create(user=user)
+                profile.phone = request.POST.get('phone', profile.phone).strip()
+                profile.save()
+
+                from django.contrib import messages
+                messages.success(request, "Profile updated successfully.")
+            except Exception as e:
+                from django.contrib import messages
+                messages.error(request, f"Failed to update profile: {str(e)}")
+
+            return redirect('admin_profile')
+
+        if action == 'change_password':
+            from django.contrib import messages
+            current_password = request.POST.get('current_password', '')
+            new_password = request.POST.get('new_password', '')
+            confirm_password = request.POST.get('confirm_password', '')
+
+            if not request.user.check_password(current_password):
+                messages.error(request, "Current password is incorrect.")
+            elif new_password != confirm_password:
+                messages.error(request, "New password and confirm password do not match.")
+            elif len(new_password) < 8:
+                messages.error(request, "New password must be at least 8 characters long.")
+            else:
+                try:
+                    request.user.set_password(new_password)
+                    request.user.save()
+                    update_session_auth_hash(request, request.user)
+                    messages.success(request, "Password updated successfully.")
+                except Exception as e:
+                    messages.error(request, f"Failed to update password: {str(e)}")
+
+            return redirect('admin_profile')
+
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    return render(request, 'admin/adminProfile.html', {
+        'admin_profile': profile,
+        'current_page': 'profile',
+    })
 
 @admin_required
 def admin_rentalshops(request):
@@ -65,9 +118,16 @@ def admin_shop_detail(request, shop_id):
     shop = get_object_or_404(RentalShop, id=shop_id)
     vehicles = Vehicle.objects.filter(shop=shop)
     
+    # Get all bookings for vehicles in this shop
+    from django.db.models import Q
+    recent_bookings = Booking.objects.filter(
+        Q(vehicle__shop=shop)
+    ).select_related('user', 'vehicle').order_by('-start_date')[:10]
+    
     context = {
         'shop': shop,
         'vehicles': vehicles,
+        'recent_bookings': recent_bookings,
     }
 
     return render(request, 'admin/rentalshopdetails.html', context)
@@ -83,12 +143,12 @@ def admin_customers(request):
 
 @admin_required
 def admin_staff(request):
-    staff_list = UserProfile.objects.filter(role="staff").select_related("user")
+    staff_users = UserProfile.objects.filter(role="staff").select_related("user")
     
     context = {
-        'staff_members': staff_list,
+        'staff_users': staff_users,
     }
-    return render(request, 'admin/rentalstaff.html', context)
+    return render(request, 'admin/staff.html', context)
 
 @admin_required
 def admin_vehicles(request):
@@ -130,35 +190,6 @@ def admin_vehicle_detail(request, vehicle_id):
         'vehicle': vehicle,
     }
     return render(request, 'admin/vehicledetails.html', context)
-
-@admin_required
-def admin_bookings(request):
-    bookings = Booking.objects.select_related("vehicle", "shop", "user")
-
-    # Filtering
-    status = request.GET.get('status')
-    if status:
-        bookings = bookings.filter(status=status)
-
-    booking_type = request.GET.get('booking_type')
-    if booking_type:
-        bookings = bookings.filter(booking_type=booking_type)
-
-    delivery_option = request.GET.get('delivery_option')
-    if delivery_option:
-        bookings = bookings.filter(delivery_option=delivery_option)
-
-    # Sorting
-    sort_by = request.GET.get('sort_by')
-    if sort_by in ['start_date', 'total_price', '-start_date', '-total_price']:
-        bookings = bookings.order_by(sort_by)
-    else:
-        bookings = bookings.order_by('-created_at') # Default sorting
-
-    context = {
-        'bookings': bookings,
-    }
-    return render(request, 'admin/booking.html', context)
 
 @admin_required
 def admin_payments(request):

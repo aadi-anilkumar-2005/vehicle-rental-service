@@ -65,8 +65,8 @@
                             data-price_per_day="{{ vehicle.price_per_day }}" data-fuel_type="{{ vehicle.fuel_type }}"
                             data-transmission="{{ vehicle.transmission }}"
                             data-seating="{% if vehicle.seating %}{{ vehicle.seating }}{% endif %}"
-                            data-features="{{ vehicle.features|join:'\x2c' }}"
-                            data-images="{{ vehicle.images|join:'\x2c' }}">
+                            data-features="{{ vehicle.features|join:',' }}"
+                            data-images="{{ vehicle.images|join:',' }}">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <form method="POST" action="{% url 'owner_vehicles' %}" id="deleteForm-{{ vehicle.id }}"

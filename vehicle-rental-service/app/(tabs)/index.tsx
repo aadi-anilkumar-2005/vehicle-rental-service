@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import * as Location from "expo-location";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   UserStackParamList,
@@ -35,6 +36,50 @@ export default function Home() {
 
   const [shops, setShops] = useState<RentalShop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+
+  const NEARBY_RADIUS_KM = 5;
+
+  const calculateDistanceKm = (
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number,
+  ) => {
+    const toRad = (value: number) => (value * Math.PI) / 180;
+    const earthRadiusKm = 6371;
+    const deltaLat = toRad(lat2 - lat1);
+    const deltaLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(deltaLng / 2) *
+        Math.sin(deltaLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
+  };
+
+  const getReadableAddress = async (latitude: number, longitude: number) => {
+    try {
+      const reverse = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (!reverse?.length) return `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+
+      const item = reverse[0];
+      const parts = [item.name, item.street, item.city || item.subregion, item.region]
+        .filter(Boolean)
+        .slice(0, 3);
+      return parts.length
+        ? parts.join(", ")
+        : `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+    } catch {
+      return `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -63,23 +108,123 @@ export default function Home() {
     }, []),
   );
 
-  const handleCurrentLocation = () => {
-    setLocation("Current Location");
-    Toast.show({
-      type: "success",
-      text1: "Location updated",
-    });
+  useEffect(() => {
+    handleCurrentLocation();
+  }, []);
+
+  const handleCurrentLocation = async () => {
+    setLocationLoading(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Toast.show({
+          type: "error",
+          text1: "Permission denied",
+          text2: "Location permission is required to show nearby rentals.",
+        });
+        return;
+      }
+
+      const current = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      const nextLocation = {
+        latitude: current.coords.latitude,
+        longitude: current.coords.longitude,
+      };
+      setUserLocation(nextLocation);
+
+      const readable = await getReadableAddress(
+        nextLocation.latitude,
+        nextLocation.longitude,
+      );
+      setLocation(readable);
+
+      Toast.show({
+        type: "success",
+        text1: "Location updated",
+      });
+    } catch (error) {
+      console.error("Failed to get current location:", error);
+      Toast.show({
+        type: "error",
+        text1: "Location error",
+        text2: "Could not fetch current location.",
+      });
+    } finally {
+      setLocationLoading(false);
+    }
   };
 
   const handleShopClick = (shopId: string) => {
     navigation.navigate("ShopDetails", { id: shopId });
   };
 
-  const filteredShops = shops.filter((shop) => {
+  const handleSearchLocation = async () => {
+    const query = location.trim();
+    if (!query) return;
+
+    setLocationLoading(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+      const data = await response.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        Toast.show({
+          type: "error",
+          text1: "No results",
+          text2: "Location not found.",
+        });
+        return;
+      }
+
+      const lat = parseFloat(data[0].lat);
+      const lng = parseFloat(data[0].lon);
+      if (Number.isNaN(lat) || Number.isNaN(lng)) {
+        Toast.show({
+          type: "error",
+          text1: "Invalid location",
+        });
+        return;
+      }
+
+      setUserLocation({ latitude: lat, longitude: lng });
+      setLocation(data[0].display_name || query);
+    } catch (error) {
+      console.error("Location search failed:", error);
+      Toast.show({
+        type: "error",
+        text1: "Search failed",
+        text2: "Unable to search this location right now.",
+      });
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const typeFilteredShops = shops.filter((shop) => {
     if (activeFilter === "all") return true;
     if (activeFilter === "car") return shop.vehicleCount.cars > 0;
     if (activeFilter === "bike") return shop.vehicleCount.bikes > 0;
     return true;
+  });
+
+  const nearbyFilteredShops = typeFilteredShops.filter((shop) => {
+    if (!userLocation) return true;
+    if (shop.latitude == null || shop.longitude == null) return false;
+    const distance = calculateDistanceKm(
+      userLocation.latitude,
+      userLocation.longitude,
+      shop.latitude,
+      shop.longitude,
+    );
+    return distance <= NEARBY_RADIUS_KM;
   });
 
   if (loading) {
@@ -99,9 +244,15 @@ export default function Home() {
             <MapPin color="#94A3B8" size={14} />
             <Text className="text-sm text-slate-400">Your Location</Text>
           </View>
-          <Text className="text-xl font-bold text-white">{location}</Text>
         </View>
         <View className="flex-row gap-3">
+          <TouchableOpacity
+            className="relative rounded-full bg-[#1E293B] p-3 border border-slate-700"
+            onPress={handleCurrentLocation}
+            disabled={locationLoading}
+          >
+            <MapPin color="#22D3EE" size={20} />
+          </TouchableOpacity>
           <TouchableOpacity
             className="relative rounded-full bg-[#1E293B] p-3 border border-slate-700"
             onPress={() => router.push("/chat" as any)}
@@ -129,14 +280,24 @@ export default function Home() {
               className="flex-1 text-white text-base"
               placeholder="Search location"
               placeholderTextColor="#64748B"
+              onSubmitEditing={handleSearchLocation}
+              returnKeyType="search"
             />
-            <View className="bg-[#1E293B] p-3 rounded-full border border-slate-700">
+            <TouchableOpacity
+              className="bg-[#1E293B] p-3 rounded-full border border-slate-700"
+              onPress={handleSearchLocation}
+              disabled={locationLoading}
+            >
               <Send color="#22D3EE" size={18} />
-            </View>
+            </TouchableOpacity>
           </View>
 
           {/* Map Widget */}
-          <MapView shops={filteredShops} onShopClick={() => {}} />
+          <MapView
+            shops={nearbyFilteredShops}
+            userLocation={userLocation}
+            onShopClick={handleShopClick}
+          />
 
           {/* Filters */}
           <View className="flex-row gap-3">
@@ -179,11 +340,11 @@ export default function Home() {
                 Nearby Rentals
               </Text>
               <Text className="text-sm text-slate-400">
-                {filteredShops.length} shops
+                {nearbyFilteredShops.length} shops
               </Text>
             </View>
 
-            {filteredShops.map((shop) => (
+            {nearbyFilteredShops.map((shop) => (
               <ShopCard
                 key={shop.id}
                 shop={shop}

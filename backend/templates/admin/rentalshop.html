@@ -27,8 +27,8 @@
     {% for shop in shops %}
     <div class="item-card" data-href="{% url 'admin_shop_detail' shop.id %}">
         <div class="item-img-container">
-            {% if shop.image %}
-            <img src="{{ shop.image }}" alt="{{ shop.name }}" class="item-img">
+            {% if shop.owner.profile_picture %}
+            <img src="{{ shop.owner.profile_picture.url }}" alt="{{ shop.owner.user.username }}" class="item-img">
             {% else %}
             <div class="item-img" style="display: flex; align-items: center; justify-content: center;">
                 <i class="fas fa-store" style="font-size: 3rem; color: #94A3B8;"></i>

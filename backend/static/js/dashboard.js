@@ -2,7 +2,13 @@
 class RentalDashboard {
   constructor() {
     this.currentBookingId = null;
+    this.storagePrefix = this.getStoragePrefix();
     this.init();
+  }
+
+  getStoragePrefix() {
+    const ownerId = document.body?.dataset?.ownerId || "anonymous";
+    return `owner:${ownerId}:`;
   }
 
   getCookie(name) {
@@ -49,9 +55,9 @@ class RentalDashboard {
     }
 
     // Load any stored data from localStorage
-    const storedStaff = localStorage.getItem("staffData");
-    const storedVehicles = localStorage.getItem("vehicleData");
-    const storedBookings = localStorage.getItem("bookingData");
+    const storedStaff = localStorage.getItem(`${this.storagePrefix}staffData`);
+    const storedVehicles = localStorage.getItem(`${this.storagePrefix}vehicleData`);
+    const storedBookings = localStorage.getItem(`${this.storagePrefix}bookingData`);
 
     if (storedStaff) {
       mockData.staff = JSON.parse(storedStaff);
@@ -66,9 +72,9 @@ class RentalDashboard {
 
   saveData() {
     // Save current data to localStorage
-    localStorage.setItem("staffData", JSON.stringify(mockData.staff));
-    localStorage.setItem("vehicleData", JSON.stringify(mockData.vehicles));
-    localStorage.setItem("bookingData", JSON.stringify(mockData.bookings));
+    localStorage.setItem(`${this.storagePrefix}staffData`, JSON.stringify(mockData.staff));
+    localStorage.setItem(`${this.storagePrefix}vehicleData`, JSON.stringify(mockData.vehicles));
+    localStorage.setItem(`${this.storagePrefix}bookingData`, JSON.stringify(mockData.bookings));
   }
 
   setupEventListeners() {
@@ -84,7 +90,10 @@ class RentalDashboard {
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", () => {
-        sessionStorage.clear(); // Clear all mock data on logout for safety
+        sessionStorage.clear();
+        localStorage.removeItem(`${this.storagePrefix}staffData`);
+        localStorage.removeItem(`${this.storagePrefix}vehicleData`);
+        localStorage.removeItem(`${this.storagePrefix}bookingData`);
         window.location.href = "/logout/"; // Use standard Django logout routing
       });
     }
@@ -513,20 +522,20 @@ class RentalDashboard {
   }
 
   updateUserDisplay() {
-    // Find existing elements and update if they exist
+    // Keep server-rendered Django user info unless explicit session values exist.
     const emailElems = document.querySelectorAll(".user-email-display");
     const nameElems = document.querySelectorAll(".user-name");
 
-    const email = sessionStorage.getItem("userEmail") || "admin@rental.com";
+    const email = sessionStorage.getItem("userEmail");
+    if (!email) return;
 
     emailElems.forEach((el) => (el.textContent = email));
 
-    // Simple name extraction from email (e.g. admin@rental.com -> Admin)
-    if (nameElems.length > 0) {
-      const namePortion = email.split("@")[0];
-      const capitalizedName =
-        namePortion.charAt(0).toUpperCase() + namePortion.slice(1);
-      nameElems.forEach((el) => (el.textContent = capitalizedName));
+    // If the app stored an explicit name, use it.
+    // Otherwise keep the server-rendered name unchanged.
+    const storedName = sessionStorage.getItem("userName");
+    if (storedName && nameElems.length > 0) {
+      nameElems.forEach((el) => (el.textContent = storedName));
     }
   }
 

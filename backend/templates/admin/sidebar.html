@@ -1,3 +1,4 @@
+{% url 'admin_profile' as admin_profile_url %}
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <i class="fas fa-car-side" style="margin-right: 10px; color: var(--primary);"></i>
@@ -20,16 +21,6 @@
             <span>Customers</span>
         </a>
 
-        <a href="{% url 'admin_rental_staff' %}" class="menu-item">
-            <i class="fas fa-user-tie"></i>
-            <span>Rental Staff</span>
-        </a>
-
-        <a href="{% url 'admin_bookings' %}" class="menu-item">
-            <i class="fas fa-calendar-check"></i>
-            <span>Bookings</span>
-        </a>
-
         <a href="{% url 'admin_payments' %}" class="menu-item">
             <i class="fas fa-credit-card"></i>
             <span>Payments</span>
@@ -49,5 +40,33 @@
             <i class="fas fa-id-card"></i>
             <span>KYC Management</span>
         </a>
+
+        <a href="{% if admin_profile_url %}{{ admin_profile_url }}{% else %}/admin/profile/{% endif %}" class="menu-item {% if current_page == 'profile' %}active{% endif %}">
+            <i class="fas fa-user-cog"></i>
+            <span>Profile</span>
+        </a>
     </nav>
+
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="sidebar-user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="sidebar-user-details">
+                <div class="sidebar-user-label">Signed in as</div>
+                <div class="sidebar-user-name">
+                    {% if request.user.first_name %}
+                        {{ request.user.first_name }} {{ request.user.last_name }}
+                    {% else %}
+                        {{ request.user.username }}
+                    {% endif %}
+                </div>
+                <div class="sidebar-user-email">{{ request.user.email }}</div>
+            </div>
+        </div>
+        <a href="{% url 'admin_logout' %}" class="menu-item sidebar-logout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </div>
 </aside>

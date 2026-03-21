@@ -3,6 +3,9 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from rentals.models import Booking, Vehicle, RentalShop, Review, Complaint, Conversation, Message
+from staff.models import StaffTask
 
 def is_owner(user):
     return user.is_authenticated and hasattr(user, 'user_profile') and user.user_profile.role == 'owner'
@@ -14,6 +17,23 @@ def is_admin(user):
         if hasattr(user, 'user_profile') and user.user_profile.role == 'admin':
             return True
     return False
+
+
+def get_owner_shop(user):
+    """
+    Resolve the shop for the logged-in owner, creating one only for that owner if missing.
+    """
+    owner_profile = user.user_profile
+    shop = RentalShop.objects.filter(owner=owner_profile).first()
+    if not shop:
+        shop = RentalShop.objects.create(
+            owner=owner_profile,
+            name=f"{user.username}'s Shop",
+            address="123 Main St",
+            latitude=0,
+            longitude=0,
+        )
+    return shop
 
 def index_view(request):
     if is_owner(request.user):
@@ -112,18 +132,12 @@ def register_view(request):
 
     return render(request, 'owner/register.html')
 
-from django.db.models import Sum
-
 @login_required(login_url='owner_login')
 def dashboard_view(request):
     if not is_owner(request.user):
         return redirect('owner_login')
 
-    from rentals.models import Booking, Vehicle, RentalShop
-    
-    shop = RentalShop.objects.annotate(v_count=models.Count('vehicles')).first()
-    if not shop:
-        shop = RentalShop.objects.create(name=f"{request.user.username}'s Shop", address="123 Main St", latitude=0, longitude=0)
+    shop = get_owner_shop(request.user)
 
     # 1. Total Revenue from completed bookings
     total_revenue = Booking.objects.filter(shop=shop, status='completed').aggregate(total=Sum('total_price'))['total'] or 0
@@ -135,7 +149,11 @@ def dashboard_view(request):
     total_vehicles = Vehicle.objects.filter(shop=shop).count()
 
     # 4. Total Staff
-    total_staff = User.objects.filter(user_profile__role='staff', is_active=True).count()
+    total_staff = User.objects.filter(
+        user_profile__role='staff',
+        is_active=True,
+        assigned_tasks__booking__shop=shop
+    ).distinct().count()
 
     # 5. Recent Bookings (top 5)
     recent_bookings = Booking.objects.filter(shop=shop).select_related('user', 'vehicle').order_by('-created_at')[:5]
@@ -150,18 +168,12 @@ def dashboard_view(request):
 
     return render(request, 'owner/dashboard.html', context)
 
-from rentals.models import Booking
-from staff.models import StaffTask
-
 @login_required(login_url='owner_login')
 def booking_management_view(request):
     if not is_owner(request.user):
         return redirect('owner_login')
 
-    # Get the owner's shop (temporary fallback approach like in vehicle_management_view)
-    shop = RentalShop.objects.annotate(v_count=models.Count('vehicles')).first()
-    if not shop:
-        shop = RentalShop.objects.create(name=f"{request.user.username}'s Shop", address="123 Main St", latitude=0, longitude=0)
+    shop = get_owner_shop(request.user)
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -200,7 +212,11 @@ def booking_management_view(request):
         return redirect('owner_bookings')
 
     bookings = Booking.objects.filter(shop=shop).select_related('user', 'vehicle').prefetch_related('staff_tasks__staff')
-    staff_members = User.objects.filter(user_profile__role='staff', is_active=True).select_related('user_profile')
+    staff_members = User.objects.filter(
+        user_profile__role='staff',
+        is_active=True,
+        assigned_tasks__booking__shop=shop
+    ).distinct().select_related('user_profile')
     
     return render(request, 'owner/bookingManagement.html', {
         'bookings': bookings,
@@ -276,27 +292,25 @@ def staff_management_view(request):
                 
         return redirect('owner_staff')
 
-    staff_users = User.objects.filter(user_profile__role='staff').select_related('user_profile')
+    shop = get_owner_shop(request.user)
+    staff_users = User.objects.filter(
+        user_profile__role='staff',
+        assigned_tasks__booking__shop=shop
+    ).distinct().select_related('user_profile')
     return render(request, 'owner/staffManagement.html', {'staff_users': staff_users})
-
-from django.db import models
-from rentals.models import Vehicle, RentalShop
 
 @login_required(login_url='owner_login')
 def vehicle_management_view(request):
     if not is_owner(request.user):
         return redirect('owner_login')
 
+    shop = get_owner_shop(request.user)
+
     if request.method == 'POST':
         action = request.POST.get('action')
         
         if action == 'add':
             try:
-                # Find the owner's shop, or create a default owned by them if we are mapping them
-                shop = RentalShop.objects.annotate(v_count=models.Count('vehicles')).first()
-                if not shop:
-                    shop = RentalShop.objects.create(name=f"{request.user.username}'s Shop", address="123 Main St", latitude=0, longitude=0)
-                
                 VALID_FUEL = ['petrol', 'diesel']
                 VALID_TRANS = ['auto', 'manual']
                 VALID_SEATING = ['5', '7']
@@ -342,7 +356,7 @@ def vehicle_management_view(request):
         elif action == 'edit':
             vehicle_id = request.POST.get('vehicle_id')
             try:
-                vehicle = Vehicle.objects.get(id=vehicle_id)
+                vehicle = Vehicle.objects.get(id=vehicle_id, shop=shop)
                 vehicle.type = request.POST.get('type')
                 vehicle.name = request.POST.get('name')
                 vehicle.brand = request.POST.get('brand')
@@ -392,7 +406,7 @@ def vehicle_management_view(request):
         elif action == 'delete':
             vehicle_id = request.POST.get('vehicle_id')
             try:
-                vehicle = Vehicle.objects.get(id=vehicle_id)
+                vehicle = Vehicle.objects.get(id=vehicle_id, shop=shop)
                 vehicle_name = vehicle.name
                 vehicle.delete()
                 messages.success(request, f"Vehicle {vehicle_name} deleted successfully!")
@@ -401,7 +415,7 @@ def vehicle_management_view(request):
                 
         return redirect('owner_vehicles')
 
-    vehicles = Vehicle.objects.all()
+    vehicles = Vehicle.objects.filter(shop=shop)
     return render(request, 'owner/vehicleManagement.html', {'vehicles': vehicles})
 
 from django.contrib.auth import update_session_auth_hash
@@ -411,10 +425,7 @@ def profile_view(request):
     if not is_owner(request.user):
         return redirect('owner_login')
 
-    from rentals.models import RentalShop
-    shop = RentalShop.objects.annotate(v_count=models.Count('vehicles')).first()
-    if not shop:
-        shop = RentalShop.objects.create(name=f"{request.user.username}'s Shop", address="123 Main St", latitude=0, longitude=0)
+    shop = get_owner_shop(request.user)
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -491,6 +502,7 @@ def profile_view(request):
 
 def logout_view(request):
     auth_logout(request)
+    request.session.flush()
     return redirect('owner_login')
 
 import json
@@ -502,8 +514,13 @@ def staff_api(request):
     if not is_owner(request.user):
         return JsonResponse({'error': 'Unauthorized'}, status=403)
 
+    shop = get_owner_shop(request.user)
+
     if request.method == 'GET':
-        staff_users = User.objects.filter(user_profile__role='staff').select_related('user_profile')
+        staff_users = User.objects.filter(
+            user_profile__role='staff',
+            assigned_tasks__booking__shop=shop
+        ).distinct().select_related('user_profile')
         data = []
         for u in staff_users:
             data.append({
@@ -556,13 +573,7 @@ def chat_view(request):
     if not is_owner(request.user):
         return redirect('owner_login')
 
-    from rentals.models import Conversation, Message, RentalShop
-
-    shop = RentalShop.objects.annotate(v_count=models.Count('vehicles')).first()
-    if not shop:
-        shop = RentalShop.objects.create(
-            name=f"{request.user.username}'s Shop", address="123 Main St", latitude=0, longitude=0
-        )
+    shop = get_owner_shop(request.user)
 
     selected_conversation = None
     conversation_messages = []
@@ -613,14 +624,9 @@ def reviews_view(request):
     if not is_owner(request.user):
         return redirect('owner_login')
 
-    from rentals.models import Review, RentalShop
     from django.utils import timezone
 
-    shop = RentalShop.objects.annotate(v_count=models.Count('vehicles')).first()
-    if not shop:
-        shop = RentalShop.objects.create(
-            name=f"{request.user.username}'s Shop", address="123 Main St", latitude=0, longitude=0
-        )
+    shop = get_owner_shop(request.user)
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -667,13 +673,7 @@ def complaints_view(request):
     if not is_owner(request.user):
         return redirect('owner_login')
 
-    from rentals.models import Complaint, RentalShop
-
-    shop = RentalShop.objects.annotate(v_count=models.Count('vehicles')).first()
-    if not shop:
-        shop = RentalShop.objects.create(
-            name=f"{request.user.username}'s Shop", address="123 Main St", latitude=0, longitude=0
-        )
+    shop = get_owner_shop(request.user)
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -705,7 +705,11 @@ def complaints_view(request):
         return redirect('owner_complaints')
 
     all_complaints = Complaint.objects.filter(shop=shop).select_related('user', 'booking', 'assigned_to')
-    staff_members = User.objects.filter(user_profile__role='staff', is_active=True).select_related('user_profile')
+    staff_members = User.objects.filter(
+        user_profile__role='staff',
+        is_active=True,
+        assigned_tasks__booking__shop=shop
+    ).distinct().select_related('user_profile')
 
     return render(request, 'owner/complaints.html', {
         'complaints': all_complaints,

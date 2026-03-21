@@ -45,8 +45,7 @@
         </div>
     </div>
     <div class="px-4 pb-2" style="margin-top: -10px;">
-        <h3 class="font-bold mb-0 user-name fs-4">{% if request.user.first_name %}{{ request.user.first_name }} {{
-            request.user.last_name }}{% else %}{{ request.user.username }}{% endif %}</h3>
+        <h3 class="font-bold mb-0 user-name fs-4">{% if request.user.first_name %}{{ request.user.first_name }} {{ request.user.last_name }}{% else %}{{ request.user.username }}{% endif %}</h3>
         <p class="text-muted mb-4 user-email-display">{{ request.user.email }}</p>
         <ul class="nav nav-tabs border-bottom" id="profileTabs" role="tablist">
             <li class="nav-item" role="presentation">
@@ -115,8 +114,6 @@
                                 value="{{ shop.name }}" required>
                         </div>
                         <div class="col-md-12 form-group mb-0">
-                            <label for="shopImage" class="form-label">Shop Image</label>
-                            <input type="file" class="form-control" name="image" id="shopImage" accept="image/*">
                             {% if shop.image %}
                             <small class="text-muted d-block mt-2">Current image: <a href="{{ shop.image.url }}" target="_blank">View image</a></small>
                             {% endif %}
@@ -131,15 +128,40 @@
                             <input type="tel" class="form-control" name="phone" id="shopPhone"
                                 value="{{ shop.phone|default:'' }}" placeholder="e.g. +1 234 567 8900">
                         </div>
-                        <div class="col-md-4 form-group mb-0">
-                            <label for="latitude" class="form-label">Latitude</label>
-                            <input type="number" step="any" class="form-control" name="latitude" id="latitude"
-                                value="{{ shop.latitude|default:'' }}">
-                        </div>
-                        <div class="col-md-4 form-group mb-0">
-                            <label for="longitude" class="form-label">Longitude</label>
-                            <input type="number" step="any" class="form-control" name="longitude" id="longitude"
-                                value="{{ shop.longitude|default:'' }}">
+                        <div class="col-12 form-group mb-0">
+                            <label class="form-label d-block">Shop Location</label>
+                            <div class="location-picker border rounded p-3">
+                                <div class="row g-2 align-items-stretch mb-3">
+                                    <div class="col-md-9">
+                                        <input type="text" class="form-control" id="locationSearch"
+                                            placeholder="Search location (e.g. New York, Times Square)">
+                                    </div>
+                                    <div class="col-md-3 d-grid">
+                                        <button type="button" class="btn btn-outline-primary" id="searchLocationBtn">
+                                            Search
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="shopLocationMap" class="rounded border"></div>
+                                <div class="mt-2 small text-muted" id="mapHint">
+                                    Click on the map to set location, then drag marker to fine-tune.
+                                </div>
+                                <div class="mt-3">
+                                    <label class="form-label mb-1">Selected Coordinates</label>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" id="latitudeDisplay" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" id="longitudeDisplay" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="latitude" id="latitude"
+                                    value="{{ shop.latitude|default:'' }}">
+                                <input type="hidden" name="longitude" id="longitude"
+                                    value="{{ shop.longitude|default:'' }}">
+                            </div>
                         </div>
                         <div class="col-12 form-group mb-0">
                             <label for="address" class="form-label">Shop Address</label>
@@ -185,6 +207,22 @@
     </div>
 </div>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+    #shopLocationMap {
+        width: 100%;
+        min-height: 320px;
+    }
+
+    @media (max-width: 576px) {
+        #shopLocationMap {
+            min-height: 260px;
+        }
+    }
+</style>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 function previewImage(input) {
     if (input.files && input.files[0]) {
@@ -195,5 +233,121 @@ function previewImage(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    var latInput = document.getElementById('latitude');
+    var lngInput = document.getElementById('longitude');
+    var latDisplay = document.getElementById('latitudeDisplay');
+    var lngDisplay = document.getElementById('longitudeDisplay');
+    var searchInput = document.getElementById('locationSearch');
+    var searchBtn = document.getElementById('searchLocationBtn');
+    var shopTabBtn = document.getElementById('shop-tab');
+    var defaultLat = 23.8103;
+    var defaultLng = 90.4125;
+    var lat = parseFloat(latInput.value);
+    var lng = parseFloat(lngInput.value);
+    var hasSavedCoords = !isNaN(lat) && !isNaN(lng);
+    var initialLat = hasSavedCoords ? lat : defaultLat;
+    var initialLng = hasSavedCoords ? lng : defaultLng;
+    var marker;
+
+    var map = L.map('shopLocationMap').setView([initialLat, initialLng], hasSavedCoords ? 15 : 12);
+    var mapHint = document.getElementById('mapHint');
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    });
+    var fallbackLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    });
+    var fallbackEnabled = false;
+
+    osmLayer.on('tileerror', function () {
+        if (fallbackEnabled) return;
+        fallbackEnabled = true;
+        map.removeLayer(osmLayer);
+        fallbackLayer.addTo(map);
+        if (mapHint) {
+            mapHint.textContent = 'OSM tiles are blocked in this environment. Using fallback tiles. Run from http://localhost or your deployed domain for direct OSM tile access.';
+        }
+    });
+
+    osmLayer.addTo(map);
+
+    function updateCoordinates(newLat, newLng, centerMap) {
+        var latFixed = Number(newLat).toFixed(6);
+        var lngFixed = Number(newLng).toFixed(6);
+
+        latInput.value = latFixed;
+        lngInput.value = lngFixed;
+        latDisplay.value = 'Latitude: ' + latFixed;
+        lngDisplay.value = 'Longitude: ' + lngFixed;
+
+        if (!marker) {
+            marker = L.marker([newLat, newLng], { draggable: true }).addTo(map);
+            marker.on('dragend', function (e) {
+                var pos = e.target.getLatLng();
+                updateCoordinates(pos.lat, pos.lng, false);
+            });
+        } else {
+            marker.setLatLng([newLat, newLng]);
+        }
+
+        if (centerMap) {
+            map.setView([newLat, newLng], 15);
+        }
+    }
+
+    if (hasSavedCoords) {
+        updateCoordinates(initialLat, initialLng, false);
+    } else {
+        latDisplay.value = 'Latitude: Not selected';
+        lngDisplay.value = 'Longitude: Not selected';
+    }
+
+    map.on('click', function (e) {
+        updateCoordinates(e.latlng.lat, e.latlng.lng, false);
+    });
+
+    function searchLocation() {
+        var query = searchInput.value.trim();
+        if (!query) return;
+
+        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query), {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+            if (!data.length) return;
+            var resultLat = parseFloat(data[0].lat);
+            var resultLng = parseFloat(data[0].lon);
+            updateCoordinates(resultLat, resultLng, true);
+        })
+        .catch(function () {
+            // No-op: keep form functional even if search fails.
+        });
+    }
+
+    searchBtn.addEventListener('click', searchLocation);
+    searchInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            searchLocation();
+        }
+    });
+
+    if (shopTabBtn) {
+        shopTabBtn.addEventListener('shown.bs.tab', function () {
+            setTimeout(function () {
+                map.invalidateSize();
+            }, 150);
+        });
+    }
+
+    if (window.location.protocol === 'file:' && mapHint) {
+        mapHint.textContent = 'Map tiles may be blocked when opened via file://. Serve this page via http://localhost or a deployed domain.';
+    }
+});
 </script>
 {% endblock %}

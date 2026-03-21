@@ -114,7 +114,7 @@ export default function ShopNavigation() {
     try {
       // Use OSRM for routing (free public API)
       const response = await fetch(
-        `http://router.project-osrm.org/route/v1/driving/${location.longitude},${location.latitude};${stationLng},${stationLat}?overview=full&geometries=geojson`
+        `https://router.project-osrm.org/route/v1/driving/${location.longitude},${location.latitude};${stationLng},${stationLat}?overview=full&geometries=geojson`
       );
       const data = await response.json();
 
@@ -195,9 +195,22 @@ export default function ShopNavigation() {
         location?.latitude || stationLat
       }, ${location?.longitude || stationLng}], 15);
       
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
+      });
+      const fallbackLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO'
+      });
+      let fallbackEnabled = false;
+
+      osmLayer.on('tileerror', () => {
+        if (fallbackEnabled) return;
+        fallbackEnabled = true;
+        map.removeLayer(osmLayer);
+        fallbackLayer.addTo(map);
+      });
+
+      osmLayer.addTo(map);
 
       // Icons
       const userIcon = L.divIcon({
@@ -267,7 +280,7 @@ export default function ShopNavigation() {
         {location ? (
           <WebView
             ref={webViewRef}
-            source={{ html: mapHtml }}
+            source={{ html: mapHtml, baseUrl: "https://localhost" }}
             style={{ flex: 1, backgroundColor: 'transparent' }}
             originWhitelist={['*']}
             javaScriptEnabled={true}

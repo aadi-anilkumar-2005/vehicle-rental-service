@@ -17,8 +17,10 @@ Including another URLconf
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from rentals import admin_views
 
 urlpatterns = [
+    path('admin/profile/', admin_views.admin_profile, name='admin_profile'),
     path('admin/', include('rentals.admin_urls')),
     path('api/staff/', include('staff.urls')),
     path('', include('owner.urls')),

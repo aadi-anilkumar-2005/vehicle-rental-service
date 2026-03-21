@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.innerWidth <= 768) {
             if (sidebar.classList.contains('mobile-open') && 
                 !sidebar.contains(e.target) && 
-                !sidebarToggle.contains(e.target)) {
+                !(sidebarToggle && sidebarToggle.contains(e.target))) {
                 sidebar.classList.remove('mobile-open');
             }
         }

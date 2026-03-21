@@ -5,6 +5,7 @@ from owner.views import logout_view as admin_logout_view
 urlpatterns = [
     # Dashboard
     path('dashboard/', admin_views.admin_dashboard, name='admin_dashboard'),
+    path('profile/', admin_views.admin_profile, name='admin_profile'),
     
     # Rental Shops
     path('rental-shops/', admin_views.admin_rentalshops, name='admin_rental_shops'),
@@ -12,12 +13,11 @@ urlpatterns = [
     
     # Users
     path('customers/', admin_views.admin_customers, name='admin_customers'),
-    path('staff/', admin_views.admin_staff, name='admin_rental_staff'),
+    path('staff/', admin_views.admin_staff, name='admin_staff'),
     
-    # Vehicles & Bookings
+    # Vehicles
     path('vehicles/', admin_views.admin_vehicles, name='admin_vehicles'),
     path('vehicles/<int:vehicle_id>/', admin_views.admin_vehicle_detail, name='admin_vehicle_detail'),
-    path('bookings/', admin_views.admin_bookings, name='admin_bookings'),
     path('payments/', admin_views.admin_payments, name='admin_payments'),
     
     # Owners

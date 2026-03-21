@@ -1,0 +1,65 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Admin Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Admin Profile</h1>
+</div>
+
+<div class="row" style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+    <div class="data-table-container" style="padding: 1.5rem;">
+        <h2 class="table-title" style="margin-bottom: 1rem;">General</h2>
+        <form method="POST" action="{% url 'admin_profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_general">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                <div>
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-control" name="first_name" value="{{ request.user.first_name }}" required>
+                </div>
+                <div>
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-control" name="last_name" value="{{ request.user.last_name }}">
+                </div>
+                <div>
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" value="{{ request.user.email }}" required>
+                </div>
+                <div>
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" class="form-control" name="phone" value="{{ admin_profile.phone|default:'' }}">
+                </div>
+            </div>
+            <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary">Save Profile</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="data-table-container" style="padding: 1.5rem;">
+        <h2 class="table-title" style="margin-bottom: 1rem;">Security</h2>
+        <form method="POST" action="{% url 'admin_profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="change_password">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; max-width: 480px;">
+                <div>
+                    <label class="form-label">Current Password</label>
+                    <input type="password" class="form-control" name="current_password" required>
+                </div>
+                <div>
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-control" name="new_password" required>
+                </div>
+                <div>
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" name="confirm_password" required>
+                </div>
+            </div>
+            <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary">Update Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

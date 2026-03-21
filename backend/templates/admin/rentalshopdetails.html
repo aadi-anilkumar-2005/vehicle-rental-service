@@ -4,13 +4,18 @@
 
 {% block content %}
 <!-- Shop Detail View -->
-<a href="{% url 'admin_rental_shops' %}" class="btn btn-outline" style="margin-bottom: 1.5rem;">
-    <i class="fas fa-arrow-left"></i> Back to Shops
-</a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <a href="{% url 'admin_rental_shops' %}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Back to Shops
+    </a>
+    <a href="{% url 'admin_staff' %}" class="btn btn-primary">
+        <i class="fas fa-users"></i> View Staff
+    </a>
+</div>
 
 <div class="detail-view">
-    {% if shop.image %}
-    <img src="{{ shop.image }}" alt="{{ shop.name }}" class="detail-header-img">
+    {% if shop.owner.profile_picture %}
+    <img src="{{ shop.owner.profile_picture.url }}" alt="{{ shop.name }}" class="detail-header-img">
     {% else %}
     <div class="detail-header-img"
         style="background: #E2E8F0; display: flex; align-items: center; justify-content: center;">
@@ -108,6 +113,31 @@
     <div
         style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius); border: 1px dashed var(--border);">
         <p style="color: var(--text-muted);">No vehicles registered under this shop yet.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<h3 style="margin-bottom: 1.5rem; font-size: 1.25rem; margin-top: 2rem;">Recent Bookings for {{ shop.name }}</h3>
+<div class="items-grid">
+    {% for booking in recent_bookings %}
+    <div class="item-card">
+        <div class="item-content">
+            <div class="item-title" style="margin-bottom: 0.5rem;">
+                <i class="fas fa-user-circle" style="color: var(--text-muted); margin-right: 0.5rem;"></i>{{ booking.user.get_full_name|default:booking.user.username }}
+            </div>
+            <div class="item-subtitle" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="status-badge status-{{ booking.status|yesno:'success,warning' }}">{{ booking.status|title }}</span>
+                <span style="font-weight: 600;">₹{{ booking.total_price }}</span>
+            </div>
+            <div class="item-details" style="border-top: 1px solid var(--border); padding-top: 0.75rem; font-size: 0.8rem; color: var(--text-muted);">
+                <i class="fas fa-car" style="margin-right: 0.5rem;"></i>{{ booking.vehicle.brand }} {{ booking.vehicle.model }}<br>
+                <i class="far fa-calendar-alt"></i> {{ booking.start_date|date:"M d, Y" }} <br>to {{ booking.end_date|date:"M d, Y" }}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; background: var(--surface); border-radius: var(--radius); border: 1px dashed var(--border);">
+        <p style="color: var(--text-muted); margin: 0;">No bookings associated with this shop yet.</p>
     </div>
     {% endfor %}
 </div>
