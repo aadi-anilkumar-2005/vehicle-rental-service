@@ -98,7 +98,7 @@
                         <td>
                             <div class="shop-info">
                                 <i class="fas fa-store"></i>
-                                <span>{{ profile.user.shops.first.name|default:"No Shop Linked" }}</span>
+                                <span>{% with shop=profile.shops.first %}{% if shop %}{{ shop.name }}{% else %}No Shop Linked{% endif %}{% endwith %}</span>
                             </div>
                         </td>
                         <td>

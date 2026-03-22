@@ -353,7 +353,8 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.role}"
 
-from django.db.models.signals import post_save
+from django.db.models import Avg
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 def _get_role_for_user(user):
@@ -422,13 +423,28 @@ class Review(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # Recalculate shop rating and review_count after every save
-        from django.db.models import Avg
+        self._recalculate_shop_rating()
+
+    def _recalculate_shop_rating(self):
+        """Recalculate shop rating and review_count from remaining reviews."""
         shop = self.shop
         agg = Review.objects.filter(shop=shop).aggregate(avg=Avg('rating'))
         shop.rating = round(agg['avg'] or 0, 1)
         shop.review_count = Review.objects.filter(shop=shop).count()
         shop.save(update_fields=['rating', 'review_count'])
+
+
+@receiver(post_delete, sender=Review)
+def recalculate_shop_rating_on_review_delete(sender, instance, **kwargs):
+    """
+    When a review is deleted, update the shop's rating and review_count in rental_shop table.
+    The deleted review is already removed from DB, so remaining reviews are used for calculation.
+    """
+    shop = instance.shop
+    agg = Review.objects.filter(shop=shop).aggregate(avg=Avg('rating'))
+    shop.rating = round(agg['avg'] or 0, 1)
+    shop.review_count = Review.objects.filter(shop=shop).count()
+    shop.save(update_fields=['rating', 'review_count'])
 
 
 class Complaint(models.Model):

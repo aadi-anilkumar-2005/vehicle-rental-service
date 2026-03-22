@@ -319,7 +319,7 @@ def admin_owners(request):
 @admin_required
 def admin_approved_owners(request):
     # Fetch active owners
-    owners = UserProfile.objects.filter(role='owner').select_related('user').order_by('-user__date_joined')
+    owners = UserProfile.objects.filter(role='owner').select_related('user').prefetch_related('shops').order_by('-user__date_joined')
     
     context = {
         'owners': owners,

@@ -163,7 +163,6 @@ export default function Home() {
         nextLocation.longitude,
       );
       setLocation(readable);
-<<<<<<< HEAD
 
       Toast.show({
         type: "success",
@@ -176,7 +175,7 @@ export default function Home() {
       let errorMessage = "Could not fetch current location.";
       if (error.message === 'Location timeout') {
         errorMessage = "Location request timed out. Please check your GPS signal.";
-      } else if (error.message.includes('unavailable')) {
+      } else if (error.message?.includes?.('unavailable')) {
         errorMessage = "Location services are currently unavailable.";
       }
       
@@ -189,10 +188,6 @@ export default function Home() {
       // Set fallback location
       setUserLocation({ latitude: 0, longitude: 0 });
       setLocation("Default Location");
-=======
-    } catch (error) {
-      console.error("Failed to get current location:", error);
->>>>>>> 6f747b0bd8cecbd9df5d27a187dad99ca4a3cbeb
     } finally {
       setLocationLoading(false);
     }
