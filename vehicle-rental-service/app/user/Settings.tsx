@@ -9,7 +9,7 @@ import {
   Mail,
   MessageSquare,
 } from "lucide-react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   Platform,
@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -41,7 +42,6 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
   const [processingKey, setProcessingKey] = useState<string | null>(null);
 
-  // Load settings on screen focus
   useFocusEffect(
     React.useCallback(() => {
       const loadSettings = async () => {
@@ -51,26 +51,17 @@ export default function Settings() {
           setSettings(data);
         } catch (error) {
           console.error("Failed to load settings:", error);
-          Toast.show({
-            type: "error",
-            text1: "Error",
-            text2: "Failed to load settings",
-          });
         } finally {
           setLoading(false);
         }
       };
-
       loadSettings();
     }, []),
   );
 
   const toggleSetting = async (key: keyof UserSettings) => {
-    // Prevent multiple rapid clicks on same setting
     if (processingKey === key) return;
-
     const newValue = !settings[key];
-
     try {
       setProcessingKey(key);
       await profileManagementApi.updateUserSettings({ [key]: newValue });
@@ -81,323 +72,206 @@ export default function Settings() {
         text2: `${key.replace(/_/g, " ")} updated successfully`,
       });
     } catch (error) {
-      console.error("Failed to update settings:", error);
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Failed to update settings",
-      });
+      Toast.show({ type: "error", text1: "Update Failed" });
     } finally {
-      // Clear processing state after a short delay
       setTimeout(() => setProcessingKey(null), 300);
     }
   };
 
-  const renderSwitch = (
+  const renderSettingItem = (
+    label: string,
+    description: string,
     value: boolean,
-    onValueChange: () => void,
-    settingKey: keyof UserSettings,
+    onToggle: () => void,
+    icon: any,
+    iconColor: string,
+    settingKey: keyof UserSettings
   ) => (
-    <Switch
-      value={value}
-      onValueChange={onValueChange}
-      disabled={processingKey === settingKey}
-      trackColor={{ false: "#334155", true: "#2dd4bf" }}
-      thumbColor={Platform.OS === "ios" ? "#ffffff" : "#ffffff"}
-      ios_backgroundColor="#334155"
-    />
+    <View style={styles.settingRow}>
+      <View style={styles.settingLeft}>
+        <View style={[styles.iconContainer, { backgroundColor: `${iconColor}15` }]}>
+          {React.createElement(icon, { size: 20, color: iconColor })}
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.settingLabel}>{label}</Text>
+          <Text style={styles.settingDescription} numberOfLines={1}>{description}</Text>
+        </View>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onToggle}
+        disabled={processingKey === settingKey}
+        trackColor={{ false: "#334155", true: "#22D3EE" }}
+        thumbColor="#ffffff"
+        ios_backgroundColor="#334155"
+      />
+    </View>
   );
 
   return (
     <View style={styles.container}>
-      {loading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#2dd4bf" />
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
-      )}
+      <StatusBar barStyle="light-content" />
       <SafeAreaView style={{ flex: 1 }}>
-        {/* Header */}
+        {/* Header - Professional Fixed Style */}
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <ArrowLeft size={24} color="#ffffff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={styles.headerTitle}>App Settings</Text>
+          <View style={{ width: 40 }} /> 
         </View>
 
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Notification Channels */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Bell size={18} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text style={styles.cardTitle}>Notification Channels</Text>
-            </View>
-
-            <View style={styles.cardContent}>
-              <View style={styles.settingRow}>
-                <View style={styles.settingLeft}>
-                  <View style={[styles.iconContainer, styles.iconTeal]}>
-                    <Bell size={20} color="#2dd4bf" />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingLabel}>Push Notifications</Text>
-                    <Text style={styles.settingDescription}>
-                      Receive push notifications on your device
-                    </Text>
-                  </View>
-                </View>
-                {renderSwitch(
-                  settings.push_notifications,
-                  () => toggleSetting("push_notifications"),
-                  "push_notifications",
-                )}
-              </View>
-
-              <View style={styles.settingRow}>
-                <View style={styles.settingLeft}>
-                  <View style={[styles.iconContainer, styles.iconPurple]}>
-                    <Mail size={20} color="#a855f7" />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingLabel}>Email Notifications</Text>
-                    <Text style={styles.settingDescription}>
-                      Receive updates via email
-                    </Text>
-                  </View>
-                </View>
-                {renderSwitch(
-                  settings.email_notifications,
-                  () => toggleSetting("email_notifications"),
-                  "email_notifications",
-                )}
-              </View>
-
-              <View style={styles.settingRow}>
-                <View style={styles.settingLeft}>
-                  <View style={[styles.iconContainer, styles.iconGreen]}>
-                    <MessageSquare size={20} color="#22c55e" />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingLabel}>SMS Notifications</Text>
-                    <Text style={styles.settingDescription}>
-                      Receive SMS alerts
-                    </Text>
-                  </View>
-                </View>
-                {renderSwitch(
-                  settings.sms_notifications,
-                  () => toggleSetting("sms_notifications"),
-                  "sms_notifications",
-                )}
-              </View>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          
+          {/* Notification Channels Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Notification Channels</Text>
+            <View style={styles.card}>
+              {renderSettingItem(
+                "Push Notifications",
+                "Alerts on your mobile device",
+                settings.push_notifications,
+                () => toggleSetting("push_notifications"),
+                Bell,
+                "#22D3EE",
+                "push_notifications"
+              )}
+              <View style={styles.divider} />
+              {renderSettingItem(
+                "Email Notifications",
+                "Receive updates via inbox",
+                settings.email_notifications,
+                () => toggleSetting("email_notifications"),
+                Mail,
+                "#A855F7",
+                "email_notifications"
+              )}
+              <View style={styles.divider} />
+              {renderSettingItem(
+                "SMS Notifications",
+                "Direct text message alerts",
+                settings.sms_notifications,
+                () => toggleSetting("sms_notifications"),
+                MessageSquare,
+                "#22C55E",
+                "sms_notifications"
+              )}
             </View>
           </View>
 
-          {/* Notification Types */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>Notification Types</Text>
-              <Text style={styles.headerSubtitle}>
-                Choose what you want to be notified about
-              </Text>
-            </View>
-
-            <View style={styles.cardContent}>
-              <View style={styles.settingRow}>
-                <View style={styles.settingLeft}>
-                  <View style={[styles.iconContainer, styles.iconTeal]}>
-                    <Car size={20} color="#2dd4bf" />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingLabel}>Booking Updates</Text>
-                    <Text style={styles.settingDescription}>
-                      Status changes, confirmations
-                    </Text>
-                  </View>
-                </View>
-                {renderSwitch(
-                  settings.booking_updates,
-                  () => toggleSetting("booking_updates"),
-                  "booking_updates",
-                )}
-              </View>
-
-              <View style={styles.settingRow}>
-                <View style={styles.settingLeft}>
-                  <View style={[styles.iconContainer, styles.iconGreen]}>
-                    <CreditCard size={20} color="#22c55e" />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingLabel}>Payment Alerts</Text>
-                    <Text style={styles.settingDescription}>
-                      Payment confirmations, refunds
-                    </Text>
-                  </View>
-                </View>
-                {renderSwitch(
-                  settings.payment_alerts,
-                  () => toggleSetting("payment_alerts"),
-                  "payment_alerts",
-                )}
-              </View>
-
-              <View style={styles.settingRow}>
-                <View style={styles.settingLeft}>
-                  <View style={[styles.iconContainer, styles.iconPurple]}>
-                    <Gift size={20} color="#a855f7" />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingLabel}>Promotions & Offers</Text>
-                    <Text style={styles.settingDescription}>
-                      Deals, discounts, special offers
-                    </Text>
-                  </View>
-                </View>
-                {renderSwitch(
-                  settings.promotions,
-                  () => toggleSetting("promotions"),
-                  "promotions",
-                )}
-              </View>
-
-              <View style={styles.settingRow}>
-                <View style={styles.settingLeft}>
-                  <View style={[styles.iconContainer, styles.iconOrange]}>
-                    <Clock size={20} color="#f97316" />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingLabel}>Ride Reminders</Text>
-                    <Text style={styles.settingDescription}>
-                      Upcoming bookings, returns
-                    </Text>
-                  </View>
-                </View>
-                {renderSwitch(
-                  settings.reminders,
-                  () => toggleSetting("reminders"),
-                  "reminders",
-                )}
-              </View>
+          {/* Preferences Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Content Preferences</Text>
+            <View style={styles.card}>
+              {renderSettingItem(
+                "Booking Updates",
+                "Confirmations and status changes",
+                settings.booking_updates,
+                () => toggleSetting("booking_updates"),
+                Car,
+                "#22D3EE",
+                "booking_updates"
+              )}
+              <View style={styles.divider} />
+              {renderSettingItem(
+                "Payment Alerts",
+                "Invoices and transaction receipts",
+                settings.payment_alerts,
+                () => toggleSetting("payment_alerts"),
+                CreditCard,
+                "#22C55E",
+                "payment_alerts"
+              )}
+              <View style={styles.divider} />
+              {renderSettingItem(
+                "Promotions",
+                "Discounts and special offers",
+                settings.promotions,
+                () => toggleSetting("promotions"),
+                Gift,
+                "#F472B6",
+                "promotions"
+              )}
+              <View style={styles.divider} />
+              {renderSettingItem(
+                "Ride Reminders",
+                "Pick-up and return schedules",
+                settings.reminders,
+                () => toggleSetting("reminders"),
+                Clock,
+                "#F97316",
+                "reminders"
+              )}
             </View>
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#22D3EE" />
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0f172a", // Dark background
-  },
+  container: { flex: 1, backgroundColor: "#0F1C23" },
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#1e293b",
   },
   backButton: {
     padding: 8,
-    marginRight: 8,
+    backgroundColor: "#1E293B",
+    borderRadius: 12,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#ffffff",
-  },
-  content: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-    gap: 24,
+  headerTitle: { fontSize: 20, fontWeight: "800", color: "#ffffff" },
+  scrollContent: { padding: 20, paddingBottom: 40 },
+  section: { marginBottom: 32 },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#64748B",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 12,
+    marginLeft: 4,
   },
   card: {
-    backgroundColor: "#1e293b", // Slate-800
-    borderRadius: 16,
+    backgroundColor: "#16202C",
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#1E293B",
     overflow: "hidden",
-  },
-  cardHeader: {
-    padding: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#334155",
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: "#94a3b8", // Slate-400
-    marginTop: 4,
-  },
-  cardContent: {
-    padding: 16,
-    gap: 20,
   },
   settingRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    padding: 16,
   },
-  settingLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    flex: 1,
-    paddingRight: 16,
-  },
+  divider: { height: 1, backgroundColor: "#1E293B", marginHorizontal: 16 },
+  settingLeft: { flexDirection: "row", alignItems: "center", gap: 14, flex: 1 },
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 12, // Slightly rounded square
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  iconTeal: { backgroundColor: "rgba(45, 212, 191, 0.1)" },
-  iconPurple: { backgroundColor: "rgba(168, 85, 247, 0.1)" },
-  iconGreen: { backgroundColor: "rgba(34, 197, 94, 0.1)" },
-  iconOrange: { backgroundColor: "rgba(249, 115, 22, 0.1)" },
-  textContainer: {
-    flex: 1,
-  },
-  settingLabel: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#ffffff",
-    marginBottom: 2,
-  },
-  settingDescription: {
-    fontSize: 12,
-    color: "#94a3b8", // Slate-400
-  },
+  textContainer: { flex: 1 },
+  settingLabel: { fontSize: 16, fontWeight: "600", color: "#ffffff" },
+  settingDescription: { fontSize: 12, color: "#94A3B8", marginTop: 2 },
   loadingOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(15, 28, 35, 0.7)",
     justifyContent: "center",
     alignItems: "center",
-  },
-  loadingText: {
-    color: "#ffffff",
-    fontSize: 16,
-    marginTop: 8,
+    zIndex: 999,
   },
 });

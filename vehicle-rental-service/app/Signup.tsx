@@ -4,7 +4,7 @@ import { AuthStackParamList } from "@/navigation/types";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
-  ArrowLeftRight,
+  CarFront,
   ArrowRight,
   Eye,
   EyeOff,
@@ -90,23 +90,25 @@ export default function Signup() {
             {/* HEADER */}
             <View className="items-center mb-10 w-full">
               <View className="h-20 w-20 rounded-3xl bg-[#22D3EE] items-center justify-center mb-6 shadow-lg shadow-cyan-500/50">
-                <ArrowLeftRight color="#0F1C23" size={32} strokeWidth={2.5} />
+                {/* LOGO UPDATED HERE */}
+                <CarFront color="#0F1C23" size={40} strokeWidth={2.5} />
               </View>
 
-              <Text className="text-[#22D3EE] text-4xl font-bold mb-1 text-center">
-                RentXplore
+              {/* App Name Synced */}
+              <Text className="text-[#22D3EE] text-5xl font-bold mb-1 text-center">
+                Rent<Text className="text-white">X</Text>plore
               </Text>
 
               {/* HEADER TEXT */}
               <Text
-                className="text-white text-2xl font-semibold text-center w-full"
+                className="text-white text-3xl font-semibold text-center w-full"
                 numberOfLines={1}
                 adjustsFontSizeToFit
               >
                 Create Account
               </Text>
 
-              <Text className="text-slate-400 text-sm mt-1 text-center">
+              <Text className="text-slate-400 text-sm mt-2 text-center">
                 Start your journey with us today
               </Text>
             </View>

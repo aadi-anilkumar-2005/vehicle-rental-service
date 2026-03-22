@@ -3,119 +3,169 @@
 {% block title %}Reviews for {{ shop.name }}{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+<style>
+    :root {
+        --accent: #3b82f6;
+        --success: #16a34a;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --card-bg: #ffffff;
+        --border: #e2e8f0;
+    }
+
+    .review-container { padding: 1rem; animation: fadeIn 0.4s ease-out; }
+
+    /* Header Actions */
+    .action-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .btn-back { 
+        display: flex; align-items: center; gap: 8px; color: var(--text-muted); 
+        text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s;
+    }
+    .btn-back:hover { color: var(--accent); transform: translateX(-4px); }
+
+    /* Stats Card (Sync with Shop Info Card style) */
+    .stats-card {
+        background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border);
+        padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 2.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    /* Review Feed Layout */
+    .review-list { display: flex; flex-direction: column; gap: 1.5rem; }
+    
+    .review-item {
+        background: white; border-radius: 20px; border: 1px solid var(--border);
+        padding: 1.5rem; transition: 0.3s;
+    }
+    .review-item:hover { border-color: var(--accent); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+
+    /* Review UI Components */
+    .customer-profile { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+    .avatar-circle { 
+        width: 40px; height: 40px; background: #eff6ff; border-radius: 12px; 
+        display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: 800;
+    }
+
+    .rating-badge {
+        background: #fffbeb; color: var(--warning); padding: 4px 10px; border-radius: 8px;
+        font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;
+    }
+
+    .owner-reply-box {
+        background: #f8fafc; border-radius: 12px; padding: 1rem; border-left: 3px solid var(--accent);
+        margin-top: 1rem; margin-left: 1rem;
+    }
+
+    .delete-action {
+        border-top: 1px solid #f1f5f9; margin-top: 1.25rem; padding-top: 1rem;
+        display: flex; justify-content: flex-end;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="review-container">
+    <div class="action-header">
+        <a href="{% url 'admin_shop_detail' shop.id %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to {{ shop.name }}
+        </a>
+    </div>
+
+    <div class="stats-card">
         <div>
-            <a href="{% url 'admin_shop_detail' shop.id %}" class="btn btn-outline">
-                <i class="fas fa-arrow-left"></i> Back to Shop
-            </a>
-            <h1 class="page-title" style="margin-top: 1rem;">Reviews for {{ shop.name }}</h1>
+            <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin: 0;">Shop Reviews</h1>
+            <p style="color: var(--text-muted); font-weight: 600; margin: 4px 0 0 0;">Feedback for {{ shop.name }}</p>
         </div>
         <div style="text-align: right;">
-            <div style="font-size: 1.5rem; font-weight: 800; color: #f59e0b;">
+            <div style="font-size: 1.75rem; font-weight: 800; color: var(--warning);">
                 <i class="fas fa-star"></i> {{ shop.rating|default:"0.0" }}
             </div>
-            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
                 Based on {{ shop.review_count|default:"0" }} Reviews
             </div>
         </div>
     </div>
-</div>
 
-{% if messages %}
-<div class="mb-4">
-    {% for message in messages %}
-    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 px-3 small"
-         style="border-radius: 12px; font-weight: 600; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-        {{ message }}
+    {% if messages %}
+    <div style="margin-bottom: 2rem;">
+        {% for message in messages %}
+        <div style="background: white; border-left: 4px solid var(--success); padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-weight: 600; color: var(--text-main);">
+            {{ message }}
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
-{% endif %}
+    {% endif %}
 
-<div class="data-table-container">
-    <div class="table-responsive">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Rating</th>
-                    <th>Review</th>
-                    <th>Owner Reply</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for review in reviews %}
-                <tr>
-                    <td>
-                        <div style="font-weight: 600;">{{ review.user.get_full_name|default:review.user.username }}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ review.user.email }}</div>
-                    </td>
-                    <td>
-                        <div style="color: #f59e0b; font-weight: 700;">
-                            {% for star in "12345" %}
-                                {% if forloop.counter <= review.rating %}
-                                    <i class="fas fa-star"></i>
-                                {% else %}
-                                    <i class="far fa-star" style="color: #d1d5db;"></i>
-                                {% endif %}
-                            {% endfor %}
-                            {{ review.rating }}/5
-                        </div>
-                    </td>
-                    <td style="max-width: 300px;">
-                        <div style="white-space: pre-wrap;">{{ review.comment }}</div>
-                    </td>
-                    <td style="max-width: 300px;">
-                        {% if review.owner_reply %}
-                            <div style="background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem; border-left: 3px solid #3b82f6;">
-                                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">
-                                    <i class="fas fa-reply"></i> Owner Reply
-                                </div>
-                                <div style="white-space: pre-wrap;">{{ review.owner_reply }}</div>
-                                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">
-                                    {{ review.replied_at|date:"M d, Y H:i" }}
-                                </div>
-                            </div>
+    <div class="review-list">
+        {% for review in reviews %}
+        <div class="review-item">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div class="customer-profile">
+                    <div class="avatar-circle">
+                        {{ review.user.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: var(--text-main);">{{ review.user.get_full_name|default:review.user.username }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ review.user.email }}</div>
+                    </div>
+                </div>
+                <div class="rating-badge">
+                    {% for star in "12345" %}
+                        {% if forloop.counter <= review.rating %}
+                            <i class="fas fa-star"></i>
                         {% else %}
-                            <span style="color: var(--text-muted); font-style: italic;">No reply yet</span>
+                            <i class="far fa-star" style="opacity: 0.3;"></i>
                         {% endif %}
-                    </td>
-                    <td style="color: var(--text-muted); font-size: 0.8rem;">
-                        {{ review.created_at|date:"M d, Y H:i" }}
-                    </td>
-                    <td>
-                        <form method="POST" action="{% url 'admin_shop_reviews' shop.id %}" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="review_id" value="{{ review.id }}">
-                            <button type="button" 
-                                    onclick="if(confirm('Are you sure you want to delete this review by {{ review.user.username }}?')) { this.form.submit(); }"
-                                    class="btn btn-sm btn-danger"
-                                    style="background: #fee2e2; color: #ef4444; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.8rem;">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        <i class="fas fa-star" style="font-size: 2rem; opacity: 0.2; margin-bottom: 0.5rem; display: block;"></i>
-                        No reviews found for this shop.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    {% endfor %}
+                    <span style="margin-left: 4px;">{{ review.rating }}/5</span>
+                </div>
+            </div>
+
+            <div style="margin: 1rem 0; line-height: 1.6; color: var(--text-main); white-space: pre-wrap;">
+                {{ review.comment }}
+            </div>
+
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
+                <i class="far fa-calendar-alt" style="margin-right: 4px;"></i> {{ review.created_at|date:"M d, Y • H:i" }}
+            </div>
+
+            {% if review.owner_reply %}
+            <div class="owner-reply-box">
+                <div style="font-size: 0.7rem; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 6px;">
+                    <i class="fas fa-reply"></i> Shop Response
+                </div>
+                <div style="font-weight: 500; color: var(--text-main); margin-bottom: 6px;">{{ review.owner_reply }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);">{{ review.replied_at|date:"M d, Y H:i" }}</div>
+            </div>
+            {% else %}
+            <div style="margin-top: 1rem; margin-left: 1rem; font-size: 0.8rem; color: var(--text-muted); font-style: italic;">
+                No owner response yet
+            </div>
+            {% endif %}
+
+            <div class="delete-action">
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="review_id" value="{{ review.id }}">
+                    <button type="button" 
+                            onclick="if(confirm('Delete review by {{ review.user.username }}?')) { this.form.submit(); }"
+                            style="background: #fee2e2; color: var(--danger); border: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: 0.2s;"
+                            onmouseover="this.style.background='#fecaca'"
+                            onmouseout="this.style.background='#fee2e2'">
+                        <i class="fas fa-trash" style="margin-right: 4px;"></i> Remove Review
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 4rem; background: white; border-radius: 24px; border: 2px dashed var(--border);">
+            <i class="fas fa-star" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 1rem; display: block;"></i>
+            <p style="color: var(--text-muted); font-weight: 600;">No reviews found for this shop yet.</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
-
-<style>
-.btn-danger:hover {
-    background: #fecaca !important;
-}
-</style>
 {% endblock %}

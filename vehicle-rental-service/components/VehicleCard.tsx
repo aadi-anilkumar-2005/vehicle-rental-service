@@ -1,10 +1,6 @@
 import { Bike, Car, Fuel, Settings2, Users } from "lucide-react-native";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
-// You'll need to define your Vehicle type interface if not available globally
-// import { Vehicle } from "@/types";
-
 import { Vehicle } from "@/types";
 import { formatCurrency, getImageSource } from '@/lib/utils';
 
@@ -14,6 +10,10 @@ interface VehicleCardProps {
 }
 
 export const VehicleCard = ({ vehicle, onPress }: VehicleCardProps) => {
+  // Function to capitalize only the first letter
+  const capitalize = (str: string) => 
+    str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : "";
+
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={styles.card}>
       <View style={styles.imageContainer}>
@@ -27,11 +27,11 @@ export const VehicleCard = ({ vehicle, onPress }: VehicleCardProps) => {
         <View style={styles.typeBadgeContainer}>
           <View style={styles.typeBadge}>
             {vehicle.type === "car" ? (
-              <Car size={16} color="#ffffff" />
+              <Car size={14} color="#ffffff" />
             ) : (
-              <Bike size={16} color="#ffffff" />
+              <Bike size={14} color="#ffffff" />
             )}
-            <Text style={styles.typeText}>{vehicle.type}</Text>
+            <Text style={styles.typeText}>{capitalize(vehicle.type)}</Text>
           </View>
         </View>
 
@@ -40,15 +40,13 @@ export const VehicleCard = ({ vehicle, onPress }: VehicleCardProps) => {
           <View
             style={[
               styles.statusBadge,
-              vehicle.isAvailable ? styles.bgSuccess : styles.bgDestructive,
+              vehicle.isAvailable ? styles.bgSuccessSubtle : styles.bgDestructiveSubtle,
             ]}
           >
             <Text
               style={[
                 styles.statusText,
-                vehicle.isAvailable
-                  ? styles.textSuccess
-                  : styles.textDestructive,
+                vehicle.isAvailable ? styles.textSuccess : styles.textDestructive,
               ]}
             >
               {vehicle.isAvailable ? "Available" : "Booked"}
@@ -59,32 +57,34 @@ export const VehicleCard = ({ vehicle, onPress }: VehicleCardProps) => {
 
       <View style={styles.content}>
         <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.title}>{vehicle.name}</Text>
-            <Text style={styles.brand}>{vehicle.brand}</Text>
-            {vehicle.vehicleNumber && (
-              <Text style={styles.vehicleNumber}>{vehicle.vehicleNumber}</Text>
-            )}
+          <View style={{ flex: 1, marginRight: 8 }}>
+            <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+                {vehicle.name}
+            </Text>
+            {/* Removed 'Standard' and formatted brand/number */}
+            <Text style={styles.brand} numberOfLines={1}>
+                {capitalize(vehicle.brand)}{vehicle.vehicleNumber ? ` • ${vehicle.vehicleNumber}` : ''}
+            </Text>
           </View>
           <View style={styles.priceContainer}>
             <Text style={styles.price}>{formatCurrency(vehicle.pricePerHour)}</Text>
-            <Text style={styles.priceUnit}>/hour</Text>
+            <Text style={styles.priceUnit}>/hr</Text>
           </View>
         </View>
 
         <View style={styles.specsRow}>
           <View style={styles.specBadge}>
-            <Fuel size={14} color="#94a3b8" />
-            <Text style={styles.specText}>{vehicle.fuelType}</Text>
+            <Fuel size={12} color="#22D3EE" />
+            <Text style={styles.specText}>{capitalize(vehicle.fuelType)}</Text>
           </View>
           <View style={styles.specBadge}>
-            <Settings2 size={14} color="#94a3b8" />
-            <Text style={styles.specText}>{vehicle.transmission}</Text>
+            <Settings2 size={12} color="#22D3EE" />
+            <Text style={styles.specText}>{capitalize(vehicle.transmission)}</Text>
           </View>
           {vehicle.seating && (
             <View style={styles.specBadge}>
-              <Users size={14} color="#94a3b8" />
-              <Text style={styles.specText}>{vehicle.seating}</Text>
+              <Users size={12} color="#22D3EE" />
+              <Text style={styles.specText}>{vehicle.seating} Seats</Text>
             </View>
           )}
         </View>
@@ -95,18 +95,15 @@ export const VehicleCard = ({ vehicle, onPress }: VehicleCardProps) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#191d24", // Requested dark bg
-    borderRadius: 16,
+    backgroundColor: "#16202C", 
+    borderRadius: 24,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    marginBottom: 16, // Add spacing between cards
+    borderWidth: 1,
+    borderColor: "#1E293B",
+    marginBottom: 16,
   },
   imageContainer: {
-    height: 180, // Slightly taller
+    height: 170,
     position: "relative",
   },
   image: {
@@ -118,58 +115,50 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "rgba(30, 41, 59, 0.8)", // Dark transparent (slate-800/80)
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20, // More rounded
+    backgroundColor: "rgba(15, 28, 35, 0.7)", 
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
   },
   typeText: {
-    fontSize: 12,
-    fontWeight: "500",
-    textTransform: "capitalize",
+    fontSize: 11,
+    fontWeight: "700",
     color: "#ffffff",
+    letterSpacing: 0.5,
   },
-
   statusBadgeContainer: { position: "absolute", right: 12, top: 12 },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20, // More rounded
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
   },
-  bgSuccess: { backgroundColor: "#10b981" }, // emerald-500
-  bgDestructive: { backgroundColor: "#ef4444" }, // red-500
-  statusText: { fontSize: 12, fontWeight: "600", color: "#ffffff" },
-  textSuccess: { color: "#ffffff" }, // Redundant but kept for safety
-  textDestructive: { color: "#ffffff" },
-
+  bgSuccessSubtle: { backgroundColor: "rgba(16, 185, 129, 0.2)" },
+  bgDestructiveSubtle: { backgroundColor: "rgba(239, 68, 68, 0.2)" },
+  statusText: { fontSize: 11, fontWeight: "800", textTransform: "uppercase" },
+  textSuccess: { color: "#10b981" },
+  textDestructive: { color: "#ef4444" },
   content: { padding: 16 },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 4,
+    alignItems: "center",
   },
-  title: { fontSize: 20, fontWeight: "700", color: "#ffffff" }, // White title
-  brand: { fontSize: 14, color: "#94a3b8", marginBottom: 4 }, // Slate-400
-  vehicleNumber: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#94a3b8", // Slate-400
-  },
-
+  title: { fontSize: 18, fontWeight: "800", color: "#ffffff", letterSpacing: -0.5 },
+  brand: { fontSize: 13, color: "#94a3b8", marginTop: 2, fontWeight: "500" },
   priceContainer: { alignItems: "flex-end" },
-  price: { fontSize: 20, fontWeight: "700", color: "#22d3ee" }, // Cyan-400
-  priceUnit: { fontSize: 12, color: "#94a3b8" }, // Slate-400
-
+  price: { fontSize: 18, fontWeight: "800", color: "#22D3EE" },
+  priceUnit: { fontSize: 11, color: "#64748B", fontWeight: "600" },
   specsRow: { flexDirection: "row", gap: 8, marginTop: 16 },
   specBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    backgroundColor: "#2a323c", // Darker gray chip
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    gap: 5,
+    backgroundColor: "#0F1C23", 
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#1E293B",
   },
-  specText: { fontSize: 12, fontWeight: "500", color: "#cbd5e1" }, // Slate-300
+  specText: { fontSize: 11, fontWeight: "600", color: "#cbd5e1" },
 });
