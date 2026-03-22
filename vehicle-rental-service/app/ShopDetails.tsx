@@ -18,6 +18,7 @@ import {
   Phone,
   Share2,
   Star,
+  Navigation,
 } from "lucide-react-native";
 import React, { useState, useEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
@@ -55,9 +56,7 @@ export default function ShopDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeFilter, setActiveFilter] = useState<"all" | "car" | "bike">(
-    "all",
-  );
+  const [activeFilter, setActiveFilter] = useState<"all" | "car" | "bike">("all");
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
 
@@ -72,7 +71,6 @@ export default function ShopDetails() {
           ]);
           setShop(shopData);
           setShopVehicles(vehiclesData);
-          // Check if this shop is already favorited
           try {
             const faved = await favoritesApi.checkFavorite(id);
             setIsFavorited(faved);
@@ -80,19 +78,12 @@ export default function ShopDetails() {
         } catch (err) {
           console.error("Failed to fetch shop details:", err);
           setError("Failed to load shop details");
-          Toast.show({
-            type: "error",
-            text1: "Error",
-            text2: "Could not load shop details",
-          });
+          Toast.show({ type: "error", text1: "Error", text2: "Could not load shop details" });
         } finally {
           setLoading(false);
         }
       };
-
-      if (id) {
-        fetchShopDetails();
-      }
+      if (id) fetchShopDetails();
     }, [id]),
   );
 
@@ -108,10 +99,7 @@ export default function ShopDetails() {
     return (
       <View className="flex-1 justify-center items-center bg-[#0F1C23]">
         <Text className="text-slate-400 mb-4">Shop not found</Text>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="bg-[#22D3EE] px-4 py-2 rounded-lg"
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} className="bg-[#22D3EE] px-4 py-2 rounded-lg">
           <Text className="font-bold text-[#0F1C23]">Go Back</Text>
         </TouchableOpacity>
       </View>
@@ -124,56 +112,22 @@ export default function ShopDetails() {
   });
 
   const handleCall = () => {
-    if (!shop || !shop.phone) {
-      Toast.show({
-        type: "error",
-        text1: "Phone number unavailable",
-        text2: "This shop has not provided a contact number.",
-      });
-      return;
-    }
-    Linking.openURL(`tel:${shop.phone}`).catch(() => {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Could not open the phone dialer.",
-      });
-    });
+    if (!shop?.phone) return;
+    Linking.openURL(`tel:${shop.phone}`);
   };
 
   const handleShare = async () => {
     if (!shop) return;
-    try {
-      await Share.share({
-        message: `Check out ${shop.name} on our Vehicle Rental App!\n📍 ${shop.address}\n📞 ${shop.phone || "No phone available"}`,
-        title: `Share ${shop.name}`,
-      });
-    } catch (error: any) {
-      Toast.show({
-        type: "error",
-        text1: "Error sharing",
-        text2: error.message,
-      });
-    }
+    await Share.share({
+      message: `Check out ${shop.name} on RentXplore!\n📍 ${shop.address}`,
+    });
   };
 
   const handleDirections = () => {
-    if (!shop || !shop.latitude || !shop.longitude) {
-      Toast.show({
-        type: "error",
-        text1: "Location unavailable",
-        text2: "This shop has no location data.",
-      });
-      return;
-    }
-
+    if (!shop?.latitude || !shop?.longitude) return;
     router.push({
       pathname: "/ShopNavigation" as any,
-      params: {
-        lat: shop.latitude.toString(),
-        lng: shop.longitude.toString(),
-        name: shop.name,
-      },
+      params: { lat: shop.latitude.toString(), lng: shop.longitude.toString(), name: shop.name },
     });
   };
 
@@ -183,12 +137,6 @@ export default function ShopDetails() {
     try {
       const result = await favoritesApi.toggleFavorite(id);
       setIsFavorited(result.favorited);
-      Toast.show({
-        type: "success",
-        text1: result.favorited
-          ? "Added to favorites"
-          : "Removed from favorites",
-      });
     } catch {
       Toast.show({ type: "error", text1: "Failed to update favorites" });
     } finally {
@@ -199,223 +147,101 @@ export default function ShopDetails() {
   return (
     <View className="flex-1 bg-[#0F1C23]">
       <StatusBar barStyle="light-content" />
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        {/* Hero Image */}
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         <View className="relative">
-          <Image
-            source={getImageSource(shop.image)}
-            className="w-full h-72"
-            resizeMode="cover"
-          />
-
-          {/* Header Buttons Overlay */}
-          <View
-            className="absolute left-0 right-0 flex-row justify-between items-center px-4"
-            style={{ top: insets.top + 10 }}
-          >
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              className="bg-[#1E293B]/80 p-3 rounded-full"
-            >
+          <Image source={getImageSource(shop.image)} className="w-full h-72" resizeMode="cover" />
+          <View className="absolute left-0 right-0 flex-row justify-between items-center px-4" style={{ top: insets.top + 10 }}>
+            <TouchableOpacity onPress={() => navigation.goBack()} className="bg-[#1E293B]/80 p-3 rounded-full">
               <ArrowLeft color="#fff" size={24} />
             </TouchableOpacity>
-            {/* Right-side buttons grouped together */}
             <View style={{ flexDirection: "row", gap: 8 }}>
-              <TouchableOpacity
-                onPress={handleToggleFavorite}
-                disabled={favoriteLoading}
-                className="bg-[#1E293B]/80 p-3 rounded-full"
-              >
-                <Heart
-                  size={20}
-                  color={isFavorited ? "#ef4444" : "#fff"}
-                  fill={isFavorited ? "#ef4444" : "transparent"}
-                />
+              <TouchableOpacity onPress={handleToggleFavorite} disabled={favoriteLoading} className="bg-[#1E293B]/80 p-3 rounded-full">
+                <Heart size={20} color={isFavorited ? "#ef4444" : "#fff"} fill={isFavorited ? "#ef4444" : "transparent"} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleShare}
-                className="bg-[#1E293B]/80 p-3 rounded-full"
-              >
+              <TouchableOpacity onPress={handleShare} className="bg-[#1E293B]/80 p-3 rounded-full">
                 <Share2 color="#fff" size={20} />
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        {/* Shop Info Card - Overlapping */}
         <View className="-mt-10 bg-[#0F1C23] rounded-t-[32px] px-6 pt-8">
-          <View className="flex-row justify-between items-start mb-2">
-            <Text className="text-2xl font-bold text-white flex-1 mr-4">
-              {shop.name}
-            </Text>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("ShopReviews", {
-                  shopId: id,
-                  shopName: shop.name,
-                })
-              }
-              activeOpacity={0.75}
-            >
-              <View className="bg-[#0F1C23] px-3 py-1.5 rounded-full flex-row items-center gap-1.5 border border-slate-700">
+          <View className="flex-row justify-between items-center mb-6">
+            <Text className="text-2xl font-bold text-white flex-1 mr-4" numberOfLines={1}>{shop.name}</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("ShopReviews", { shopId: id, shopName: shop.name })}>
+              <View className="bg-[#1E293B] px-3 py-1.5 rounded-full flex-row items-center gap-1.5 border border-slate-700">
                 <Star fill="#F59E0B" color="#F59E0B" size={14} />
                 <Text className="font-bold text-white">{shop.rating?.toFixed(1) || "0.0"}</Text>
-                <Text className="text-xs text-slate-400">
-                  ({shop.reviewCount})
-                </Text>
+                <Text className="text-xs text-slate-400">({shop.reviewCount})</Text>
               </View>
             </TouchableOpacity>
           </View>
 
-          <View className="mb-6 space-y-3">
+          {/* Location - Multiline allowed for full visibility */}
+          <View className="mb-4 flex-row items-start gap-2">
+            <MapPin color="#22D3EE" size={18} style={{ marginTop: 2 }} />
+            <Text className="text-slate-400 text-base flex-1 leading-6">{shop.address}</Text>
+          </View>
+
+          {/* Timing Row - Added space above */}
+          <View className="mb-8 flex-row items-center gap-6">
             <View className="flex-row items-center gap-2">
-              <MapPin color="#94A3B8" size={16} />
-              <Text className="text-slate-400 text-base">{shop.address}</Text>
+              <View className={`w-2.5 h-2.5 rounded-full ${shop.isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
+              <Text className={`${shop.isOpen ? 'text-green-500' : 'text-red-500'} font-semibold`}>
+                {shop.isOpen ? "Open Now" : "Closed"}
+              </Text>
             </View>
-
-            <View className="flex-row items-center gap-4">
-              {shop.isOpen ? (
-                <View className="flex-row items-center gap-2">
-                  <View className="w-2 h-2 rounded-full bg-green-500" />
-                  <Text className="text-green-500 font-medium">Open Now</Text>
-                </View>
-              ) : (
-                <View className="flex-row items-center gap-2">
-                  <View className="w-2 h-2 rounded-full bg-red-500" />
-                  <Text className="text-red-500 font-medium">Closed</Text>
-                </View>
-              )}
-
-              <View className="flex-row items-center gap-2">
-                <Clock color="#94A3B8" size={16} />
-                <Text className="text-slate-400">
-                  {shop.operatingHours || "8:00 AM - 10:00 PM"}
-                </Text>
-              </View>
+            <View className="flex-row items-center gap-2">
+              <Clock color="#94A3B8" size={16} />
+              <Text className="text-slate-400 font-medium">{shop.operatingHours || "8:00 AM - 10:00 PM"}</Text>
             </View>
           </View>
 
-          {/* Action Buttons */}
-          <View className="mb-8">
-            <View className="flex-row gap-4 mb-3">
-              <TouchableOpacity
-                onPress={handleCall}
-                className="flex-1 flex-row items-center justify-center gap-2 bg-[#22D3EE] py-4 rounded-2xl"
-              >
-                <Phone color="#0F1C23" size={20} />
-                <Text className="font-bold text-[#0F1C23] text-base">
-                  Call Shop
-                </Text>
+          <View className="mb-10">
+            <View className="flex-row gap-3 mb-3">
+              <TouchableOpacity onPress={handleCall} className="flex-1 flex-row items-center justify-center gap-2 bg-[#22D3EE] h-14 rounded-2xl">
+                <Phone color="#0F1C23" size={18} />
+                <Text className="font-bold text-[#0F1C23] text-sm" numberOfLines={1}>Call Shop</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleDirections}
-                className="flex-1 flex-row items-center justify-center gap-2 border border-[#22D3EE] py-4 rounded-2xl"
-              >
-                <Text className="font-bold text-[#22D3EE] text-base">
-                  Get Directions
-                </Text>
+              <TouchableOpacity onPress={handleDirections} className="flex-1 flex-row items-center justify-center gap-2 border border-[#22D3EE] h-14 rounded-2xl">
+                <Navigation color="#22D3EE" size={18} />
+                <Text className="font-bold text-[#22D3EE] text-sm" numberOfLines={1}>Get Directions</Text>
               </TouchableOpacity>
             </View>
-
             <TouchableOpacity
-              className="flex-row items-center justify-center gap-2 bg-[#1E293B] py-4 rounded-2xl border border-slate-700"
+              className="flex-row items-center justify-center gap-2 bg-[#1E293B] h-14 rounded-2xl border border-slate-700"
               onPress={async () => {
-                try {
-                  const conv = await chatApi.getOrCreateConversation(
-                    token || "",
-                    shop.id,
-                  );
-                  router.push({
-                    pathname: "/chat/[id]",
-                    params: {
-                      id: conv.id,
-                      partnerName: conv.partnerName,
-                      partnerRole: conv.partnerRole,
-                      isOnline: String(conv.isOnline),
-                      shopName: conv.shopName,
-                    },
-                  });
-                } catch (e) {
-                  Toast.show({
-                    type: "error",
-                    text1: "Error",
-                    text2: "Could not open conversation",
-                  });
-                }
+                const conv = await chatApi.getOrCreateConversation(token || "", shop.id);
+                router.push({ pathname: "/chat/[id]", params: { id: conv.id, partnerName: conv.partnerName, partnerRole: conv.partnerRole, isOnline: String(conv.isOnline), shopName: conv.shopName }});
               }}
             >
-              <MessageCircle color="#FFFFFF" size={20} />
-              <Text className="font-bold text-white text-base">
-                Message Shop
-              </Text>
+              <MessageCircle color="#FFFFFF" size={18} />
+              <Text className="font-bold text-white text-sm" numberOfLines={1}>Message Shop</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Available Vehicles Header */}
-          <View className="flex-row justify-between items-end mb-4">
-            <Text className="text-xl font-bold text-white">
-              Available Vehicles
-            </Text>
-            <Text className="text-slate-400 pb-1">
-              {filteredVehicles.length} vehicles
-            </Text>
+          <View className="flex-row justify-between items-center mb-5">
+            <Text className="text-xl font-bold text-white" numberOfLines={1}>Available Vehicles</Text>
+            <Text className="text-slate-400 text-xs font-bold bg-[#1E293B] px-2 py-1 rounded-md">{filteredVehicles.length} UNITS</Text>
           </View>
 
-          {/* Custom Filters */}
           <View className="flex-row gap-3 mb-6">
-            <TouchableOpacity
-              onPress={() => setActiveFilter("all")}
-              className={`w-10 h-10 rounded-full items-center justify-center ${activeFilter === "all" ? "bg-[#22D3EE]" : "bg-[#0F1C23] border border-slate-700"}`}
-            >
-              <Text
-                className={`font-medium ${activeFilter === "all" ? "text-[#0F1C23]" : "text-slate-400"}`}
-              >
-                All
-              </Text>
+            <TouchableOpacity onPress={() => setActiveFilter("all")} className={`w-12 h-10 rounded-full items-center justify-center ${activeFilter === "all" ? "bg-[#22D3EE]" : "bg-[#1E293B] border border-slate-700"}`}>
+              <Text className={`font-bold ${activeFilter === "all" ? "text-[#0F1C23]" : "text-slate-400"}`}>All</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setActiveFilter("car")}
-              className={`px-4 h-10 rounded-full flex-row items-center gap-2 ${activeFilter === "car" ? "bg-[#22D3EE]" : "bg-[#0F1C23] border border-slate-700"}`}
-            >
-              <Car
-                color={activeFilter === "car" ? "#0F1C23" : "#94A3B8"}
-                size={18}
-              />
-              <Text
-                className={`font-medium ${activeFilter === "car" ? "text-[#0F1C23]" : "text-slate-400"}`}
-              >
-                Cars
-              </Text>
+            <TouchableOpacity onPress={() => setActiveFilter("car")} className={`flex-1 h-10 rounded-full flex-row items-center justify-center gap-2 ${activeFilter === "car" ? "bg-[#22D3EE]" : "bg-[#1E293B] border border-slate-700"}`}>
+              <Car color={activeFilter === "car" ? "#0F1C23" : "#94A3B8"} size={18} />
+              <Text className={`font-bold ${activeFilter === "car" ? "text-[#0F1C23]" : "text-slate-400"}`} numberOfLines={1}>Cars</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setActiveFilter("bike")}
-              className={`px-4 h-10 rounded-full flex-row items-center gap-2 ${activeFilter === "bike" ? "bg-[#22D3EE]" : "bg-[#0F1C23] border border-slate-700"}`}
-            >
-              <Bike
-                color={activeFilter === "bike" ? "#0F1C23" : "#94A3B8"}
-                size={18}
-              />
-              <Text
-                className={`font-medium ${activeFilter === "bike" ? "text-[#0F1C23]" : "text-slate-400"}`}
-              >
-                Bikes
-              </Text>
+            <TouchableOpacity onPress={() => setActiveFilter("bike")} className={`flex-1 h-10 rounded-full flex-row items-center justify-center gap-2 ${activeFilter === "bike" ? "bg-[#22D3EE]" : "bg-[#1E293B] border border-slate-700"}`}>
+              <Bike color={activeFilter === "bike" ? "#0F1C23" : "#94A3B8"} size={18} />
+              <Text className={`font-bold ${activeFilter === "bike" ? "text-[#0F1C23]" : "text-slate-400"}`} numberOfLines={1}>Bikes</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Vehicle List */}
-          <View className="gap-4">
+          <View className="gap-y-4">
             {filteredVehicles.map((vehicle) => (
-              <VehicleCard
-                key={vehicle.id}
-                vehicle={vehicle}
-                onPress={() =>
-                  navigation.navigate("VehicleDetails", { id: vehicle.id })
-                }
-              />
+              <VehicleCard key={vehicle.id} vehicle={vehicle} onPress={() => navigation.navigate("VehicleDetails", { id: vehicle.id })} />
             ))}
           </View>
         </View>

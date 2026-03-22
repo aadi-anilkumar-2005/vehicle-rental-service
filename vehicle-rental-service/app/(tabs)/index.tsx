@@ -6,12 +6,12 @@ import { UserStackParamList } from "@/navigation/types";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useRouter } from "expo-router";
-import { Bell, MapPin, MessageCircle, Send } from "lucide-react-native";
+// Added Car and Bike for the side-facing icons in filters
+import { Bell, MapPin, MessageCircle, Send, CarFront, Car, Bike } from "lucide-react-native"; 
 import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
   ActivityIndicator,
@@ -86,10 +86,9 @@ export default function Home() {
       const fetchShops = async () => {
         try {
           const data = await api.getRentalShops();
-          // Mock distance calculation for now
           const shopsWithDistance = data.map((shop) => ({
             ...shop,
-            distance: parseFloat((Math.random() * 5).toFixed(1)), // Random 0-5km
+            distance: parseFloat((Math.random() * 5).toFixed(1)), 
           }));
           setShops(shopsWithDistance);
         } catch (error) {
@@ -139,18 +138,8 @@ export default function Home() {
         nextLocation.longitude,
       );
       setLocation(readable);
-
-      Toast.show({
-        type: "success",
-        text1: "Location updated",
-      });
     } catch (error) {
       console.error("Failed to get current location:", error);
-      Toast.show({
-        type: "error",
-        text1: "Location error",
-        text2: "Could not fetch current location.",
-      });
     } finally {
       setLocationLoading(false);
     }
@@ -158,54 +147,6 @@ export default function Home() {
 
   const handleShopClick = (shopId: string) => {
     navigation.navigate("ShopDetails", { id: shopId });
-  };
-
-  const handleSearchLocation = async () => {
-    const query = location.trim();
-    if (!query) return;
-
-    setLocationLoading(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
-        {
-          headers: {
-            Accept: "application/json",
-          },
-        },
-      );
-      const data = await response.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        Toast.show({
-          type: "error",
-          text1: "No results",
-          text2: "Location not found.",
-        });
-        return;
-      }
-
-      const lat = parseFloat(data[0].lat);
-      const lng = parseFloat(data[0].lon);
-      if (Number.isNaN(lat) || Number.isNaN(lng)) {
-        Toast.show({
-          type: "error",
-          text1: "Invalid location",
-        });
-        return;
-      }
-
-      setUserLocation({ latitude: lat, longitude: lng });
-      setLocation(data[0].display_name || query);
-    } catch (error) {
-      console.error("Location search failed:", error);
-      Toast.show({
-        type: "error",
-        text1: "Search failed",
-        text2: "Unable to search this location right now.",
-      });
-    } finally {
-      setLocationLoading(false);
-    }
   };
 
   const typeFilteredShops = shops.filter((shop) => {
@@ -237,14 +178,20 @@ export default function Home() {
 
   return (
     <View className="flex-1 bg-[#0F1C23]" style={{ paddingTop: insets.top }}>
+      
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4">
-        <View>
-          <View className="flex-row items-center gap-2 mb-1">
-            <MapPin color="#94A3B8" size={14} />
-            <Text className="text-sm text-slate-400">Your Location</Text>
+        <View className="flex-row items-center gap-3">
+          <View className="h-10 w-10 rounded-xl bg-[#22D3EE] items-center justify-center shadow-lg shadow-cyan-500/50">
+            <CarFront color="#0F1C23" size={20} strokeWidth={2.5} />
+          </View>
+          <View>
+            <Text className="text-[#22D3EE] text-xl font-bold tracking-tight">
+              Rent<Text className="text-white">X</Text>plore
+            </Text>
           </View>
         </View>
+
         <View className="flex-row gap-3">
           <TouchableOpacity
             className="relative rounded-full bg-[#1E293B] p-3 border border-slate-700"
@@ -271,25 +218,19 @@ export default function Home() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <View className="px-6 py-4 gap-6">
-          {/* Search Bar */}
+          
+          {/* Static Location Bar */}
           <View className="flex-row items-center bg-[#16202C] rounded-2xl border border-slate-800 h-14 px-4 gap-3">
             <MapPin color="#22D3EE" size={20} />
-            <TextInput
-              value={location}
-              onChangeText={setLocation}
-              className="flex-1 text-white text-base"
-              placeholder="Search location"
-              placeholderTextColor="#64748B"
-              onSubmitEditing={handleSearchLocation}
-              returnKeyType="search"
-            />
-            <TouchableOpacity
-              className="bg-[#1E293B] p-3 rounded-full border border-slate-700"
-              onPress={handleSearchLocation}
-              disabled={locationLoading}
-            >
-              <Send color="#22D3EE" size={18} />
-            </TouchableOpacity>
+            <View className="flex-1">
+                <Text 
+                    className="text-white text-base" 
+                    numberOfLines={1} 
+                    ellipsizeMode="tail"
+                >
+                    {locationLoading ? "Updating location..." : location}
+                </Text>
+            </View>
           </View>
 
           {/* Map Widget */}
@@ -299,7 +240,7 @@ export default function Home() {
             onShopClick={handleShopClick}
           />
 
-          {/* Filters */}
+          {/* Filters - Updated with Side-Facing Icons */}
           <View className="flex-row gap-3">
             <TouchableOpacity
               onPress={() => setActiveFilter("all")}
@@ -311,20 +252,24 @@ export default function Home() {
                 All
               </Text>
             </TouchableOpacity>
+            
             <TouchableOpacity
               onPress={() => setActiveFilter("car")}
-              className={`px-6 py-2.5 rounded-full flex-row items-center gap-2 ${activeFilter === "car" ? "bg-[#22D3EE]" : "bg-[#1E293B] border border-slate-700"}`}
+              className={`px-5 py-2.5 rounded-full flex-row items-center gap-2 ${activeFilter === "car" ? "bg-[#22D3EE]" : "bg-[#1E293B] border border-slate-700"}`}
             >
+              <Car color={activeFilter === "car" ? "#0F1C23" : "#94A3B8"} size={18} />
               <Text
                 className={`font-semibold ${activeFilter === "car" ? "text-[#0F1C23]" : "text-slate-400"}`}
               >
                 Cars
               </Text>
             </TouchableOpacity>
+            
             <TouchableOpacity
               onPress={() => setActiveFilter("bike")}
-              className={`px-6 py-2.5 rounded-full flex-row items-center gap-2 ${activeFilter === "bike" ? "bg-[#22D3EE]" : "bg-[#1E293B] border border-slate-700"}`}
+              className={`px-5 py-2.5 rounded-full flex-row items-center gap-2 ${activeFilter === "bike" ? "bg-[#22D3EE]" : "bg-[#1E293B] border border-slate-700"}`}
             >
+              <Bike color={activeFilter === "bike" ? "#0F1C23" : "#94A3B8"} size={18} />
               <Text
                 className={`font-semibold ${activeFilter === "bike" ? "text-[#0F1C23]" : "text-slate-400"}`}
               >

@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import {
-  ArrowLeftRight,
+  CarFront,
   ArrowRight,
   Eye,
   EyeOff,
@@ -65,24 +65,25 @@ export const Login = () => {
             {/* HEADER SECTION */}
             <View className="items-center mb-10 w-full">
               <View className="h-20 w-20 rounded-3xl bg-[#22D3EE] items-center justify-center mb-6 shadow-lg shadow-cyan-500/50">
-                <ArrowLeftRight color="#0F1C23" size={32} strokeWidth={2.5} />
+                {/* LOGO UPDATED HERE */}
+                <CarFront color="#0F1C23" size={40} strokeWidth={2.5} />
               </View>
 
-              {/* App Name */}
-              <Text className="text-[#22D3EE] text-4xl font-bold mb-1 text-center">
-                RentXplore
+              {/* App Name Synced */}
+              <Text className="text-[#22D3EE] text-5xl font-bold mb-1 text-center">
+                Rent<Text className="text-white">X</Text>plore
               </Text>
 
               {/* Welcome Back in one line */}
               <Text
-                className="text-white text-2xl font-semibold text-center w-full"
+                className="text-white text-3xl font-semibold text-center w-full"
                 numberOfLines={1}
                 adjustsFontSizeToFit
               >
                 Welcome Back
               </Text>
 
-              <Text className="text-slate-400 text-sm mt-1 text-center">
+              <Text className="text-slate-400 text-sm mt-2 text-center">
                 Sign in to your account
               </Text>
             </View>
