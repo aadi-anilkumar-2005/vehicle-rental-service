@@ -14,7 +14,7 @@ urlpatterns = [
     
     # Users
     path('customers/', admin_views.admin_customers, name='admin_customers'),
-    path('staff/', admin_views.admin_staff, name='admin_staff'),
+    path('staff/<int:shop_id>/', admin_views.admin_staff, name='admin_staff'),
     
     # Vehicles
     path('vehicles/', admin_views.admin_vehicles, name='admin_vehicles'),

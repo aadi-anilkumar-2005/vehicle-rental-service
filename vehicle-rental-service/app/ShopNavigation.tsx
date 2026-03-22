@@ -58,41 +58,66 @@ export default function ShopNavigation() {
   useEffect(() => {
     let sub: Location.LocationSubscription | null = null;
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setLoading(false);
-        return;
-      }
-      const loc = await Location.getCurrentPositionAsync({});
-      setLocation({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
-
-      sub = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.High,
-          timeInterval: 5000,
-          distanceInterval: 10,
-        },
-        (newLocation) => {
-          const newCoords = {
-            latitude: newLocation.coords.latitude,
-            longitude: newLocation.coords.longitude,
-          };
-          setLocation(newCoords);
-          
-          if (webViewRef.current) {
-            webViewRef.current.postMessage(
-              JSON.stringify({
-                type: "UPDATE_USER_LOCATION",
-                lat: newCoords.latitude,
-                lng: newCoords.longitude,
-              })
-            );
-          }
+      try {
+        // Check if location services are enabled
+        const enabled = await Location.hasServicesEnabledAsync();
+        if (!enabled) {
+          console.log("Location services are disabled");
+          setLoading(false);
+          return;
         }
-      );
+
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.log("Location permission not granted");
+          setLoading(false);
+          return;
+        }
+
+        // Add timeout to prevent hanging
+        const loc = await Promise.race([
+          Location.getCurrentPositionAsync({}),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Location timeout')), 10000)
+          )
+        ]) as Location.LocationObject;
+
+        setLocation({
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+        });
+
+        sub = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 5000,
+            distanceInterval: 10,
+          },
+          (newLocation) => {
+            const newCoords = {
+              latitude: newLocation.coords.latitude,
+              longitude: newLocation.coords.longitude,
+            };
+            setLocation(newCoords);
+           
+            if (webViewRef.current) {
+              webViewRef.current.postMessage(
+                JSON.stringify({
+                  type: "UPDATE_USER_LOCATION",
+                  lat: newCoords.latitude,
+                  lng: newCoords.longitude,
+                })
+              );
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Location error in ShopNavigation:", error);
+        // Set default location on error
+        setLocation({ latitude: 0, longitude: 0 });
+      } finally {
+        setLoading(false);
+      }
     })();
 
     return () => {

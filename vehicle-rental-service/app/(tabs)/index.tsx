@@ -115,19 +115,44 @@ export default function Home() {
   const handleCurrentLocation = async () => {
     setLocationLoading(true);
     try {
+      // Check if location services are enabled
+      const enabled = await Location.hasServicesEnabledAsync();
+      if (!enabled) {
+        Toast.show({
+          type: "error",
+          text1: "Location disabled",
+          text2: "Please enable location services in your device settings.",
+        });
+        // Set default location
+        setUserLocation({ latitude: 0, longitude: 0 });
+        setLocation("Default Location");
+        return;
+      }
+
+      // Request permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         Toast.show({
           type: "error",
           text1: "Permission denied",
-          text2: "Location permission is required to show nearby rentals.",
+          text2: "Location permission is required to show nearby rentals. Using default location.",
         });
+        // Set default location
+        setUserLocation({ latitude: 0, longitude: 0 });
+        setLocation("Default Location");
         return;
       }
 
-      const current = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      // Try to get current position with longer timeout
+      const current = await Promise.race([
+        Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Location timeout')), 30000) // 30 seconds
+        )
+      ]) as Location.LocationObject;
+
       const nextLocation = {
         latitude: current.coords.latitude,
         longitude: current.coords.longitude,
@@ -144,13 +169,26 @@ export default function Home() {
         type: "success",
         text1: "Location updated",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to get current location:", error);
+      
+      // Handle different error types
+      let errorMessage = "Could not fetch current location.";
+      if (error.message === 'Location timeout') {
+        errorMessage = "Location request timed out. Please check your GPS signal.";
+      } else if (error.message.includes('unavailable')) {
+        errorMessage = "Location services are currently unavailable.";
+      }
+      
       Toast.show({
         type: "error",
         text1: "Location error",
-        text2: "Could not fetch current location.",
+        text2: errorMessage,
       });
+      
+      // Set fallback location
+      setUserLocation({ latitude: 0, longitude: 0 });
+      setLocation("Default Location");
     } finally {
       setLocationLoading(false);
     }

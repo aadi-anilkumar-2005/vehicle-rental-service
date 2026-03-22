@@ -228,6 +228,9 @@ def staff_management_view(request):
     if not is_owner(request.user):
         return redirect('owner_login')
 
+    # Get the shop for the current owner - available for both GET and POST
+    shop = get_owner_shop(request.user)
+
     if request.method == 'POST':
         action = request.POST.get('action')
         
@@ -251,6 +254,7 @@ def staff_management_view(request):
                 )
                 user.user_profile.role = 'staff'
                 user.user_profile.phone = phone
+                user.user_profile.shop = shop
                 user.user_profile.save()
                 messages.success(request, f"Staff member {name} added successfully!")
             except Exception as e:
@@ -264,7 +268,7 @@ def staff_management_view(request):
             password = request.POST.get('password')
 
             try:
-                user = User.objects.get(id=user_id, user_profile__role='staff')
+                user = User.objects.get(id=user_id, user_profile__role='staff', user_profile__shop=shop)
                 name_parts = name.split(' ', 1)
                 user.first_name = name_parts[0]
                 user.last_name = name_parts[1] if len(name_parts) > 1 else ''
@@ -283,7 +287,7 @@ def staff_management_view(request):
         elif action == 'delete':
             user_id = request.POST.get('user_id')
             try:
-                user = User.objects.get(id=user_id, user_profile__role='staff')
+                user = User.objects.get(id=user_id, user_profile__role='staff', user_profile__shop=shop)
                 user_name = f"{user.first_name} {user.last_name}".strip() or user.username
                 user.delete()
                 messages.success(request, f"Staff member {user_name} deleted successfully!")
@@ -292,10 +296,22 @@ def staff_management_view(request):
                 
         return redirect('owner_staff')
 
-    shop = get_owner_shop(request.user)
+    # DEBUG: Print debug information
+    print(f"=== STAFF MANAGEMENT DEBUG ===")
+    print(f"Current User: {request.user.username}")
+    print(f"User ID: {request.user.id}")
+    print(f"Shop from get_owner_shop: {shop.name if shop else None} (ID: {shop.id if shop else None})")
+    
     staff_users = User.objects.filter(
-        user_profile__role='staff'
+        user_profile__role='staff',
+        user_profile__shop=shop
     ).select_related('user_profile')
+    
+    print(f"Staff query result count: {staff_users.count()}")
+    for staff in staff_users:
+        print(f"  - {staff.username} (Shop: {staff.user_profile.shop.name if staff.user_profile.shop else 'None'})")
+    print(f"=== END DEBUG ===")
+    
     return render(request, 'owner/staffManagement.html', {'staff_users': staff_users})
 
 @login_required(login_url='owner_login')

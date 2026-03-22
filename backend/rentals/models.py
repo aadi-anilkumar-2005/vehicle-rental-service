@@ -103,8 +103,9 @@ class Booking(models.Model):
     ]
     
     DELIVERY_OPTIONS = [
-        ('pickup', 'Self Pickup'),
-        ('delivery', 'Home Delivery'),
+        ('self_pickup', 'Self Pickup'),        # User picks up the vehicle themselves
+        ('pickup_service', 'Pickup Service'),   # Shop agent/driver picks up vehicle
+        ('home_delivery', 'Home Delivery'),     # Vehicle delivered to user's location
     ]
     
     PAYMENT_METHODS = [
@@ -130,7 +131,7 @@ class Booking(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     
     # Delivery details
-    delivery_option = models.CharField(max_length=10, choices=DELIVERY_OPTIONS, default='pickup')
+    delivery_option = models.CharField(max_length=15, choices=DELIVERY_OPTIONS, default='self_pickup')
     delivery_address = models.TextField(blank=True, null=True)
     return_location = models.TextField(blank=True, null=True)
     
@@ -344,6 +345,7 @@ class UserProfile(models.Model):
     address = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='user_img/', blank=True, null=True)
+    shop = models.ForeignKey('RentalShop', on_delete=models.CASCADE, null=True, blank=True, related_name='staff_members')
     
     class Meta:
         db_table = 'user_profile'

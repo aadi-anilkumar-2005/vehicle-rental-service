@@ -161,7 +161,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
     booking_type = serializers.ChoiceField(choices=Booking.BOOKING_TYPES)
     start_date = serializers.DateTimeField()
     duration = serializers.IntegerField(min_value=1)
-    delivery_option = serializers.ChoiceField(choices=Booking.DELIVERY_OPTIONS, default='delivery')
+    delivery_option = serializers.ChoiceField(choices=Booking.DELIVERY_OPTIONS, default='self_pickup')
     delivery_address = serializers.CharField(required=False, allow_blank=True)
     payment_method = serializers.ChoiceField(choices=Booking.PAYMENT_METHODS)
     
@@ -213,7 +213,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Vehicle is already booked for this time period")
         
         # Prepare booking data
-        delivery_fee = 10 if delivery_option == 'delivery' else 0
+        delivery_fee = 10 if delivery_option == 'home_delivery' else 0
         service_fee = 5
         booking_data = {
             'vehicle': vehicle,

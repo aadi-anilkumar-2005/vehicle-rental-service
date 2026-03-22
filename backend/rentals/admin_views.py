@@ -209,13 +209,30 @@ def admin_customers(request):
     return render(request, 'admin/customer.html', context)
 
 @admin_required
-def admin_staff(request):
-    staff_users = UserProfile.objects.filter(role="staff").select_related("user")
-    
+def admin_staff(request, shop_id):
+    shop = get_object_or_404(RentalShop, id=shop_id)
+    staff_users = UserProfile.objects.filter(
+        role="staff",
+        shop=shop
+    ).select_related("user")
+
+    # Apply filters from GET params
+    is_active = request.GET.get("is_active")
+    if is_active is not None and is_active != "":
+        is_active_bool = is_active.lower() in ("true", "1", "yes")
+        staff_users = staff_users.filter(user__is_active=is_active_bool)
+
+    sort = request.GET.get("sort")
+    if sort == "username":
+        sort = "user__username"
+    if sort in ["-user__date_joined", "user__username"]:
+        staff_users = staff_users.order_by(sort)
+
     context = {
-        'staff_users': staff_users,
+        "staff_users": staff_users,
+        "shop": shop,
     }
-    return render(request, 'admin/staff.html', context)
+    return render(request, "admin/staff.html", context)
 
 @admin_required
 def admin_vehicles(request):

@@ -81,11 +81,11 @@ export const api = {
   },
 
   async createBooking(bookingData: {
-    vehicle_id: string;
+    vehicle_id: string | number;
     booking_type: "hour" | "day";
     start_date: string;
     duration: number;
-    delivery_option: "delivery";
+    delivery_option: "self_pickup" | "pickup_service" | "home_delivery";
     delivery_address?: string;
     payment_method: "card" | "upi" | "wallet";
   }): Promise<any> {
@@ -99,8 +99,22 @@ export const api = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to create booking");
+      const errorData = await response.json().catch(() => ({})) as Record<string, unknown>;
+      const message =
+        typeof errorData.error === "string"
+          ? errorData.error
+          : Array.isArray(errorData.delivery_option)
+            ? errorData.delivery_option[0]
+            : Array.isArray(errorData.vehicle_id)
+              ? errorData.vehicle_id[0]
+              : typeof errorData === "object" && errorData !== null
+                ? Object.values(errorData)
+                    .flat()
+                    .filter(Boolean)[0]
+                : null;
+      throw new Error(
+        typeof message === "string" ? message : "Failed to create booking"
+      );
     }
 
     return await response.json();

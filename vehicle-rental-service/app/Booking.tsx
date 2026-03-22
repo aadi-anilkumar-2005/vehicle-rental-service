@@ -13,6 +13,7 @@ import {
   MapPin,
   Smartphone,
   Truck,
+  User,
   Wallet,
 } from "lucide-react-native";
 import React, { useState, useEffect } from "react";
@@ -35,7 +36,7 @@ import { DeliveryLocationSelector } from "@/components/user/DeliveryLocationSele
 import { PaymentMethod, SavedLocation } from "@/services/api";
 import { formatCurrency, getImageSource } from '@/lib/utils';
 
-type DeliveryOption = "delivery";
+type DeliveryOption = "pickup" | "delivery";
 
 export default function Booking() {
   const navigation = useNavigation();
@@ -67,8 +68,7 @@ export default function Booking() {
   const [duration, setDuration] = useState(bookingType === "day" ? 1 : 4);
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
 
-  const [deliveryOption, setDeliveryOption] =
-    useState<DeliveryOption>("delivery");
+  const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>("pickup");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [showDeliverySelector, setShowDeliverySelector] = useState(false);
 
@@ -222,16 +222,17 @@ export default function Booking() {
   };
 
   const handleConfirmBooking = async () => {
-    if (!deliveryAddress) {
+    if (deliveryOption === "delivery" && !deliveryAddress) {
       Alert.alert("Error", "Please set a delivery location");
       return;
     }
 
     try {
       // Combine date and time for start_date
-      const [hours, minutes] = selectedTime.split(":");
-      const [period] = selectedTime.split(" ");
-      let hour24 = parseInt(hours);
+      const [hours, rest] = selectedTime.split(":");
+      const minutePart = rest?.split(" ")[0] ?? "0";
+      const period = selectedTime.toUpperCase().includes("PM") ? "PM" : "AM";
+      let hour24 = parseInt(hours ?? "10", 10);
 
       if (period === "PM" && hour24 !== 12) {
         hour24 += 12;
@@ -240,43 +241,43 @@ export default function Booking() {
       }
 
       const startDateTime = new Date(selectedDate);
-      startDateTime.setHours(hour24, parseInt(minutes));
+      startDateTime.setHours(hour24, parseInt(minutePart, 10));
+      startDateTime.setSeconds(0, 0);
+
+      const deliveryOptionBackend =
+        deliveryOption === "pickup" ? "self_pickup" : "home_delivery";
 
       const bookingData = {
-        vehicle_id: vehicle.id,
-        booking_type: bookingType as "hour" | "day",
+        vehicle_id: parseInt(id, 10),
+        booking_type: bookingType,
         start_date: startDateTime.toISOString(),
-        duration: duration,
-        delivery_option: "delivery" as const,
-        delivery_address: deliveryAddress,
+        duration,
+        delivery_option: deliveryOptionBackend,
+        delivery_address:
+          deliveryOption === "delivery" ? deliveryAddress : undefined,
         payment_method:
-          savedPaymentMethods.find((p) => p.id === paymentMethodId)?.type ||
-          "card",
+          (savedPaymentMethods.find((p) => p.id === paymentMethodId)
+            ?.type as "card" | "upi" | "wallet") || "card",
       };
 
-      const response = await api.createBooking(bookingData);
+      await api.createBooking(bookingData);
 
       Alert.alert(
-        "Booking confirmed!",
-        `Your ${vehicle.name} is booked for ${duration} ${
-          bookingType === "day"
-            ? duration === 1
-              ? "day"
-              : "days"
-            : duration === 1
-              ? "hour"
-              : "hours"
-        } on ${selectedDate.toLocaleDateString()}`,
-        [{ text: "OK", onPress: () => router.replace("/(tabs)/bookings") }],
+        "Booking Confirmed!",
+        `Your ${vehicle?.name} has been booked successfully.`,
+        [
+          {
+            text: "View Bookings",
+            onPress: () => router.push("/user/(tabs)/bookings"),
+          },
+          { text: "Continue Shopping", onPress: () => router.push("/(tabs)/") },
+        ]
       );
     } catch (error) {
-      Alert.alert(
-        "Booking Failed",
-        error instanceof Error
-          ? error.message
-          : "Failed to create booking. Please try again.",
-        [{ text: "OK" }],
-      );
+      console.error("Booking failed:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to create booking. Please try again.";
+      Alert.alert("Error", message);
     }
   };
 
@@ -526,23 +527,66 @@ export default function Booking() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Truck size={20} color="#2dd4bf" />
-            <Text style={styles.sectionTitle}>Vehicle Delivery</Text>
+            <Text style={styles.sectionTitle}>Delivery Option</Text>
           </View>
-          <View style={[styles.outlineActive, { paddingVertical: 12, alignItems: "center" }]}>
-            <Text style={styles.outlineTextActive}>
-              Home Delivery (+{formatCurrency(10)})
-            </Text>
+          
+          <View style={styles.deliveryOptionsRow}>
+            {/* Home Delivery Option */}
+            <TouchableOpacity
+              onPress={() => {
+                setDeliveryOption("delivery");
+                setShowDeliverySelector(true);
+              }}
+              style={[
+                styles.outlineOption,
+                deliveryOption === "delivery" && styles.outlineActive
+              ]}
+            >
+              <View style={styles.deliveryOptionContent}>
+                <Truck size={20} color={deliveryOption === "delivery" ? "#2dd4bf" : "#64748b"} />
+                <Text style={[
+                  styles.outlineText,
+                  deliveryOption === "delivery" && styles.outlineTextActive
+                ]}>
+                  Home Delivery (+{formatCurrency(10)})
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Self Pickup Option */}
+            <TouchableOpacity
+              onPress={() => {
+                setDeliveryOption("pickup");
+              }}
+              style={[
+                styles.outlineOption,
+                deliveryOption === "pickup" && styles.outlineActive
+              ]}
+            >
+              <View style={styles.deliveryOptionContent}>
+                <User size={20} color={deliveryOption === "pickup" ? "#2dd4bf" : "#64748b"} />
+                <Text style={[
+                  styles.outlineText,
+                  deliveryOption === "pickup" && styles.outlineTextActive
+                ]}>
+                  Self Pickup (Free)
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            onPress={() => setShowDeliverySelector(true)}
-            style={styles.locationSelectorBtn}
-          >
-            <MapPin size={20} color="#2dd4bf" />
-            <Text style={styles.locationSelectorText}>
-              {deliveryAddress || "Set delivery location..."}
-            </Text>
-          </TouchableOpacity>
+          {/* Delivery Address Selector - Only show for delivery */}
+          {deliveryOption === "delivery" && (
+            <TouchableOpacity
+              onPress={() => setShowDeliverySelector(true)}
+              style={styles.locationSelectorBtn}
+            >
+              <MapPin size={20} color="#2dd4bf" />
+              <Text style={styles.locationSelectorText}>
+                {deliveryAddress || "Set delivery location..."}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Price summary */}
@@ -775,6 +819,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#2dd4bf",
     borderRadius: 12,
+  },
+  outlineOption: {
+    backgroundColor: "rgba(148, 163, 184, 0.05)",
+    borderWidth: 1,
+    borderColor: "#334155",
+    borderRadius: 12,
+    padding: 16,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 80,
+  },
+  deliveryOptionsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginVertical: 8,
+  },
+  deliveryOptionContent: {
+    paddingVertical: 12,
+    alignItems: "center",
+    flex: 1,
   },
   outlineTextActive: {
     color: "#2dd4bf",

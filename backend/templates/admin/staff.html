@@ -89,14 +89,14 @@
 <div class="staff-container">
     <div class="page-header">
         <div class="header-left">
-            <a href="javascript:history.back()" class="btn-back">
-                <i class="fas fa-arrow-left"></i>
+            <a href="{% url 'admin_shop_detail' shop.id %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back to {{ shop.name }}
             </a>
-            <h1 class="page-title">Staff Directory</h1>
+            <h1 class="page-title">Staff - {{ shop.name }}</h1>
         </div>
 
         <div class="actions-group">
-            <form method="GET" class="filters-bar">
+            <form method="GET" action="{% url 'admin_staff' shop.id %}" class="filters-bar">
                 <select class="filter-select" name="is_active" onchange="this.form.submit()">
                     <option value="">All Status</option>
                     <option value="True" {% if request.GET.is_active == 'True' %}selected{% endif %}>Active</option>
