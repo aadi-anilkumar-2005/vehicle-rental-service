@@ -214,9 +214,9 @@ def booking_management_view(request):
     bookings = Booking.objects.filter(shop=shop).select_related('user', 'vehicle').prefetch_related('staff_tasks__staff')
     staff_members = User.objects.filter(
         user_profile__role='staff',
-        is_active=True,
-        assigned_tasks__booking__shop=shop
-    ).distinct().select_related('user_profile')
+        user_profile__shop=shop,
+        is_active=True
+    ).select_related('user_profile')
     
     return render(request, 'owner/bookingManagement.html', {
         'bookings': bookings,
